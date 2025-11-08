@@ -203,7 +203,35 @@
         <iframe src="ad.html" id="ad-iframe" style="width: 100%; height: 100%; border: none;"></iframe>
     </div>
     <!-- END AD OVERLAY -->
+   <script>
+        // Check ad settings before loading anything
+        (async function() {
+            try {
+                const response = await fetch('ad_settings.json');
+                const settings = await response.json();
+                
+                if (settings.enabled === true) {
+                    // Create and add the ad overlay
+                    const adOverlay = document.createElement('div');
+                    adOverlay.id = 'ad-overlay-container';
+                    adOverlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; background: white;';
+                    
+                    const adIframe = document.createElement('iframe');
+                    adIframe.src = 'ad.html';
+                    adIframe.id = 'ad-iframe';
+                    adIframe.style.cssText = 'width: 100%; height: 100%; border: none;';
+                    
+                    adOverlay.appendChild(adIframe);
+                    document.body.insertBefore(adOverlay, document.body.firstChild);
+                }
+            } catch (error) {
+                console.log('Ad settings not found or error loading:', error);
+                // If file doesn't exist or error, don't show ads
+            }
+        })();
+    </script>
 
+    
     <a href="index.html" class="logout-arrow">←</a>
 
     <a href="index.html" class="logout-arrow">←</a>
@@ -634,17 +662,19 @@
             return table;
         }
 // Listen for message from ad.html to close the overlay
+
         window.addEventListener('message', function(event) {
             if (event.data === 'closeAd') {
                 const adOverlay = document.getElementById('ad-overlay-container');
-                adOverlay.style.transition = 'opacity 1s ease';
-                adOverlay.style.opacity = '0';
-                setTimeout(() => {
-                    adOverlay.remove();
-                }, 1000);
+                if (adOverlay) {
+                    adOverlay.style.transition = 'opacity 1s ease';
+                    adOverlay.style.opacity = '0';
+                    setTimeout(() => {
+                        adOverlay.remove();
+                    }, 1000);
+                }
             }
         });
-
         
     </script>
 </body>
