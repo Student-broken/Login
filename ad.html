@@ -1,1 +1,625 @@
-not used for now
+<!DOCTYPE html>
+<html lang="en">
+  
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AD SYSTEM</title>
+
+<style>
+  /* Base styles */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%;
+    height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: white;
+    color: #222;
+    overflow-x: hidden;
+  }
+
+  /* INTRO SCENE - Video Container */
+  #intro {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    overflow: hidden;
+    background: black;
+  }
+
+  /* Video container for full screen */
+  #video-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100vw;
+    height: 100vh;
+    transform: translate(-50%, -50%);
+    overflow: hidden;
+  }
+
+  /* YouTube iFrame to cover the screen */
+  #ad-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: none;
+  }
+
+  /* Placeholder slides base style */
+  .placeholder-slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+    padding: 60px 40px;
+    z-index: 5;
+    animation: fadeIn 0.5s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .placeholder-slide h1 {
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 800;
+    margin-bottom: 30px;
+    text-shadow: 3px 3px 15px rgba(0,0,0,0.4);
+    letter-spacing: -1px;
+    line-height: 1.1;
+  }
+
+  .placeholder-slide p {
+    font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+    margin-bottom: 40px;
+    opacity: 0.95;
+    max-width: 900px;
+    line-height: 1.5;
+    font-weight: 400;
+  }
+
+  .placeholder-slide .contact {
+    font-size: clamp(1.3rem, 2.2vw, 2rem);
+    font-weight: 700;
+    background: rgba(255,255,255,0.25);
+    padding: 20px 40px;
+    border-radius: 15px;
+    backdrop-filter: blur(15px);
+    border: 2px solid rgba(255,255,255,0.3);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+  }
+
+  .placeholder-slide .contact:hover {
+    transform: scale(1.05);
+    background: rgba(255,255,255,0.35);
+  }
+
+  .placeholder-slide .subtitle {
+    font-size: clamp(1rem, 1.8vw, 1.4rem);
+    opacity: 0.85;
+    margin-top: 20px;
+    font-style: italic;
+  }
+
+  /* Individual slide themes */
+  #slide1 { 
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  #slide2 { 
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  }
+  
+  #slide3 { 
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  }
+  
+  #slide4 { 
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  }
+  
+  #slide5 { 
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  }
+  
+  #slide6 { 
+    background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+  }
+  
+  #slide7 { 
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  }
+  
+  #slide8 { 
+    background: linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%);
+  }
+  
+  #slide9 { 
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+  }
+
+  /* Add decorative elements */
+  .placeholder-slide::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: pulse 4s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+  }
+  
+  /* Unused elements hidden */
+  #intro-bg, .photo-container, .photo, #vignette { display: none; }
+
+  /* BLACK FADE */
+  #fadeOverlay {
+    position: absolute;
+    inset: 0;
+    background: black;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* MAIN CONTENT - Hidden until the end of the ad */
+  #mainContent {
+    opacity: 0;
+    transition: opacity 1s ease;
+    padding: 40px;
+    min-height: 100vh;
+  }
+
+  /* LINKVERTISE POPUP */
+  #linkvertisePopup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  #linkvertisePopup.show {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .popup-content {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    max-width: 500px;
+    text-align: center;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+    position: relative;
+  }
+
+  .close-popup {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 30px;
+    height: 30px;
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+  }
+
+  .close-popup:hover {
+    background: #cc0000;
+    transform: scale(1.1);
+  }
+
+  .popup-content h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #333;
+  }
+
+  .popup-content p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    color: #666;
+  }
+
+  #linkvertiseLink {
+    display: inline-block;
+    padding: 15px 40px;
+    background: #ccc;
+    color: #999;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: not-allowed;
+    transition: all 0.3s ease;
+  }
+
+  #linkvertiseLink.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    cursor: pointer;
+    transform: scale(1.05);
+  }
+
+  #linkvertiseLink.active:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+  }
+
+  #countdown {
+    font-size: 1.5rem;
+    color: #764ba2;
+    font-weight: bold;
+    margin-top: 15px;
+  }
+
+  /* Skip Ad Button */
+  #skipPromptArea {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    cursor: pointer;
+    border-radius: 8px;
+    font-family: sans-serif;
+    z-index: 10000;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 2px solid rgba(255,255,255,0.3);
+  }
+
+  #skipPromptArea:hover {
+    background: rgba(0, 0, 0, 0.95);
+    transform: scale(1.05);
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .placeholder-slide {
+      padding: 40px 20px;
+    }
+    
+    .placeholder-slide .contact {
+      padding: 15px 30px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="intro">
+  <div id="video-container">
+    <iframe 
+      id="ad-video"
+      src="" 
+      frameborder="0" 
+      allow="autoplay; encrypted-media" 
+      allowfullscreen
+      title="Advertisement Video">
+    </iframe>
+    
+    <!-- Slide 1: Your Ad Here -->
+    <div id="slide1" class="placeholder-slide">
+      <h1> Your Ad Could Be Here</h1>
+      <p>Anything can be published here, contact us for more information</p>
+      <div class="contact">x</div>
+      <div class="subtitle">x</div>
+    </div>
+
+    <!-- Slide 2: Premium Access -->
+    <div id="slide2" class="placeholder-slide">
+      <h1> Your Ad Could Be Here</h1>
+      <p>Anything can be published here, contact us for more information</p>
+      <div class="contact">x</div>
+      <div class="subtitle">x</div>
+    </div>
+
+    <!-- Slide 3: Sponsor Opportunity -->
+    <div id="slide3" class="placeholder-slide">
+      <h1> Your Ad Could Be Here</h1>
+      <p>Anything can be published here, contact us for more information</p>
+      <div class="contact">x</div>
+      <div class="subtitle">x</div>
+    </div>
+
+    <!-- Slide 4: VIP Membership -->
+    <div id="slide4" class="placeholder-slide">
+      <h1> Your Ad Could Be Here</h1>
+      <p>Anything can be published here, contact us for more information</p>
+      <div class="contact">x</div>
+      <div class="subtitle">x</div>
+    </div>
+
+    <!-- Slide 5: Business Solutions -->
+    <div id="slide5" class="placeholder-slide">
+      <h1> Your Ad Could Be Here</h1>
+      <p>Anything can be published here, contact us for more information</p>
+      <div class="contact">x</div>
+      <div class="subtitle">x</div>
+    </div>
+
+    <!-- Slide 6: Partner Program -->
+    <div id="slide6" class="placeholder-slide">
+      <h1> Your Ad Could Be Here</h1>
+      <p>Anything can be published here, contact us for more information</p>
+      <div class="contact">x</div>
+      <div class="subtitle">x</div>
+    </div>
+    
+    <!-- Slide 7: Premium Features -->
+    <div id="slide7" class="placeholder-slide">
+      <h1> Your Ad Could Be Here</h1>
+      <p>Anything can be published here, contact us for more information</p>
+      <div class="contact">x</div>
+      <div class="subtitle">x</div>
+    </div>
+
+    <!-- Slide 8: Advertise Now -->
+    <div id="slide8" class="placeholder-slide">
+      <h1> Your Ad Could Be Here</h1>
+      <p>Anything can be published here, contact us for more information</p>
+      <div class="contact">x</div>
+      <div class="subtitle">x</div>
+    </div>
+
+    <!-- Slide 9: Skip Ads Forever -->
+    <div id="slide9" class="placeholder-slide">
+      <h1> Your Ad Could Be Here</h1>
+      <p>Anything can be published here, contact us for more information</p>
+      <div class="contact">x</div>
+      <div class="subtitle">x</div>
+    </div>
+  </div>
+  <div id="intro-bg"></div>
+  <div class="photo-container" id="photoContainer"></div>
+  <div id="vignette"></div>
+  <div id="fadeOverlay"></div>
+</div>
+
+
+
+<!-- Linkvertise Popup -->
+<div id="linkvertisePopup">
+  <div class="popup-content">
+    <button class="close-popup" id="closePopup">✕</button>
+    <h2>Want to Access Now?</h2>
+    <p>Complete this 15 second task:</p>
+    <a id="linkvertiseLink" href="https://link-target.net/1438923/GGjoR9RXGs8N" target="_blank">
+      Click Here to Continue
+    </a>
+    <div id="countdown">Link available in <span id="countdownNumber">5</span> seconds...</div>
+  </div>
+</div>
+
+<script>
+const VERIFICATION_URL = "https://script.google.com/macros/s/AKfycbwNnr7yofbZsalVH9-V4TJRgSnaIT93Q6uNR7Gt-J7owpPdwmFMODisawKWqFL_Jbs3Pw/exec";
+
+const intro = document.getElementById("intro");
+const fadeOverlay = document.getElementById("fadeOverlay");
+const mainContent = document.getElementById("mainContent");
+const adVideo = document.getElementById("ad-video");
+const linkvertisePopup = document.getElementById("linkvertisePopup");
+const linkvertiseLink = document.getElementById("linkvertiseLink");
+const countdownNumber = document.getElementById("countdownNumber");
+const closePopup = document.getElementById("closePopup");
+
+// Get all slides
+const slides = [
+  document.getElementById("slide1"),
+  document.getElementById("slide2"),
+  document.getElementById("slide3"),
+  document.getElementById("slide4"),
+  document.getElementById("slide5"),
+  document.getElementById("slide6"),
+  document.getElementById("slide7"),
+  document.getElementById("slide8"),
+  document.getElementById("slide9")
+];
+
+let animationCompleted = false;
+let popupInterval;
+
+// Content rotation: All slides, no videos
+const CONTENT_ITEMS = [
+    { type: "slide", slideIndex: 0 }, // slide1
+    { type: "slide", slideIndex: 1 }, // slide2
+    { type: "slide", slideIndex: 2 }, // slide3
+    { type: "slide", slideIndex: 3 }, // slide4
+    { type: "slide", slideIndex: 4 }, // slide5
+    { type: "slide", slideIndex: 5 }, // slide6
+    { type: "slide", slideIndex: 6 }, // slide7
+    { type: "slide", slideIndex: 7 }, // slide8
+    { type: "slide", slideIndex: 8 }, // slide9
+];
+let currentContentIndex = 0;
+const ROTATION_INTERVAL = 8000;
+let rotationTimer;
+
+function getEmbedUrl(videoId) {
+    return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0`;
+}
+
+function hideAllContent() {
+    adVideo.style.display = "none";
+    slides.forEach(slide => slide.style.display = "none");
+}
+
+function showContent(item) {
+    hideAllContent();
+    
+    if (item.type === "video") {
+        adVideo.style.display = "block";
+        adVideo.src = getEmbedUrl(item.id);
+    } else if (item.type === "slide") {
+        slides[item.slideIndex].style.display = "flex";
+    }
+}
+
+function changeContent() {
+    currentContentIndex = (currentContentIndex + 1) % CONTENT_ITEMS.length;
+    showContent(CONTENT_ITEMS[currentContentIndex]);
+}
+
+// Show first content and start rotation
+if (adVideo) {
+    showContent(CONTENT_ITEMS[currentContentIndex]);
+    rotationTimer = setInterval(changeContent, ROTATION_INTERVAL);
+}
+
+function endIntroSequence() {
+    if (animationCompleted) return;
+    animationCompleted = true;
+
+    // STOP VIDEO ROTATION
+    if (rotationTimer) {
+        clearInterval(rotationTimer);
+    }
+
+    // STOP POPUP INTERVAL
+    if (popupInterval) {
+        clearInterval(popupInterval);
+    }
+
+    // Stop the video
+    if (adVideo) {
+        adVideo.src = "";
+    }
+    
+    fadeOverlay.style.opacity = 1;
+
+    setTimeout(() => {
+        intro.style.opacity = 0;
+        window.parent.postMessage('closeAd', '*');
+        mainContent.style.opacity = 1;
+        document.body.style.overflow = "auto";
+        setTimeout(() => {
+            intro.remove();
+        }, 1500);
+    }, 1500);
+}
+
+// Linkvertise Popup Logic
+function showLinkvertisePopup() {
+    linkvertiseLink.classList.remove("active");
+    linkvertiseLink.style.cursor = "not-allowed";
+    
+    linkvertisePopup.classList.add("show");
+    
+    let countdown = 5;
+    countdownNumber.textContent = countdown;
+    document.getElementById("countdown").textContent = `Link available in ${countdown} seconds...`;
+    
+    const countdownInterval = setInterval(() => {
+        countdown--;
+        countdownNumber.textContent = countdown;
+        
+        if (countdown <= 0) {
+            clearInterval(countdownInterval);
+            linkvertiseLink.classList.add("active");
+            linkvertiseLink.style.cursor = "pointer";
+            document.getElementById("countdown").textContent = "Link is now active";
+        } else {
+            document.getElementById("countdown").textContent = `Link available in ${countdown} seconds...`;
+        }
+    }, 1000);
+    
+    linkvertiseLink.onclick = (e) => {
+        if (!linkvertiseLink.classList.contains('active')) {
+            e.preventDefault();
+            alert("Please wait");
+            return false;
+        }
+    };
+}
+
+function closePopupFunc() {
+    linkvertisePopup.classList.remove("show");
+}
+
+closePopup.addEventListener('click', closePopupFunc);
+
+// Show popup 5 seconds after page load
+setTimeout(() => {
+    showLinkvertisePopup();
+}, 5000);
+
+// Show popup every 60 seconds
+popupInterval = setInterval(() => {
+    if (!animationCompleted) {
+        showLinkvertisePopup();
+    }
+}, 60000);
+
+// Skip Ad
+const skipPromptArea = document.createElement("div");
+skipPromptArea.id = "skipPromptArea";
+skipPromptArea.textContent = "Skip Ad (Password Required)";
+intro.appendChild(skipPromptArea);
+
+skipPromptArea.addEventListener('click', () => {
+    if (animationCompleted) return;
+    
+    const enteredPassword = prompt("Enter the password to skip the ad:");
+
+    if (enteredPassword) {
+        const fullUrl = `${VERIFICATION_URL}?password=${encodeURIComponent(enteredPassword)}`;
+
+        fetch(fullUrl)
+        .then(response => {
+             if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) { 
+                endIntroSequence();
+            } else {
+                alert("Incorrect password. Keep watching.");
+            }
+        })
+        .catch(error => {
+            console.error('Verification failed or network error:', error);
+            alert("Error connecting to the password service. Please check your connection.");
+        });
+    } else if (enteredPassword !== null) {
+         alert("Please enter a password.");
+    }
+});
+</script>
+
+</body>
+</html>
