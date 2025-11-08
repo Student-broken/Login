@@ -12,7 +12,7 @@
             --text-color: #34495e; --light-grey: #bdc3c7; --footer-grey: #95a5a6; --danger-color: #e74c3c;
             --shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
         }
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--background-color); color: var(--text-color); display: flex; flex-direction: column; min-height: 100vh; }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, 'Playfair Display'; background-color: var(--background-color); color: var(--text-color); display: flex; flex-direction: column; min-height: 100vh; }
         .site-header-container { background-color: var(--widget-background); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); border-bottom: 1px solid #e0e6eb; padding: 15px 0; position: relative; }
         .site-header { text-align: center; padding: 0; margin: 0; color: var(--secondary-color); font-size: 2.2em; font-weight: 700; font-family: 'Playfair Display', serif; letter-spacing: 0.05em; }
         .content { flex-grow: 1; display: flex; justify-content: center; align-items: flex-start; padding: 40px 20px; }
@@ -43,63 +43,35 @@
     </style>
 </head>
 <body>
-
     <div class="site-header-container">
-        <a href="main.html" class="back-arrow" title="Retour">←</a>
         <header class="site-header">Outil JDLM*</header>
+        <a href="main.html" class="back-arrow" title="Retour">←</a>
         <button class="info-btn" id="open-modal-btn" title="Ouvrir le tutoriel">?</button>
     </div>
-
     <main class="content">
         <div class="data-widget">
             <form id="data-form">
-                <textarea id="raw-text" placeholder="Collez les données du portail ici..."></textarea>
-                <p class="terms-acceptance">
-                    En cliquant sur "Enregistrer et continuer", vos données seront sauvegardées localement et synchronisées anonymement au classement. Vous acceptez les <a href="conditions.html" target="_blank">Conditions d’utilisation</a>.
-                </p>
+                <textarea id="raw-text" placeholder="Collez les données du portail ici... (Appuyez sur le bouton ? pour un tutoriel)"></textarea>
+                <p class="terms-acceptance">En cliquant sur "Enregistrer et continuer", vous acceptez les <a href="conditions.html" target="_blank">Conditions d’utilisation</a> et la <a href="confidentialite.html" target="_blank">Politique de confidentialité</a>.</p>
                 <button type="submit" id="submit-btn" class="btn" disabled>Enregistrer et continuer</button>
             </form>
         </div>
     </main>
-    
     <div class="modal-overlay" id="tutorial-modal">
         <div class="modal-content">
             <span class="modal-close" id="close-modal-btn">&times;</span>
             <h3>Comment utiliser l'outil</h3>
-            <div class="important-message">
-                <span class="icon">⚠</span>
-                <span><strong>Important!</strong> Pour avoir des informations à jour, vous devez refaire ces étapes souvent.</span>
-            </div>
+            <div class="important-message"><span class="icon">⚠</span><span><strong>Important!</strong> Pour avoir des informations à jour, vous devez refaire les étapes 1 à 5 souvent.</span></div>
             <p>1. Allez dans la section "Travaux" du portail.</p>
-            <p>2. Faites <strong>CTRL + A</strong> pour tout sélectionner.</p>
+            <p>2. Faites les touches <strong>CTRL + A</strong> pour tout sélectionner.</p>
             <p>3. Faites <strong>CTRL + C</strong> pour copier la sélection.</p>
             <p>4. Collez le texte dans la zone ci-dessus avec <strong>CTRL + V</strong>.</p>
             <p>5. Cliquez sur <strong>Enregistrer et continuer</strong>.</p>
+            <p>6. <strong>Répétez les étapes 1 à 5</strong> pour chaque étape (2e, 3e).</p>
         </div>
     </div>
-
     <footer>*jauge de la moyenne</footer>
-                
     <script>
-        // ==================================================================
-        // CONFIGURATION
-        // ==================================================================
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzJ3xIMl7pk2bgeN-T5VaadiiE5W-9ov5J0TTFFcAdhxpNAHhIz74UnSj2BX2i-Shk/exec'; // <-- IMPORTANT: PASTEZ VOTRE URL ICI
-
-        // Copied from main.html for calculations
-        const gradeMap = {
-            'A+': {min: 100, max: 100}, 'A': {min: 95, max: 95}, 'A-': {min: 90, max: 90},
-            'B+': {min: 85, max: 85}, 'B': {min: 80, max: 80}, 'B-': {min: 75, max: 75},
-            'C+': {min: 70, max: 70}, 'C': {min: 65, max: 65}, 'C-': {min: 60, max: 60},
-            'D+': {min: 55, max: 55}, 'D': {min: 50, max: 50}, 'E': {min: 45, max: 45}
-        };
-        const defaultUnits = {
-            sec4: { 'ART': 2, 'MUS': 2, 'DRM': 2, 'FRA': 6, 'ELA': 4, 'EESL': 6, 'ESL': 4, 'MAT': 6, 'CST': 6, 'ST': 4, 'STE': 4, 'HQC': 4, 'CCQ': 2, 'EPS': 2, 'ENT': 2, 'INF': 2, 'PSY': 2, },
-            sec5: { 'ART': 2, 'MUS': 2, 'DRM': 2, 'CAT': 4, 'FRA': 6, 'ELA': 6, 'EESL': 6, 'ESL': 4, 'MAT': 6, 'CST': 4, 'MED': 4, 'PSY': 4, 'ENT': 4, 'FIN': 4, 'CHI': 4, 'PHY': 4, 'MON': 2, 'HQC': 4, 'CCQ': 2, 'EPS': 2, 'FIN': 2 }
-        };
-        // ==================================================================
-
-        // --- Modal & Form UI Logic ---
         const openModalBtn = document.getElementById('open-modal-btn');
         const closeModalBtn = document.getElementById('close-modal-btn');
         const tutorialModal = document.getElementById('tutorial-modal');
@@ -109,6 +81,7 @@
         closeModalBtn.addEventListener('click', closeModal);
         tutorialModal.addEventListener('click', (e) => { if (e.target === tutorialModal) closeModal(); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
         const submitBtn = document.getElementById('submit-btn');
         const dataForm = document.getElementById('data-form');
         const rawTextArea = document.getElementById('raw-text');
@@ -116,159 +89,27 @@
         checkTextarea();
         rawTextArea.addEventListener('input', checkTextarea);
 
-        // --- Main Form Submission Handler ---
-        dataForm.addEventListener('submit', async (e) => {
+        dataForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const rawText = rawTextArea.value;
-            if (!rawText.trim()) return alert("Veuillez coller des données avant d'enregistrer.");
+            if (!rawText.trim()) { alert("Veuillez coller des données avant d'enregistrer."); return; }
             
-            submitBtn.textContent = 'Analyse en cours...';
-            submitBtn.disabled = true;
-
             const parsedResult = parsePortalData(rawText);
-            if (!parsedResult.nom || !parsedResult.etapeData) {
-                alert("Erreur: Le nom ou le numéro d'étape n'a pas pu être trouvé. Vérifiez le texte.");
-                submitBtn.textContent = 'Enregistrer et continuer';
-                checkTextarea();
-                return;
-            }
+            if (!parsedResult.nom || !parsedResult.etapeData) { alert("Erreur lors de l'analyse des données. Le nom ou le numéro d'étape n'a pas pu être trouvé. Vérifiez le texte collé."); return; }
 
             const existingData = JSON.parse(localStorage.getItem('jdlmData')) || {};
+            
+            // --- NOUVEAU: Générer un ID unique une seule fois ---
+            if (!existingData.uniqueID) {
+                existingData.uniqueID = Date.now().toString(36) + Math.random().toString(36).substring(2);
+            }
+            // --- FIN NOUVEAU ---
+
             const updatedData = { ...existingData, nom: parsedResult.nom, [parsedResult.etapeKey]: parsedResult.etapeData };
             localStorage.setItem('jdlmData', JSON.stringify(updatedData));
-            
-            // --- Conditional Auto-Sync to Google Sheet ---
-            const settings = updatedData.settings || {};
-            if (settings.niveau && WEB_APP_URL !== 'YOUR_WEB_APP_URL') {
-                submitBtn.textContent = 'Synchronisation...';
-                await syncDataToSheet(updatedData);
-            }
-
             window.location.href = 'main.html';
         });
 
-        // --- Unique Code Generation ---
-        function getOrGenerateUserCode() {
-            let userCode = localStorage.getItem('jdlmUserCode');
-            if (!userCode) {
-                userCode = 'user-' + Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
-                localStorage.setItem('jdlmUserCode', userCode);
-            }
-            return userCode;
-        }
-
-        // --- Data Sync Function ---
-        async function syncDataToSheet(data) {
-            const averages = calculateAverages(data);
-            const settings = data.settings || {};
-            const findSubjectAverage = (etape, subjectCode) => {
-                const subject = averages.subjectAverages[etape]?.[subjectCode];
-                return subject?.average ?? null;
-            };
-
-            const payload = {
-                Code: getOrGenerateUserCode(),
-                Niveau: settings.niveau || null,
-                'Moyenne Générale': averages.globalAverage,
-                'Moyenne Étape 1': averages.termAverages.etape1 || null,
-                'Moyenne Étape 2': averages.termAverages.etape2 || null,
-                'Français (Étape 1)': findSubjectAverage('etape1', 'FRA'),
-                'Math (Étape 1)': findSubjectAverage('etape1', 'MAT') || findSubjectAverage('etape1', 'CST'),
-                'Anglais (Étape 1)': findSubjectAverage('etape1', 'ELA') || findSubjectAverage('etape1', 'ESL') || findSubjectAverage('etape1', 'EESL'),
-                'Français (Étape 2)': findSubjectAverage('etape2', 'FRA'),
-                'Math (Étape 2)': findSubjectAverage('etape2', 'MAT') || findSubjectAverage('etape2', 'CST'),
-                'Anglais (Étape 2)': findSubjectAverage('etape2', 'ELA') || findSubjectAverage('etape2', 'ESL') || findSubjectAverage('etape2', 'EESL'),
-            };
-            
-            const formData = new FormData();
-            for (const key in payload) {
-                // Ensure null values are sent as empty strings, as FormData requires string values
-                formData.append(key, payload[key] !== null ? payload[key] : '');
-            }
-
-            try {
-                const response = await fetch(WEB_APP_URL, { method: 'POST', body: formData });
-                const result = await response.json();
-                if (result.result !== 'success') {
-                    console.error('Apps Script Error:', result.error);
-                }
-            } catch (error) {
-                console.error("Erreur de synchronisation:", error);
-            }
-        }
-        
-        // --- Calculation Helpers (ported from main.html) ---
-        function getNumericGrade(result) {
-            if (!result) return null;
-            const trimmedResult = result.trim();
-            if (gradeMap[trimmedResult]) { return (gradeMap[trimmedResult].min + gradeMap[trimmedResult].max) / 2; }
-            const scoreMatch = trimmedResult.match(/(\d+[,.]?\d*)\s*\/\s*(\d+[,.]?\d*)/);
-            if (scoreMatch) {
-                const score = parseFloat(scoreMatch[1].replace(',', '.'));
-                const maxScore = parseFloat(scoreMatch[2].replace(',', '.'));
-                if (!isNaN(score) && !isNaN(maxScore) && maxScore > 0) { return (score / maxScore) * 100; }
-            }
-            return null;
-        }
-
-        function calculateSubjectAverage(subject) {
-            let totalWeightedGrade = 0, totalCompetencyWeight = 0;
-            subject.competencies.forEach(comp => {
-                const compWeightMatch = comp.name.match(/\((\d+)%\)/);
-                if (!compWeightMatch) return;
-                const compWeight = parseFloat(compWeightMatch[1]);
-                let totalAssignmentGrade = 0, totalAssignmentWeight = 0;
-                comp.assignments.forEach(assign => {
-                    const grade = getNumericGrade(assign.result);
-                    const weight = parseFloat(assign.pond);
-                    if (grade !== null && !isNaN(weight)) {
-                        totalAssignmentGrade += grade * weight;
-                        totalAssignmentWeight += weight;
-                    }
-                });
-                if (totalAssignmentWeight > 0) {
-                    const competencyAverage = totalAssignmentGrade / totalAssignmentWeight;
-                    totalWeightedGrade += competencyAverage * compWeight;
-                    totalCompetencyWeight += compWeight;
-                }
-            });
-            return totalCompetencyWeight > 0 ? totalWeightedGrade / totalCompetencyWeight : null;
-        }
-
-        function calculateAverages(dataToCalc) {
-            const settings = dataToCalc.settings || {};
-            const niveau = settings.niveau;
-            const units = (niveau && defaultUnits[niveau]) ? defaultUnits[niveau] : {};
-            let allTermAverages = {}, allSubjectAverages = {};
-            const defaultSubjectUnit = 2;
-            ['etape1', 'etape2', 'etape3'].forEach(etape => {
-                if (!dataToCalc[etape]) return;
-                let termWeightedSum = 0, termUnitSum = 0;
-                allSubjectAverages[etape] = {};
-                dataToCalc[etape].forEach(subject => {
-                    const average = calculateSubjectAverage(subject);
-                    const codePrefix = subject.code.substring(0,3);
-                    allSubjectAverages[etape][codePrefix] = { average: average };
-                    const unit = units[codePrefix] ?? defaultSubjectUnit;
-                    if (average !== null && unit !== null && niveau) {
-                        termWeightedSum += average * unit;
-                        termUnitSum += unit;
-                    }
-                });
-                allTermAverages[etape] = termUnitSum > 0 ? termWeightedSum / termUnitSum : null;
-            });
-            let globalWeightedSum = 0, globalTermCount = 0;
-            Object.values(allTermAverages).forEach(avg => {
-                if (avg !== null) { globalWeightedSum += avg; globalTermCount++; }
-            });
-            return {
-                subjectAverages: allSubjectAverages,
-                termAverages: allTermAverages,
-                globalAverage: globalTermCount > 0 ? globalWeightedSum / globalTermCount : null
-            };
-        }
-
-        // --- Data Parser (no changes) ---
         function parsePortalData(text) {
             const nameMatch = text.match(/Photo\s*\n(.+)/);
             const semesterMatch = text.match(/Classe\s*\n\s*(\d)/);
@@ -287,26 +128,17 @@
                 const finalizeAssignment = () => {
                     if (currentAssignment.textBuffer.length === 0 && !currentAssignment.pond) return;
                     const buffer = currentAssignment.textBuffer;
-                    if (buffer.length === 1) { currentAssignment.work = buffer[0]; }
-                    else if (buffer.length > 1) { currentAssignment.category = buffer[0]; currentAssignment.work = buffer.slice(1).join('<br>');}
+                    if (buffer.length === 1) { currentAssignment.work = buffer[0]; } 
+                    else if (buffer.length > 1) { currentAssignment.category = buffer[0]; currentAssignment.work = buffer.slice(1).join('<br>'); }
                     assignments.push(currentAssignment);
                 };
                 for (const line of lines) {
                     const trimmedLine = line.trim();
                     if (!trimmedLine) continue;
-                    if (RESULT_REGEX.test(trimmedLine)) {
-                        currentAssignment.result = trimmedLine;
-                        finalizeAssignment();
-                        currentAssignment = createNewAssignment();
-                    } else if (POND_REGEX.test(trimmedLine)) {
-                        currentAssignment.pond = trimmedLine;
-                    } else if (DATE_REGEX.test(trimmedLine)) {
-                        if (!currentAssignment.assignedDate) { currentAssignment.assignedDate = trimmedLine.split('à')[0].trim(); }
-                        currentAssignment.dueDate = trimmedLine;
-                    } else {
-                        if (currentAssignment.pond || currentAssignment.assignedDate) { finalizeAssignment(); currentAssignment = createNewAssignment(); }
-                        currentAssignment.textBuffer.push(trimmedLine);
-                    }
+                    if (RESULT_REGEX.test(trimmedLine)) { currentAssignment.result = trimmedLine; finalizeAssignment(); currentAssignment = createNewAssignment(); } 
+                    else if (POND_REGEX.test(trimmedLine)) { currentAssignment.pond = trimmedLine; } 
+                    else if (DATE_REGEX.test(trimmedLine)) { if (!currentAssignment.assignedDate) { currentAssignment.assignedDate = trimmedLine.split('à')[0].trim(); } currentAssignment.dueDate = trimmedLine; } 
+                    else { if (currentAssignment.pond || currentAssignment.assignedDate) { finalizeAssignment(); currentAssignment = createNewAssignment(); } currentAssignment.textBuffer.push(trimmedLine); }
                 }
                 finalizeAssignment();
                 return assignments;
