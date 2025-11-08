@@ -3,42 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Classement - Outil JDLM</title>
+    <title>Ajouter des Données - Outil JDLM</title>
     <link rel="icon" href="https://raw.githubusercontent.com/Student-broken/student-broken.github.io/refs/heads/main/favicon.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2980b9;
-            --secondary-color: #2c3e50;
-            --background-color: #f7f9fb;
+            --primary-color: #2980b9; 
+            --secondary-color: #2c3e50; 
+            --background-color: #f7f9fb; 
             --widget-background: #ffffff;
-            --text-color: #34495e;
+            --text-color: #34495e; 
             --light-grey: #bdc3c7;
             --footer-grey: #95a5a6;
-            --gold: #FFD700;
-            --silver: #C0C0C0;
-            --bronze: #CD7F32;
+            --danger-color: #e74c3c;
             --shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
         }
         body {
             margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, 'Playfair Display';
             background-color: var(--background-color);
             color: var(--text-color);
             display: flex;
             flex-direction: column;
             min-height: 100vh;
         }
+
         .site-header-container {
             background-color: var(--widget-background);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            border-bottom: 1px solid #e0e6eb;
-            padding: 15px 0;
-            position: relative;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
+            border-bottom: 1px solid #e0e6eb; 
+            padding: 15px 0; 
+            position: relative; 
         }
+        
         .site-header {
             text-align: center;
-            padding: 0;
+            padding: 0; 
             margin: 0;
             color: var(--secondary-color);
             font-size: 2.2em;
@@ -46,11 +46,18 @@
             font-family: 'Playfair Display', serif;
             letter-spacing: 0.05em;
         }
+
+        .content {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+        }
         .back-arrow {
             position: absolute;
-            top: 50%;
+            top: 20px; 
             left: 25px;
-            transform: translateY(-50%);
             font-size: 2.2em;
             color: var(--secondary-color);
             text-decoration: none;
@@ -59,138 +66,289 @@
         }
         .back-arrow:hover {
             color: var(--primary-color);
-            transform: translateY(-50%) scale(1.05);
+            transform: scale(1.05);
         }
-        .content {
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 40px 20px;
-        }
-        .leaderboard-widget {
+        .data-widget {
             background-color: var(--widget-background);
             padding: 40px;
             border-radius: 16px;
             box-shadow: var(--shadow);
             width: 100%;
-            max-width: 800px;
+            max-width: 650px;
+            margin-top: 20px;
         }
-        .leaderboard-widget h2 {
-            margin-top: 0;
-            color: var(--secondary-color);
-            text-align: center;
-            font-size: 1.8em;
-            margin-bottom: 10px;
-        }
-        .subtitle {
-            text-align: center;
-            color: var(--light-grey);
-            margin-bottom: 30px;
-            font-size: 0.95em;
-        }
-        .filter-controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .filter-controls select {
-            padding: 10px 15px;
-            border-radius: 8px;
+        textarea {
+            width: 100%;
+            height: 350px;
+            padding: 15px;
             border: 1px solid #ddd;
-            background-color: white;
-            transition: box-shadow 0.2s, border-color 0.2s;
-            font-size: 0.95em;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            margin-bottom: 30px;
+            box-sizing: border-box;
+            resize: vertical;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .filter-controls select:focus {
-            box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.2);
+        textarea:focus {
             border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.2);
             outline: none;
         }
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: var(--light-grey);
-            font-style: italic;
-        }
-        .leaderboard-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 10px;
-        }
-        .leaderboard-row {
-            background-color: #f8f9fa;
-            transition: transform 0.2s, box-shadow 0.2s;
-            cursor: default;
-        }
-        .leaderboard-row:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        .leaderboard-row.current-user {
+        
+        .sharing-section {
             background-color: #e3f2fd;
-            border: 2px solid var(--primary-color);
-        }
-        .leaderboard-row td {
-            padding: 15px;
-            vertical-align: middle;
-        }
-        .leaderboard-row td:first-child {
-            border-radius: 8px 0 0 8px;
-        }
-        .leaderboard-row td:last-child {
-            border-radius: 0 8px 8px 0;
-        }
-        .rank {
-            font-size: 1.5em;
-            font-weight: bold;
-            text-align: center;
-            width: 80px;
-        }
-        .rank.gold { color: var(--gold); }
-        .rank.silver { color: var(--silver); }
-        .rank.bronze { color: var(--bronze); }
-        .username {
-            font-weight: 600;
-            font-size: 1.1em;
-        }
-        .average {
-            text-align: right;
-            font-size: 1.3em;
-            font-weight: bold;
-            color: var(--primary-color);
-            width: 120px;
-        }
-        .stats-widget {
-            background-color: #f8f9fa;
+            border: 1px solid #90caf9;
+            border-radius: 10px;
             padding: 20px;
-            border-radius: 12px;
             margin-bottom: 25px;
+        }
+        
+        .sharing-section h4 {
+            margin-top: 0;
+            color: var(--secondary-color);
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+        
+        .checkbox-container {
             display: flex;
-            justify-content: space-around;
-            gap: 20px;
+            align-items: center;
+            margin-bottom: 15px;
+            cursor: pointer;
         }
-        .stat-item {
-            text-align: center;
+        
+        .checkbox-container input[type="checkbox"] {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
         }
-        .stat-label {
-            font-size: 0.85em;
-            color: var(--light-grey);
+        
+        .checkbox-container label {
+            cursor: pointer;
+            font-size: 0.95em;
+        }
+        
+        .display-name-input {
+            display: none;
+            margin-top: 15px;
+        }
+        
+        .display-name-input.active {
+            display: block;
+        }
+        
+        .display-name-input label {
+            display: block;
             margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.9em;
         }
-        .stat-value {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: var(--primary-color);
+        
+        .display-name-input input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 0.95em;
         }
-        .no-data {
-            text-align: center;
-            padding: 40px;
-            color: var(--light-grey);
+        
+        .display-name-input input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.2);
+            outline: none;
+        }
+        
+        .sharing-note {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 10px;
             font-style: italic;
         }
+        
+        .terms-acceptance {
+            font-size: 0.85em;
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--text-color);
+        }
+        .terms-acceptance a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .terms-acceptance a:hover {
+            text-decoration: underline;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            color: white;
+            background-color: var(--primary-color);
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .btn:not(:disabled):hover {
+            background-color: #3498db;
+            transform: translateY(-1px);
+        }
+        .btn:disabled {
+            background-color: var(--light-grey);
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .info-btn {
+            position: absolute;
+            top: 20px; 
+            right: 25px;
+            width: 45px;
+            height: 45px;
+            background: none;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+            padding: 0;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .info-btn:hover {
+            background-color: var(--primary-color);
+            color: var(--widget-background);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            max-width: 90%;
+            width: 450px;
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: transform 0.3s, opacity 0.3s;
+        }
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 2em;
+            cursor: pointer;
+            color: var(--light-grey);
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .modal-close:hover {
+            color: var(--danger-color);
+        }
+        .modal-content h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+        .modal-content p {
+            line-height: 1.5;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--primary-color);
+            padding-left: 10px;
+        }
+
+        .important-message {
+            background-color: #fceae9;
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            font-size: 0.95em;
+        }
+        .important-message .icon {
+            font-size: 1.5em;
+            margin-right: 10px;
+            line-height: 1;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .loading-content {
+            background-color: white;
+            padding: 30px 50px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         footer {
             text-align: center;
             padding: 15px;
@@ -203,54 +361,86 @@
     </style>
 </head>
 <body>
+
     <div class="site-header-container">
-        <a href="main.html" class="back-arrow" title="Retour">←</a>
-        <header class="site-header">Classement</header>
+        <header class="site-header">Outil JDLM*</header>
     </div>
 
+    <a href="main.html" class="back-arrow" title="Retour">←</a>
+    
+    <button class="info-btn" id="open-modal-btn" title="Ouvrir le tutoriel">?</button>
+
     <main class="content">
-        <div class="leaderboard-widget">
-            <h2>🏆 Classement des Moyennes</h2>
-            <p class="subtitle">Comparaison anonyme des performances</p>
-            
-            <div class="stats-widget" id="stats-widget">
-                <div class="stat-item">
-                    <div class="stat-label">Participants</div>
-                    <div class="stat-value" id="total-participants">--</div>
+        <div class="data-widget">
+            <form id="data-form">
+                <textarea id="raw-text" placeholder="Collez les données du portail ici... 
+(Appuyez sur le bouton Aide pour un tutoriel)"></textarea>
+                
+                <div class="sharing-section">
+                    <h4>📊 Partager au Classement</h4>
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="share-checkbox">
+                        <label for="share-checkbox">Partager ma moyenne de manière anonyme au classement</label>
+                    </div>
+                    
+                    <div class="display-name-input" id="display-name-section">
+                        <label for="display-name">Nom d'affichage (optionnel):</label>
+                        <input type="text" id="display-name" placeholder="Ex: Étudiant123" maxlength="30">
+                    </div>
+                    
+                    <div class="sharing-note">
+                        ℹ️ Vos moyennes seront partagées de façon anonyme. Seul votre nom d'affichage sera visible. Les données sont stockées de manière permanente sur GitHub.
+                    </div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-label">Moyenne Globale</div>
-                    <div class="stat-value" id="global-average">--</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Votre Rang</div>
-                    <div class="stat-value" id="user-rank">--</div>
-                </div>
-            </div>
+                
+                <p class="terms-acceptance">
+                    En cliquant sur "Enregistrer et continuer", vous acceptez les <a href="conditions.html" target="_blank">Conditions d'utilisation</a> et la <a href="confidentialite.html" target="_blank">Politique de confidentialité</a>.
+                </p>
 
-            <div class="filter-controls">
-                <select id="filter-niveau">
-                    <option value="all">Tous les niveaux</option>
-                    <option value="sec4">Secondaire 4</option>
-                    <option value="sec5">Secondaire 5</option>
-                </select>
-                <select id="filter-etape">
-                    <option value="generale">Moyenne Générale</option>
-                    <option value="etape1">Étape 1</option>
-                    <option value="etape2">Étape 2</option>
-                    <option value="etape3">Étape 3</option>
-                </select>
-            </div>
-
-            <div id="leaderboard-content">
-                <div class="loading">Chargement du classement...</div>
-            </div>
+                <button type="submit" id="submit-btn" class="btn" disabled>Enregistrer et continuer</button>
+            </form>
         </div>
     </main>
+    
+    <div class="modal-overlay" id="tutorial-modal">
+        <div class="modal-content">
+            <span class="modal-close" id="close-modal-btn">&times;</span>
+            <h3>Comment utiliser l'outil</h3>
+            
+            <div class="important-message">
+                <span class="icon">⚠</span>
+                <span>
+                    <strong>Important!</strong> Pour avoir des informations à jour, vous devez refaire les étapes 1 à 5 souvent.
+                </span>
+            </div>
+            
+            <p>1. Allez dans la section "Travaux" du portail.</p>
+            <p>2. Faites les touches <strong>CTRL + A</strong> pour tout sélectionner.</p>
+            <p>3. Faites <strong>CTRL + C</strong> pour copier la sélection.</p>
+            <p>4. Collez le texte dans la zone ci-dessus avec <strong>CTRL + V</strong>.</p>
+            <p>5. Cliquez sur <strong>Enregistrer et continuer</strong>.</p>
+            <p>6. <strong>Répétez les étapes 1 à 5</strong> pour chaque étape (2e, 3e).</p>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Synchronisation avec GitHub...</p>
+        </div>
+    </div>
 
     <footer>*jauge de la moyenne</footer>
-
+                
     <script>
+        // GitHub Configuration - UPDATE THESE VALUES
+        const GITHUB_CONFIG = {
+            owner: 'Student-broken',  // Your GitHub username
+            repo: 'student-broken.github.io',  // Your repository name
+            token: 'YOUR_GITHUB_TOKEN_HERE',  // You need to create a Personal Access Token
+            dataFile: 'leaderboard-data.json'  // File to store leaderboard data
+        };
+
         const gradeMap = {
             'A+': {min: 95, max: 100}, 'A': {min: 90, max: 94}, 'A-': {min: 85, max: 89},
             'B+': {min: 80, max: 84}, 'B': {min: 75, max: 79}, 'B-': {min: 70, max: 74},
@@ -263,137 +453,295 @@
             sec5: { 'ART': 2, 'MUS': 2, 'DRM': 2, 'CAT': 4, 'FRA': 6, 'ELA': 6, 'EESL': 6, 'ESL': 4, 'MAT': 6, 'CST': 4, 'MED': 4, 'PSY': 4, 'ENT': 4, 'FIN': 4, 'CHI': 4, 'PHY': 4, 'MON': 2, 'HQC': 4, 'CCQ': 2, 'EPS': 2 }
         };
 
-        let currentUserData = null;
-        let allLeaderboardData = [];
+        const openModalBtn = document.getElementById('open-modal-btn');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const tutorialModal = document.getElementById('tutorial-modal');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        
+        const openModal = () => tutorialModal.classList.add('active');
+        const closeModal = () => tutorialModal.classList.remove('active');
+        
+        openModalBtn.addEventListener('click', openModal);
+        closeModalBtn.addEventListener('click', closeModal);
+        tutorialModal.addEventListener('click', (e) => { if (e.target === tutorialModal) closeModal(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            currentUserData = JSON.parse(localStorage.getItem('jdlmData')) || null;
-            
-            document.getElementById('filter-niveau').addEventListener('change', renderLeaderboard);
-            document.getElementById('filter-etape').addEventListener('change', renderLeaderboard);
-            
-            await loadLeaderboardData();
+        const shareCheckbox = document.getElementById('share-checkbox');
+        const displayNameSection = document.getElementById('display-name-section');
+        const displayNameInput = document.getElementById('display-name');
+        
+        shareCheckbox.addEventListener('change', () => {
+            displayNameSection.classList.toggle('active', shareCheckbox.checked);
         });
 
-        async function loadLeaderboardData() {
-            try {
-                const result = await window.storage.list('leaderboard:', true);
-                
-                if (!result || !result.keys || result.keys.length === 0) {
-                    document.getElementById('leaderboard-content').innerHTML = '<div class="no-data">Aucune donnée de classement disponible.</div>';
-                    return;
-                }
+        const submitBtn = document.getElementById('submit-btn');
+        const dataForm = document.getElementById('data-form');
+        const rawTextArea = document.getElementById('raw-text');
 
-                allLeaderboardData = [];
-                for (const key of result.keys) {
-                    try {
-                        const entryResult = await window.storage.get(key, true);
-                        if (entryResult && entryResult.value) {
-                            const data = JSON.parse(entryResult.value);
-                            allLeaderboardData.push(data);
-                        }
-                    } catch (err) {
-                        console.error(`Error loading entry ${key}:`, err);
-                    }
-                }
+        const checkTextarea = () => {
+            submitBtn.disabled = rawTextArea.value.trim().length === 0;
+        };
 
-                renderLeaderboard();
-            } catch (error) {
-                console.error('Error loading leaderboard:', error);
-                document.getElementById('leaderboard-content').innerHTML = '<div class="no-data">Erreur lors du chargement du classement.</div>';
+        checkTextarea();
+        rawTextArea.addEventListener('input', checkTextarea);
+
+        dataForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const rawText = rawTextArea.value;
+            if (!rawText.trim()) {
+                alert("Veuillez coller des données avant d'enregistrer.");
+                return;
             }
-        }
-
-        function renderLeaderboard() {
-            const niveauFilter = document.getElementById('filter-niveau').value;
-            const etapeFilter = document.getElementById('filter-etape').value;
-
-            let filteredData = allLeaderboardData.filter(entry => {
-                if (niveauFilter !== 'all' && entry.niveau !== niveauFilter) return false;
-                return true;
-            });
-
-            filteredData = filteredData.map(entry => {
-                let average;
-                if (etapeFilter === 'generale') {
-                    average = entry.globalAverage;
-                } else {
-                    average = entry.termAverages[etapeFilter];
-                }
-                return { ...entry, displayAverage: average };
-            }).filter(entry => entry.displayAverage !== null && entry.displayAverage !== undefined);
-
-            filteredData.sort((a, b) => b.displayAverage - a.displayAverage);
-
-            renderStats(filteredData);
-            renderTable(filteredData);
-        }
-
-        function renderStats(data) {
-            const totalParticipants = data.length;
-            const globalAverage = totalParticipants > 0 
-                ? (data.reduce((sum, entry) => sum + entry.displayAverage, 0) / totalParticipants).toFixed(2) 
-                : '--';
-
-            let userRank = '--';
-            if (currentUserData && currentUserData.userId) {
-                const userIndex = data.findIndex(entry => entry.userId === currentUserData.userId);
-                if (userIndex !== -1) {
-                    userRank = userIndex + 1;
+            
+            const parsedResult = parsePortalData(rawText);
+            if (!parsedResult.nom || !parsedResult.etapeData) {
+                alert("Erreur lors de l'analyse des données. Le nom ou le numéro d'étape n'a pas pu être trouvé. Vérifiez le texte collé.");
+                return;
+            }
+            
+            const existingData = JSON.parse(localStorage.getItem('jdlmData')) || {};
+            
+            if (!existingData.userId) {
+                existingData.userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+            
+            const updatedData = { 
+                ...existingData, 
+                nom: parsedResult.nom, 
+                [parsedResult.etapeKey]: parsedResult.etapeData,
+                shareToLeaderboard: shareCheckbox.checked,
+                displayName: displayNameInput.value.trim() || parsedResult.nom
+            };
+            
+            localStorage.setItem('jdlmData', JSON.stringify(updatedData));
+            
+            if (shareCheckbox.checked) {
+                loadingOverlay.classList.add('active');
+                try {
+                    await updateGitHubLeaderboard(updatedData);
+                    loadingOverlay.classList.remove('active');
+                } catch (error) {
+                    loadingOverlay.classList.remove('active');
+                    alert("Erreur lors de la synchronisation avec GitHub. Vos données locales ont été sauvegardées.");
+                    console.error(error);
                 }
             }
+            
+            window.location.href = 'main.html';
+        });
 
-            document.getElementById('total-participants').textContent = totalParticipants;
-            document.getElementById('global-average').textContent = globalAverage !== '--' ? globalAverage + '%' : '--';
-            document.getElementById('user-rank').textContent = userRank !== '--' ? `#${userRank}` : '--';
-        }
-
-        function renderTable(data) {
-            const container = document.getElementById('leaderboard-content');
-
-            if (data.length === 0) {
-                container.innerHTML = '<div class="no-data">Aucune donnée pour ces filtres.</div>';
+        async function updateGitHubLeaderboard(userData) {
+            if (GITHUB_CONFIG.token === 'YOUR_GITHUB_TOKEN_HERE') {
+                console.error('GitHub token not configured');
                 return;
             }
 
-            const table = document.createElement('table');
-            table.className = 'leaderboard-table';
+            const averages = calculateAverages(userData);
+            
+            const leaderboardEntry = {
+                userId: userData.userId,
+                displayName: userData.displayName,
+                niveau: userData.settings?.niveau || 'unknown',
+                globalAverage: averages.globalAverage,
+                termAverages: averages.termAverages,
+                lastUpdated: new Date().toISOString()
+            };
 
-            data.forEach((entry, index) => {
-                const row = document.createElement('tr');
-                row.className = 'leaderboard-row';
+            try {
+                // Get current file content
+                let existingData = [];
+                let sha = null;
                 
-                if (currentUserData && currentUserData.userId === entry.userId) {
-                    row.classList.add('current-user');
+                try {
+                    const getResponse = await fetch(
+                        `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.dataFile}`,
+                        {
+                            headers: {
+                                'Authorization': `token ${GITHUB_CONFIG.token}`,
+                                'Accept': 'application/vnd.github.v3+json'
+                            }
+                        }
+                    );
+                    
+                    if (getResponse.ok) {
+                        const fileData = await getResponse.json();
+                        sha = fileData.sha;
+                        const content = atob(fileData.content);
+                        existingData = JSON.parse(content);
+                    }
+                } catch (error) {
+                    console.log('File does not exist yet, creating new one');
                 }
 
-                const rank = index + 1;
-                let rankClass = '';
-                let rankDisplay = rank;
-
-                if (rank === 1) {
-                    rankClass = 'gold';
-                    rankDisplay = '🥇';
-                } else if (rank === 2) {
-                    rankClass = 'silver';
-                    rankDisplay = '🥈';
-                } else if (rank === 3) {
-                    rankClass = 'bronze';
-                    rankDisplay = '🥉';
+                // Update or add user entry
+                const userIndex = existingData.findIndex(entry => entry.userId === userData.userId);
+                if (userIndex >= 0) {
+                    existingData[userIndex] = leaderboardEntry;
+                } else {
+                    existingData.push(leaderboardEntry);
                 }
 
-                row.innerHTML = `
-                    <td class="rank ${rankClass}">${rankDisplay}</td>
-                    <td class="username">${entry.displayName}</td>
-                    <td class="average">${entry.displayAverage.toFixed(2)}%</td>
-                `;
+                // Encode and upload
+                const content = btoa(unescape(encodeURIComponent(JSON.stringify(existingData, null, 2))));
+                
+                const updateResponse = await fetch(
+                    `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.dataFile}`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${GITHUB_CONFIG.token}`,
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: `Update leaderboard for ${leaderboardEntry.displayName}`,
+                            content: content,
+                            sha: sha
+                        })
+                    }
+                );
 
-                table.appendChild(row);
-            });
+                if (!updateResponse.ok) {
+                    throw new Error('Failed to update GitHub file');
+                }
 
-            container.innerHTML = '';
-            container.appendChild(table);
+                console.log('Leaderboard updated successfully on GitHub');
+            } catch (error) {
+                console.error('Error updating GitHub leaderboard:', error);
+                throw error;
+            }
         }
-    </script>
-</body>
-</html>
+
+        function getNumericGrade(result) {
+            if (!result) return null;
+            const trimmedResult = result.trim();
+            if (gradeMap[trimmedResult]) {
+                const { min, max } = gradeMap[trimmedResult];
+                return (min + max) / 2;
+            }
+            const scoreMatch = trimmedResult.match(/(\d+[,.]?\d*)\s*\/\s*(\d+[,.]?\d*)/);
+            if (scoreMatch) {
+                const score = parseFloat(scoreMatch[1].replace(',', '.'));
+                const maxScore = parseFloat(scoreMatch[2].replace(',', '.'));
+                if (!isNaN(score) && !isNaN(maxScore) && maxScore > 0) {
+                    return (score / maxScore) * 100;
+                }
+            }
+            return null;
+        }
+
+        function calculateSubjectAverage(subject) {
+            let totalWeightedGrade = 0;
+            let totalCompetencyWeight = 0;
+            subject.competencies.forEach(comp => {
+                const compWeightMatch = comp.name.match(/\((\d+)%\)/);
+                if (!compWeightMatch) return;
+                const compWeight = parseFloat(compWeightMatch[1]);
+                let totalAssignmentGrade = 0;
+                let totalAssignmentWeight = 0;
+                comp.assignments.forEach(assign => {
+                    const grade = getNumericGrade(assign.result);
+                    const weight = parseFloat(assign.pond);
+                    if (grade !== null && !isNaN(weight)) {
+                        totalAssignmentGrade += grade * weight;
+                        totalAssignmentWeight += weight;
+                    }
+                });
+                if (totalAssignmentWeight > 0) {
+                    const competencyAverage = totalAssignmentGrade / totalAssignmentWeight;
+                    totalWeightedGrade += competencyAverage * compWeight;
+                    totalCompetencyWeight += compWeight;
+                }
+            });
+            return totalCompetencyWeight > 0 ? totalWeightedGrade / totalCompetencyWeight : null;
+        }
+
+        function calculateAverages(jdlmData) {
+            const settings = jdlmData.settings || {};
+            const niveau = settings.niveau;
+            const mode = settings.unitesMode || 'defaut';
+            
+            let units = {};
+            if (mode === 'sans') {
+                units = new Proxy({}, { get: () => 1 });
+            } else if (mode === 'perso') {
+                units = settings.customUnites || {};
+            } else if (mode === 'defaut' && niveau && defaultUnits[niveau]) {
+                units = defaultUnits[niveau];
+            }
+            
+            let allTermAverages = {};
+            const defaultSubjectUnit = 2;
+            
+            ['etape1', 'etape2', 'etape3'].forEach(etape => {
+                if (!jdlmData[etape]) return;
+                let termWeightedSum = 0;
+                let termUnitSum = 0;
+                
+                jdlmData[etape].forEach(subject => {
+                    const average = calculateSubjectAverage(subject);
+                    const codePrefix = subject.code.substring(0,3);
+                    
+                    let unit;
+                    if (mode === 'defaut' && !niveau) {
+                        unit = null;
+                    } else if (mode === 'sans' || mode === 'perso') {
+                        unit = units[codePrefix] ?? 1;
+                    } else if (mode === 'defaut') {
+                        unit = units[codePrefix] ?? defaultSubjectUnit;
+                    }
+
+                    if (average !== null && unit !== null && niveau) {
+                        termWeightedSum += average * unit;
+                        termUnitSum += unit;
+                    }
+                });
+                
+                allTermAverages[etape] = termUnitSum > 0 ? termWeightedSum / termUnitSum : null;
+            });
+            
+            let globalWeightedSum = 0;
+            let globalTermCount = 0;
+            Object.values(allTermAverages).forEach(avg => {
+                if (avg !== null) {
+                    globalWeightedSum += avg;
+                    globalTermCount++;
+                }
+            });
+            
+            return {
+                termAverages: allTermAverages,
+                globalAverage: globalTermCount > 0 ? globalWeightedSum / globalTermCount : null
+            };
+        }
+
+        function parsePortalData(text) {
+            const nameMatch = text.match(/Photo\s*\n(.+)/);
+            const semesterMatch = text.match(/Classe\s*\n\s*(\d)/);
+            const nom = nameMatch ? nameMatch[1].trim() : null;
+            const etapeNumber = semesterMatch ? semesterMatch[1].trim() : null;
+            if (!nom || !etapeNumber) return {};
+            const etapeKey = `etape${etapeNumber}`;
+
+            const POND_REGEX = /^\d{1,3}$/;
+            const DATE_REGEX = /^\d{4}-\d{2}-\d{2}/;
+            const RESULT_REGEX = /^(\d{1,3},\d\s\/\s\d{1,3}\s\(.+\)|[A-DF][+-]?)$/;
+            
+            const createNewAssignment = () => ({ textBuffer: [], category: '', work: '', pond: '', assignedDate: '', dueDate: '', result: '' });
+
+            const parseAssignments = (lines) => {
+                let assignments = [];
+                if (lines.length === 0) return assignments;
+                let currentAssignment = createNewAssignment();
+
+                const finalizeAssignment = () => {
+                    if (currentAssignment.textBuffer.length === 0 && !currentAssignment.pond) return;
+                    const buffer = currentAssignment.textBuffer;
+                    if (buffer.length === 1) {
+                        currentAssignment.work = buffer[0];
+                    } else if (buffer.length > 1) {
+                        currentAssignment.category = buffer[0];
+                        currentAssignment.work = buffer.slice(1).join('<br>');
+                    }
+                    assignments.push(currentAssignment);
+                };
