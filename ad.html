@@ -421,6 +421,7 @@ function endIntroSequence() {
 
     setTimeout(() => {
         intro.style.opacity = 0;
+        window.parent.postMessage('closeAd', '*');  // ADD THIS LINE
         mainContent.style.opacity = 1;
         document.body.style.overflow = "auto";
         setTimeout(() => {
