@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de Bord - Outil JDLM</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <!-- Google Font for Premium Title Look -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -30,9 +29,9 @@
             text-align: center;
             padding: 20px 0;
             color: var(--secondary-color);
-            font-size: 2.2em; /* Bigger title */
+            font-size: 2.2em;
             font-weight: 700;
-            font-family: 'Playfair Display', serif; /* Premium Font */
+            font-family: 'Playfair Display', serif;
             letter-spacing: 0.05em;
         }
         .main-container {
@@ -53,7 +52,7 @@
             background-color: var(--side-panel-color);
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15); /* Soft shadow */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
         }
         .moyenne-widgets {
             display: flex;
@@ -170,7 +169,7 @@
         .subject-table tr:last-child td { border-bottom: none; }
         .competency-row td { background-color: #eaf2f8; color: var(--secondary-color); font-weight: bold; font-style: italic; }
         .no-data { color: var(--light-grey); }
-        .grade-percentage { font-weight: bold; } /* New style for bold percentage */
+        .grade-percentage { font-weight: bold; }
         footer { text-align: center; padding: 15px; font-size: 0.8em; color: var(--footer-grey); font-style: italic; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
         .modal-overlay.active { opacity: 1; visibility: visible; }
@@ -298,7 +297,6 @@
                 document.getElementById('tab-contents').innerHTML = "<p>Aucune donnée disponible. Veuillez ajouter les données.</p>";
                 return;
             }
-            // Update timestamp for active session
             localStorage.setItem('jdlmLastActive', Date.now().toString());
             loadSettings();
             setupEventListeners();
@@ -309,10 +307,8 @@
             const lastActiveTime = localStorage.getItem('jdlmLastActive');
             const ONE_HOUR = 60 * 60 * 1000;
             if (lastActiveTime && (Date.now() - parseInt(lastActiveTime)) > ONE_HOUR) {
-                // Optionally clear data on timeout, but per request, just redirect
                 window.location.href = 'index.html';
             }
-            // Start a recurring check (e.g., every 5 minutes)
             setInterval(() => {
                 const checkTime = localStorage.getItem('jdlmLastActive');
                  if (checkTime && (Date.now() - parseInt(checkTime)) > ONE_HOUR) {
@@ -345,13 +341,13 @@
             document.getElementById('close-unites-modal').addEventListener('click', () => {
                 saveCustomUnits();
                 unitesModal.classList.remove('active');
-                renderAll(); // Forced update after closing modal
+                renderAll();
             });
             unitesModal.addEventListener('click', (e) => {
                 if(e.target === unitesModal) {
                     saveCustomUnits();
                     unitesModal.classList.remove('active');
-                    renderAll(); // Forced update after clicking overlay
+                    renderAll();
                 }
             });
             document.getElementById('unites-mode').addEventListener('change', (e) => {
@@ -425,17 +421,30 @@
             const settings = jdlmData.settings || {};
             const niveau = settings.niveau;
             const mode = settings.unitesMode || 'defaut';
+            
             if (mode === 'sans') return new Proxy({}, { get: () => 1 });
             if (mode === 'perso') return settings.customUnites || {};
-            if (mode === 'defaut' && niveau) return defaultUnits[niveau] || {};
+            
+            // Fix: Correctly access defaultUnits based on niveau
+            if (mode === 'defaut' && niveau && defaultUnits[niveau]) {
+                return defaultUnits[niveau];
+            }
+
+            // Return empty object if no valid unit source is found
             return {};
         }
 
         function calculateAverages() {
             const units = getUnits();
-            const niveau = (jdlmData.settings || {}).niveau;
+            const settings = jdlmData.settings || {};
+            const niveau = settings.niveau;
+            const mode = settings.unitesMode || 'defaut';
+            
             let allTermAverages = {};
             let allSubjectAverages = {};
+            
+            const defaultSubjectUnit = 2; // Default for missing unit if 'defaut' is selected
+            
             ['etape1', 'etape2', 'etape3'].forEach(etape => {
                 if (!jdlmData[etape]) return;
                 let termWeightedSum = 0;
@@ -446,8 +455,17 @@
                     const codePrefix = subject.code.substring(0,3);
                     allSubjectAverages[etape][codePrefix] = { name: subjectList[codePrefix] || subject.name, average: average };
                     
-                    const unit = units[codePrefix] ?? (mode === 'perso' ? 1 : 2); // Default unit weight of 2
-                    
+                    let unit;
+                    if (mode === 'defaut' && !niveau) {
+                        unit = null; // Highlighted red N/A if Niveau is not set
+                    } else if (mode === 'sans' || mode === 'perso') {
+                        // For sans and perso, look up unit (defaulting to 1 if not found)
+                        unit = units[codePrefix] ?? 1;
+                    } else if (mode === 'defaut') {
+                        // For defaut mode, use the explicit unit or 2 (if not found in the list)
+                        unit = units[codePrefix] ?? defaultSubjectUnit;
+                    }
+
                     if (average !== null && unit !== null && niveau) {
                         termWeightedSum += average * unit;
                         termUnitSum += unit;
@@ -486,17 +504,23 @@
             const niveau = (jdlmData.settings || {}).niveau;
             const globalAvgEl = document.getElementById('moyenne-generale');
             const termAvgEl = document.getElementById('moyenne-etape');
+            
             globalAvgEl.classList.toggle('invalid', !niveau);
             termAvgEl.classList.toggle('invalid', !niveau);
-            globalAvgEl.innerHTML = !niveau ? 'N/A' : (averages.globalAverage !== null ? `<span class="grade-percentage">${averages.globalAverage.toFixed(2)}%</span>` : '--');
-            termAvgEl.innerHTML = !niveau ? 'N/A' : (averages.termAverages[activeTab] !== null ? `<span class="grade-percentage">${averages.termAverages[activeTab].toFixed(2)}%</span>` : '--');
+            
+            const formatAvg = (avg) => avg !== null ? `<span class="grade-percentage">${avg.toFixed(2)}%</span>` : '--';
+            
+            globalAvgEl.innerHTML = !niveau ? 'N/A' : formatAvg(averages.globalAverage);
+            termAvgEl.innerHTML = !niveau ? 'N/A' : formatAvg(averages.termAverages[activeTab]);
+
             const subjectListEl = document.getElementById('subject-averages-list');
             subjectListEl.innerHTML = '';
             const activeTermSubjects = averages.subjectAverages[activeTab];
+            
             if (activeTermSubjects && Object.keys(activeTermSubjects).length > 0) {
                 Object.entries(activeTermSubjects).forEach(([code, subj]) => {
                     const li = document.createElement('li');
-                    li.innerHTML = `<span>${subj.name}</span><strong>${subj.average !== null ? `<span class="grade-percentage">${subj.average.toFixed(2)}%</span>` : 'N/A'}</strong>`;
+                    li.innerHTML = `<span>${subj.name}</span><strong>${formatAvg(subj.average)}</strong>`;
                     subjectListEl.appendChild(li);
                 });
             } else {
@@ -524,16 +548,24 @@
                 listContainer.innerHTML = '<div class="no-data">Aucune matière trouvée.</div>';
                 return;
             }
+            const units = getUnits();
+            const defaultSubjectUnit = 2; // For displaying default value
+            
             allSubjects.forEach((name, code) => {
                 const item = document.createElement('div');
                 item.className = 'unite-item';
                 let valueDisplay = '';
+                
                 if (mode === 'perso') {
                     const currentValue = (settings.customUnites || {})[code] || 1;
                     valueDisplay = `<input type="number" data-code="${code}" value="${currentValue}" min="0" step="1">`;
                 } else {
-                    const units = getUnits();
-                    const unitValue = units[code] ?? (mode === 'sans' ? 1 : 2);
+                    let unitValue;
+                    if (mode === 'sans') {
+                        unitValue = 1;
+                    } else if (mode === 'defaut') {
+                        unitValue = units[code] ?? defaultSubjectUnit;
+                    }
                     valueDisplay = `<span>${unitValue}</span>`;
                 }
                 item.innerHTML = `<label>${name} (${code})</label>${valueDisplay}`;
@@ -575,7 +607,6 @@
                         if (isLetterGrade && numGrade !== null) {
                             formattedResult = `${assign.result} <i>(~<span class="grade-percentage">${numGrade.toFixed(1)}%</span>)</i>`;
                         } else if (isSimplePercentage || assign.result.match(/(\d+[,.]?\d*)\s*\/\s*(\d+[,.]?\d*)/)) {
-                            // Already a score/percentage, only bold the number part.
                             formattedResult = assign.result.replace(/(\d+[,.]?\d*\s*\/.*|(\d+[,.]?\d*\s*%))/g, (match) => `<span class="grade-percentage">${match}</span>`);
                         } else {
                             formattedResult = assign.result;
