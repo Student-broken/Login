@@ -8,23 +8,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2980b9; --secondary-color: #2c3e50; --background-color: #f7f9fb; --widget-background: #ffffff;
-            --text-color: #34495e; --light-grey: #bdc3c7; --footer-grey: #95a5a6; --danger-color: #e74c3c;
-            --shadow-header: 0 2px 4px rgba(0, 0, 0, 0.05); --shadow-widget: 0 8px 15px rgba(0, 0, 0, 0.08);
+            --primary-color: #2980b9; --secondary-color: #2c3e50; --side-panel-color: #ffffff;
+            --widget-darker-color: #f0f4f7; --background-color: #f7f9fb; --widget-background: #ffffff;
+            --text-color: #34495e; --light-grey: #bdc3c7; --footer-grey: #95a5a6;
+            --danger-color: #e74c3c; --shadow-header: 0 2px 4px rgba(0, 0, 0, 0.05);
+            --shadow-widget: 0 8px 15px rgba(0, 0, 0, 0.08);
         }
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, 'Playfair Display'; background-color: var(--background-color); color: var(--text-color); }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--background-color); color: var(--text-color); }
         .site-header-container { background-color: var(--widget-background); box-shadow: var(--shadow-header); border-bottom: 1px solid #e0e6eb; padding: 15px 0; position: relative; margin-bottom: 20px; }
         .site-header { text-align: center; padding: 0; margin: 0; color: var(--secondary-color); font-size: 2.2em; font-weight: 700; font-family: 'Playfair Display', serif; letter-spacing: 0.05em; }
         .main-container { display: flex; max-width: 1600px; margin: 0 auto; padding: 0 20px; align-items: flex-start; gap: 30px; }
         .data-section { flex: 3; }
         .side-panel { flex: 1; position: sticky; top: 20px; background-color: var(--side-panel-color); border-radius: 12px; padding: 25px; box-shadow: var(--shadow-widget); }
         .moyenne-widgets { display: flex; gap: 15px; margin-bottom: 25px; }
-        .moyenne-widget { flex: 1; background-color: #f0f4f7; border-radius: 10px; padding: 15px; text-align: center; border: 1px solid #e0e6eb; }
+        .moyenne-widget { flex: 1; background-color: var(--widget-darker-color); border-radius: 10px; padding: 15px; text-align: center; box-shadow: none; border: 1px solid #e0e6eb; }
         .moyenne-widget h4 { margin: 0 0 8px 0; font-size: 0.85em; color: var(--secondary-color); font-weight: 500; }
         .moyenne-value { font-size: 2.2em; font-weight: bold; color: var(--primary-color); }
         .moyenne-value.invalid { color: var(--danger-color); }
         .control-group { margin-bottom: 20px; }
-        .control-group select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background-color: white; transition: box-shadow 0.2s, border-color 0.2s; -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%232c3e50%22%20d%3D%22M287%2069.9L146.7%20209.7%206.4%2069.9%2034.6%2041.7l112.1%20112.1L259.9%2041.7z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 10px top 50%; background-size: 10px auto; }
+        select { padding: 12px; border-radius: 10px; border: 1px solid #ddd; background-color: white; transition: box-shadow 0.2s, border-color 0.2s; -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%232c3e50%22%20d%3D%22M287%2069.9L146.7%20209.7%206.4%2069.9%2034.6%2041.7l112.1%20112.1L259.9%2041.7z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 10px top 50%; background-size: 10px auto; }
         select:focus { box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.2); border-color: var(--primary-color); outline: none; }
         .subject-averages { margin-top: 25px; padding-top: 15px; border-top: 1px solid #e0e6eb; }
         .subject-averages h4 { margin-top: 0; color: var(--secondary-color); font-size: 1.1em; margin-bottom: 15px; }
@@ -69,7 +71,7 @@
         .unite-item:nth-child(even) { background-color: #fcfdfe; }
         .unite-item label { flex: 1; font-weight: 500; }
         .unite-item input, .unite-item span { width: 70px; text-align: center; padding: 6px; border: 1px solid #ddd; border-radius: 6px; }
-        .unite-item span { background-color: #f0f4f7; font-weight: bold; border: none; }
+        .unite-item span { background-color: var(--widget-darker-color); font-weight: bold; border: none; }
         .unite-item input:focus { border-color: var(--primary-color); outline: none; }
     </style>
 </head>
@@ -77,7 +79,7 @@
     <div class="site-header-container">
         <a href="index.html" class="logout-arrow" title="Déconnexion">←</a>
         <header class="site-header">Outil JDLM*</header>
-        <a href="classement.html" id="classement-btn" class="btn btn-header-action">Voir le classement</a>
+        <a href="data.html" class="btn btn-header-action">Ajouter des données</a>
     </div>
     <main class="main-container">
         <section class="data-section">
@@ -94,30 +96,15 @@
         </section>
         <aside class="side-panel">
             <div class="moyenne-widgets">
-                <div class="moyenne-widget">
-                    <h4>Moyenne générale</h4>
-                    <div id="moyenne-generale" class="moyenne-value">--</div>
-                </div>
-                <div class="moyenne-widget">
-                    <h4>Moyenne de l'étape</h4>
-                    <div id="moyenne-etape" class="moyenne-value">--</div>
-                </div>
+                <div class="moyenne-widget"><h4>Moyenne générale</h4><div id="moyenne-generale" class="moyenne-value">--</div></div>
+                <div class="moyenne-widget"><h4>Moyenne de l'étape</h4><div id="moyenne-etape" class="moyenne-value">--</div></div>
             </div>
-            <div class="control-group">
-                <select id="niveau-secondaire">
-                    <option value="">-- Niveau --</option>
-                    <option value="sec4">Secondaire 4</option>
-                    <option value="sec5">Secondaire 5</option>
-                </select>
-            </div>
-            <div class="control-group">
-                <button id="unites-btn" class="btn btn-control">Unités</button>
-            </div>
+            <div class="control-group"><select id="niveau-secondaire"><option value="">-- Niveau --</option><option value="sec4">Secondaire 4</option><option value="sec5">Secondaire 5</option></select></div>
+            <div class="control-group"><button id="unites-btn" class="btn btn-control">Unités</button></div>
+            <div class="control-group"><button id="classement-btn" class="btn btn-control">Classement</button></div>
             <div class="subject-averages">
                 <h4>Moyennes par matière</h4>
-                <ul id="subject-averages-list">
-                    <li class="no-data">Aucune donnée</li>
-                </ul>
+                <ul id="subject-averages-list"><li class="no-data">Aucune donnée</li></ul>
             </div>
         </aside>
     </main>
@@ -125,27 +112,36 @@
         <div class="modal-content">
             <span class="modal-close" id="close-unites-modal">&times;</span>
             <h3>Unités</h3>
-            <div class="control-group">
-                <select id="unites-mode">
-                    <option value="defaut">Unités défaut</option>
-                    <option value="sans">Sans unités</option>
-                    <option value="perso">Personnalisée</option>
-                </select>
-            </div>
+            <div class="control-group"><select id="unites-mode"><option value="defaut">Unités défaut</option><option value="sans">Sans unités</option><option value="perso">Personnalisée</option></select></div>
             <div id="unites-list"></div>
         </div>
     </div>
     <footer>*jauge de la moyenne</footer>
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyu3K_41Veu53rHD8LuLO7d7sb6HnwBrXhCmhrTHXFW2C16AZpH39x_TGr7B_V1bQbI/exec"; // <-- IMPORTANT: Collez votre URL ici
-
-        const gradeMap = { 'A+': {min: 100, max: 100}, 'A': {min: 95, max: 95}, 'A-': {min: 90, max: 90}, 'B+': {min: 85, max: 85}, 'B': {min: 80, max: 80}, 'B-': {min: 75, max: 75}, 'C+': {min: 70, max: 70}, 'C': {min: 65, max: 65}, 'C-': {min: 60, max: 60}, 'D+': {min: 55, max: 55}, 'D': {min: 50, max: 50}, 'E': {min: 45, max: 45} };
-        const defaultUnits = { sec4: { 'ART': 2, 'MUS': 2, 'DRM': 2, 'FRA': 6, 'ELA': 4, 'EESL': 6, 'ESL': 4, 'MAT': 6, 'CST': 6, 'ST': 4, 'STE': 4, 'HQC': 4, 'CCQ': 2, 'EPS': 2, 'ENT': 2, 'INF': 2, 'PSY': 2, }, sec5: { 'ART': 2, 'MUS': 2, 'DRM': 2, 'CAT': 4, 'FRA': 6, 'ELA': 6, 'EESL': 6, 'ESL': 4, 'MAT': 6, 'CST': 4, 'MED': 4, 'PSY': 4, 'ENT': 4, 'FIN': 4, 'CHI': 4, 'PHY': 4, 'MON': 2, 'HQC': 4, 'CCQ': 2, 'EPS': 2, 'FIN': 2 } };
-        const subjectList = { 'ART': "Arts Plastiques", 'MUS': "Musique", 'DRM': "Art Dramatique", 'CAT': "Conception et Application Technologique", 'FRA': "Français, Langue d'enseignement", 'ELA': "English Language Arts", 'EESL': "Enriched English as a Second Language", 'ESL': "English as a Second Language", 'SN': "Mathématique, Science Nature", 'CST': "Mathématique, Culture, Société et Technique", 'ST': "Science et Technologie", 'STE': "Science et Technologie de l'Environnement", 'HQC': "Histoire du Québec et du Canada", 'CCQ': "Culture et Citoyenneté Québécoise", 'EPS': "Éducation Physique et à la Santé", 'CHI': "Chimie", 'PHY': "Physique", 'MON': "Monde Contemporain", 'MED': "Média", 'ENT': "Entrepreneuriat", 'INF': "Informatique", 'PSY': "Psychologie", 'FIN': "Éducation Financière" };
+        // ==================================================================
+        // CONFIGURATION
+        // ==================================================================
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRT8ogbS1yQKKd7tSKeH2S8Xx3Z_LqrSM0cmMkRGt0gBhihb98JomAHbyt2xAvyJZY/exec';
+        const gradeMap = {
+            'A+': {min: 100, max: 100}, 'A': {min: 95, max: 95}, 'A-': {min: 90, max: 90},
+            'B+': {min: 85, max: 85}, 'B': {min: 80, max: 80}, 'B-': {min: 75, max: 75},
+            'C+': {min: 70, max: 70}, 'C': {min: 65, max: 65}, 'C-': {min: 60, max: 60},
+            'D+': {min: 55, max: 55}, 'D': {min: 50, max: 50}, 'E': {min: 45, max: 45}
+        };
+        const defaultUnits = {
+            sec4: { 'ART': 2, 'MUS': 2, 'DRM': 2, 'FRA': 6, 'ELA': 4, 'EESL': 6, 'ESL': 4, 'MAT': 6, 'CST': 6, 'ST': 4, 'STE': 4, 'HQC': 4, 'CCQ': 2, 'EPS': 2, 'ENT': 2, 'INF': 2, 'PSY': 2 },
+            sec5: { 'ART': 2, 'MUS': 2, 'DRM': 2, 'CAT': 4, 'FRA': 6, 'ELA': 6, 'EESL': 6, 'ESL': 4, 'MAT': 6, 'CST': 4, 'MED': 4, 'PSY': 4, 'ENT': 4, 'FIN': 4, 'CHI': 4, 'PHY': 4, 'MON': 2, 'HQC': 4, 'CCQ': 2, 'EPS': 2, 'FIN': 2 }
+        };
+        const subjectList = { 'ART':"Arts Plastiques",'MUS':"Musique",'DRM':"Art Dramatique",'CAT':"Conception et Application Technologique",'FRA':"Français, Langue d'enseignement",'ELA':"English Language Arts",'EESL':"Enriched English as a Second Language",'ESL':"English as a Second Language",'SN':"Mathématique, Science Nature",'CST':"Mathématique, Culture, Société et Technique",'ST':"Science et Technologie",'STE':"Science et Technologie de l'Environnement",'HQC':"Histoire du Québec et du Canada",'CCQ':"Culture et Citoyenneté Québécoise",'EPS':"Éducation Physique et à la Santé",'CHI':"Chimie",'PHY':"Physique",'MON':"Monde Contemporain",'MED':"Média",'ENT':"Entrepreneuriat",'INF':"Informatique",'PSY':"Psychologie",'FIN':"Éducation Financière" };
+        const mathCourses = ['SN', 'CST', 'MAT'];
+        const frenchCourses = ['FRA'];
+        const englishCourses = ['ELA', 'EESL', 'ESL'];
+        // ==================================================================
+        // FIN DE LA CONFIGURATION
+        // ==================================================================
         let jdlmData, activeTab = 'etape1';
 
         document.addEventListener('DOMContentLoaded', () => {
-            checkLogoutTimer();
             jdlmData = JSON.parse(localStorage.getItem('jdlmData')) || {};
             if (!jdlmData.nom) { document.getElementById('tab-contents').innerHTML = "<p>Aucune donnée disponible. Veuillez ajouter les données.</p>"; return; }
             localStorage.setItem('jdlmLastActive', Date.now().toString());
@@ -154,43 +150,99 @@
             renderAll();
         });
 
-        function checkLogoutTimer() {
-            const lastActiveTime = localStorage.getItem('jdlmLastActive');
-            const ONE_HOUR = 60 * 60 * 1000;
-            if (lastActiveTime && (Date.now() - parseInt(lastActiveTime)) > ONE_HOUR) { window.location.href = 'index.html'; }
-            setInterval(() => { const checkTime = localStorage.getItem('jdlmLastActive'); if (checkTime && (Date.now() - parseInt(checkTime)) > ONE_HOUR) { window.location.href = 'index.html'; } }, 5 * 60 * 1000);
-        }
-
         function setupEventListeners() {
-            document.querySelectorAll('.tab-btn').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    document.querySelector('.tab-btn.active').classList.remove('active'); tab.classList.add('active');
-                    document.querySelector('.tab-content.active').classList.remove('active');
-                    activeTab = tab.dataset.tab;
-                    document.getElementById(activeTab).classList.add('active');
-                    renderSidePanel();
-                });
+            document.querySelectorAll('.tab-btn').forEach(tab => tab.addEventListener('click', (e) => switchTab(e.target.dataset.tab)));
+            document.getElementById('niveau-secondaire').addEventListener('change', (e) => {
+                jdlmData.settings = { ...jdlmData.settings, niveau: e.target.value };
+                localStorage.setItem('jdlmData', JSON.stringify(jdlmData));
+                renderAll();
             });
-            document.getElementById('niveau-secondaire').addEventListener('change', (e) => { jdlmData.settings = { ...jdlmData.settings, niveau: e.target.value }; localStorage.setItem('jdlmData', JSON.stringify(jdlmData)); renderAll(); });
             const unitesModal = document.getElementById('unites-modal');
             document.getElementById('unites-btn').addEventListener('click', () => { populateUnitesModal(); unitesModal.classList.add('active'); });
-            document.getElementById('close-unites-modal').addEventListener('click', () => { saveCustomUnits(); unitesModal.classList.remove('active'); renderAll(); });
-            unitesModal.addEventListener('click', (e) => { if(e.target === unitesModal) { saveCustomUnits(); unitesModal.classList.remove('active'); renderAll(); } });
-            document.getElementById('unites-mode').addEventListener('change', (e) => { jdlmData.settings = { ...jdlmData.settings, unitesMode: e.target.value }; localStorage.setItem('jdlmData', JSON.stringify(jdlmData)); populateUnitesModal(); });
+            document.getElementById('close-unites-modal').addEventListener('click', () => { saveAndCloseUnitesModal(); });
+            unitesModal.addEventListener('click', (e) => { if (e.target === unitesModal) { saveAndCloseUnitesModal(); } });
+            document.getElementById('unites-mode').addEventListener('change', (e) => {
+                jdlmData.settings = { ...jdlmData.settings, unitesMode: e.target.value };
+                localStorage.setItem('jdlmData', JSON.stringify(jdlmData));
+                populateUnitesModal();
+            });
+            document.getElementById('classement-btn').addEventListener('click', handleClassementClick);
+        }
+
+        function switchTab(tabId) {
+            document.querySelector('.tab-btn.active').classList.remove('active');
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+            document.querySelector('.tab-content.active').classList.remove('active');
+            activeTab = tabId;
+            document.getElementById(activeTab).classList.add('active');
+            renderSidePanel();
+        }
+
+        function saveAndCloseUnitesModal() {
+            saveCustomUnits();
+            document.getElementById('unites-modal').classList.remove('active');
+            renderAll();
+        }
+
+        function handleClassementClick() {
+            const button = document.getElementById('classement-btn');
+            const niveau = (jdlmData.settings || {}).niveau;
+            if (!niveau) {
+                alert("Veuillez sélectionner votre niveau (Secondaire 4 ou 5) avant de consulter le classement.");
+                return;
+            }
+            button.textContent = "Mise à jour...";
+            button.disabled = true;
+
+            const averages = calculateAverages();
+            const subjectAverages = averages.subjectAverages;
+
+            const findSubjectAvg = (courses, etape) => {
+                if (!subjectAverages[etape]) return null;
+                for (const code of courses) {
+                    if (subjectAverages[etape][code] && subjectAverages[etape][code].average !== null) {
+                        return subjectAverages[etape][code].average;
+                    }
+                }
+                return null;
+            };
+
+            const payload = {
+                userCode: jdlmData.userCode,
+                niveau: niveau,
+                avg_generale: averages.globalAverage,
+                avg_etape1: averages.termAverages.etape1,
+                avg_etape2: averages.termAverages.etape2,
+                avg_etape3: averages.termAverages.etape3,
+                avg_francais: findSubjectAvg(frenchCourses, activeTab),
+                avg_math: findSubjectAvg(mathCourses, activeTab),
+                avg_anglais: findSubjectAvg(englishCourses, activeTab)
+            };
             
-            // --- NOUVEAU: Écouteur pour le bouton de classement ---
-            document.getElementById('classement-btn').addEventListener('click', (e) => {
-                e.preventDefault();
-                sendDataToLeaderboard();
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors', // Changed to no-cors as the script doesn't return a CORS-compliant response for POST
+                cache: 'no-cache',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(() => {
+                window.location.href = 'classement.html';
+            })
+            .catch(error => {
+                console.error('Error sending data:', error);
+                alert("Une erreur est survenue lors de l'envoi des données. Veuillez réessayer.");
+                button.textContent = "Classement";
+                button.disabled = false;
             });
         }
-        
+
         function loadSettings() {
             const settings = jdlmData.settings || {};
             document.getElementById('niveau-secondaire').value = settings.niveau || '';
             document.getElementById('unites-mode').value = settings.unitesMode || 'defaut';
         }
-        
+
         function saveCustomUnits() {
             if (document.getElementById('unites-mode').value !== 'perso') return;
             let customUnites = {};
@@ -202,28 +254,33 @@
         function getNumericGrade(result) {
             if (!result) return null;
             const trimmedResult = result.trim();
-            if (gradeMap[trimmedResult]) { const { min, max } = gradeMap[trimmedResult]; return (min + max) / 2; }
+            if (gradeMap[trimmedResult]) { return (gradeMap[trimmedResult].min + gradeMap[trimmedResult].max) / 2; }
             const scoreMatch = trimmedResult.match(/(\d+[,.]?\d*)\s*\/\s*(\d+[,.]?\d*)/);
-            if (scoreMatch) { const score = parseFloat(scoreMatch[1].replace(',', '.')); const maxScore = parseFloat(scoreMatch[2].replace(',', '.')); if (!isNaN(score) && !isNaN(maxScore) && maxScore > 0) { return (score / maxScore) * 100; } }
+            if (scoreMatch) {
+                const score = parseFloat(scoreMatch[1].replace(',', '.'));
+                const maxScore = parseFloat(scoreMatch[2].replace(',', '.'));
+                if (!isNaN(score) && !isNaN(maxScore) && maxScore > 0) { return (score / maxScore) * 100; }
+            }
             return null;
         }
 
-        function calculateSubjectAverage(subject, specificCodes = []) {
-            if (specificCodes.length > 0 && !specificCodes.some(code => subject.code.startsWith(code))) { return null; }
-            let totalWeightedGrade = 0;
-            let totalCompetencyWeight = 0;
+        function calculateSubjectAverage(subject) {
+            let totalWeightedGrade = 0, totalCompetencyWeight = 0;
             subject.competencies.forEach(comp => {
                 const compWeightMatch = comp.name.match(/\((\d+)%\)/);
                 if (!compWeightMatch) return;
                 const compWeight = parseFloat(compWeightMatch[1]);
-                let totalAssignmentGrade = 0;
-                let totalAssignmentWeight = 0;
-                comp.assignments.forEach(assign => { const grade = getNumericGrade(assign.result); const weight = parseFloat(assign.pond); if (grade !== null && !isNaN(weight)) { totalAssignmentGrade += grade * weight; totalAssignmentWeight += weight; } });
+                let totalAssignmentGrade = 0, totalAssignmentWeight = 0;
+                comp.assignments.forEach(assign => {
+                    const grade = getNumericGrade(assign.result);
+                    const weight = parseFloat(assign.pond);
+                    if (grade !== null && !isNaN(weight)) { totalAssignmentGrade += grade * weight; totalAssignmentWeight += weight; }
+                });
                 if (totalAssignmentWeight > 0) { const competencyAverage = totalAssignmentGrade / totalAssignmentWeight; totalWeightedGrade += competencyAverage * compWeight; totalCompetencyWeight += compWeight; }
             });
             return totalCompetencyWeight > 0 ? totalWeightedGrade / totalCompetencyWeight : null;
         }
-        
+
         function getUnits() {
             const settings = jdlmData.settings || {};
             const niveau = settings.niveau;
@@ -239,13 +296,11 @@
             const settings = jdlmData.settings || {};
             const niveau = settings.niveau;
             const mode = settings.unitesMode || 'defaut';
-            let allTermAverages = {};
-            let allSubjectAverages = {};
+            let allTermAverages = {}, allSubjectAverages = {};
             const defaultSubjectUnit = 2;
             ['etape1', 'etape2', 'etape3'].forEach(etape => {
                 if (!jdlmData[etape]) return;
-                let termWeightedSum = 0;
-                let termUnitSum = 0;
+                let termWeightedSum = 0, termUnitSum = 0;
                 allSubjectAverages[etape] = {};
                 jdlmData[etape].forEach(subject => {
                     const average = calculateSubjectAverage(subject);
@@ -259,15 +314,26 @@
                 });
                 allTermAverages[etape] = termUnitSum > 0 ? termWeightedSum / termUnitSum : null;
             });
-            let globalWeightedSum = 0;
-            let globalTermCount = 0;
+            let globalWeightedSum = 0, globalTermCount = 0;
             Object.values(allTermAverages).forEach(avg => { if (avg !== null) { globalWeightedSum += avg; globalTermCount++; } });
-            return { subjectAverages: allSubjectAverages, termAverages: allTermAverages, globalAverage: globalTermCount > 0 ? globalWeightedSum / globalTermCount : null };
+            return {
+                subjectAverages: allSubjectAverages,
+                termAverages: allTermAverages,
+                globalAverage: globalTermCount > 0 ? globalWeightedSum / globalTermCount : null
+            };
         }
-        
-        function renderAll() { renderTermTables(); renderSidePanel(); }
-        function renderTermTables() { renderTermData(jdlmData.etape1, document.getElementById('etape1')); renderTermData(jdlmData.etape2, document.getElementById('etape2')); renderTermData(jdlmData.etape3, document.getElementById('etape3')); }
-        
+
+        function renderAll() {
+            renderTermTables();
+            renderSidePanel();
+        }
+
+        function renderTermTables() {
+            renderTermData(jdlmData.etape1, document.getElementById('etape1'));
+            renderTermData(jdlmData.etape2, document.getElementById('etape2'));
+            renderTermData(jdlmData.etape3, document.getElementById('etape3'));
+        }
+
         function renderSidePanel() {
             const averages = calculateAverages();
             const niveau = (jdlmData.settings || {}).niveau;
@@ -282,17 +348,28 @@
             subjectListEl.innerHTML = '';
             const activeTermSubjects = averages.subjectAverages[activeTab];
             if (activeTermSubjects && Object.keys(activeTermSubjects).length > 0) {
-                Object.entries(activeTermSubjects).forEach(([code, subj]) => { const li = document.createElement('li'); li.innerHTML = `<span>${subj.name}</span><strong>${formatAvg(subj.average)}</strong>`; subjectListEl.appendChild(li); });
+                Object.entries(activeTermSubjects).forEach(([code, subj]) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span>${subj.name}</span><strong>${formatAvg(subj.average)}</strong>`;
+                    subjectListEl.appendChild(li);
+                });
             } else { subjectListEl.innerHTML = '<li class="no-data">Aucune matière pour cette étape</li>'; }
         }
-        
+
         function populateUnitesModal() {
             const listContainer = document.getElementById('unites-list');
             const mode = document.getElementById('unites-mode').value;
             const settings = jdlmData.settings || {};
             listContainer.innerHTML = '';
             const allSubjects = new Map();
-            ['etape1', 'etape2', 'etape3'].forEach(etape => { if (jdlmData[etape]) { jdlmData[etape].forEach(subject => { const codePrefix = subject.code.substring(0,3); if (!allSubjects.has(codePrefix)) { allSubjects.set(codePrefix, subjectList[codePrefix] || subject.name); } }); } });
+            ['etape1', 'etape2', 'etape3'].forEach(etape => {
+                if (jdlmData[etape]) {
+                    jdlmData[etape].forEach(subject => {
+                        const codePrefix = subject.code.substring(0,3);
+                        if (!allSubjects.has(codePrefix)) { allSubjects.set(codePrefix, subjectList[codePrefix] || subject.name); }
+                    });
+                }
+            });
             if (allSubjects.size === 0) { listContainer.innerHTML = '<div class="no-data">Aucune matière trouvée.</div>'; return; }
             const units = getUnits();
             const defaultSubjectUnit = 2;
@@ -300,83 +377,52 @@
                 const item = document.createElement('div');
                 item.className = 'unite-item';
                 let valueDisplay = '';
-                if (mode === 'perso') { const currentValue = (settings.customUnites || {})[code] || 1; valueDisplay = `<input type="number" data-code="${code}" value="${currentValue}" min="0" step="1">`; } 
-                else { let unitValue; if (mode === 'sans') { unitValue = 1; } else if (mode === 'defaut') { unitValue = units[code] ?? defaultSubjectUnit; } valueDisplay = `<span>${unitValue}</span>`; }
+                if (mode === 'perso') {
+                    const currentValue = (settings.customUnites || {})[code] || 1;
+                    valueDisplay = `<input type="number" data-code="${code}" value="${currentValue}" min="0" step="1">`;
+                } else {
+                    let unitValue;
+                    if (mode === 'sans') { unitValue = 1; } 
+                    else if (mode === 'defaut') { unitValue = units[code] ?? defaultSubjectUnit; }
+                    valueDisplay = `<span>${unitValue}</span>`;
+                }
                 item.innerHTML = `<label>${name} (${code})</label>${valueDisplay}`;
                 listContainer.appendChild(item);
             });
         }
-        
-        function renderTermData(termData, container) { container.innerHTML = ''; if (!termData || termData.length === 0) { container.innerHTML = '<p class="no-data">Aucune donnée pour cette étape.</p>'; return; } termData.forEach(subject => container.appendChild(renderSubjectTable(subject))); }
+
+        function renderTermData(termData, container) {
+            container.innerHTML = '';
+            if (!termData || termData.length === 0) { container.innerHTML = '<p class="no-data">Aucune donnée pour cette étape.</p>'; return; }
+            termData.forEach(subject => container.appendChild(renderSubjectTable(subject)));
+        }
+
         function renderSubjectTable(subject) {
-            const table = document.createElement('table'); table.className = 'subject-table'; table.innerHTML = `<thead><tr><th colspan="7">${subject.code} - ${subject.name}</th></tr><tr><th>Catégorie</th><th>Travail</th><th>Pond.</th><th>Date assignée</th><th>Date due</th><th>Date complétée</th><th>Résultat</th></tr></thead><tbody></tbody>`;
+            const table = document.createElement('table');
+            table.className = 'subject-table';
+            table.innerHTML = `<thead><tr><th colspan="7">${subject.code} - ${subject.name}</th></tr><tr><th>Catégorie</th><th>Travail</th><th>Pond.</th><th>Date assignée</th><th>Date due</th><th>Date complétée</th><th>Résultat</th></tr></thead><tbody></tbody>`;
             const tbody = table.querySelector('tbody');
-            subject.competencies.forEach(comp => { const compRow = document.createElement('tr'); compRow.className = 'competency-row'; compRow.innerHTML = `<td colspan="7">${comp.name}</td>`; tbody.appendChild(compRow);
-                comp.assignments.forEach(assign => { const assignRow = document.createElement('tr'); const numGrade = getNumericGrade(assign.result); let formattedResult = '<span class="no-data">-</span>'; if (assign.result) { const isLetterGrade = !!gradeMap[assign.result.trim()]; const isSimplePercentage = assign.result.includes('%') && !assign.result.includes('/'); if (isLetterGrade && numGrade !== null) { formattedResult = `${assign.result} <i>(~<span class="grade-percentage">${numGrade.toFixed(1)}%</span>)</i>`; } else if (isSimplePercentage || assign.result.match(/(\d+[,.]?\d*)\s*\/\s*(\d+[,.]?\d*)/)) { formattedResult = assign.result.replace(/(\d+[,.]?\d*\s*\/.*|(\d+[,.]?\d*\s*%))/g, (match) => `<span class="grade-percentage">${match}</span>`); } else { formattedResult = assign.result; } } assignRow.innerHTML = `<td>${assign.category || '<span class="no-data">-</span>'}</td><td>${assign.work || '<span class="no-data">-</span>'}</td><td>${assign.pond || '<span class="no-data">-</span>'}</td><td>${assign.assignedDate || '<span class="no-data">-</span>'}</td><td>${assign.dueDate.replace('à','') || '<span class="no-data">-</span>'}</td><td>${assign.completedDate || '<span class="no-data">-</span>'}</td><td>${formattedResult}</td>`; tbody.appendChild(assignRow); });
+            subject.competencies.forEach(comp => {
+                const compRow = document.createElement('tr');
+                compRow.className = 'competency-row';
+                compRow.innerHTML = `<td colspan="7">${comp.name}</td>`;
+                tbody.appendChild(compRow);
+                comp.assignments.forEach(assign => {
+                    const assignRow = document.createElement('tr');
+                    const numGrade = getNumericGrade(assign.result);
+                    let formattedResult = '<span class="no-data">-</span>';
+                    if (assign.result) {
+                        const isLetterGrade = !!gradeMap[assign.result.trim()];
+                        const isSimplePercentage = assign.result.includes('%') && !assign.result.includes('/');
+                        if (isLetterGrade && numGrade !== null) { formattedResult = `${assign.result} <i>(~<span class="grade-percentage">${numGrade.toFixed(1)}%</span>)</i>`; } 
+                        else if (isSimplePercentage || assign.result.match(/(\d+[,.]?\d*)\s*\/\s*(\d+[,.]?\d*)/)) { formattedResult = assign.result.replace(/(\d+[,.]?\d*\s*\/.*|(\d+[,.]?\d*\s*%))/g, (match) => `<span class="grade-percentage">${match}</span>`); } 
+                        else { formattedResult = assign.result; }
+                    }
+                    assignRow.innerHTML = `<td>${assign.category || '<span class="no-data">-</span>'}</td><td>${assign.work || '<span class="no-data">-</span>'}</td><td>${assign.pond || '<span class="no-data">-</span>'}</td><td>${assign.assignedDate || '<span class="no-data">-</span>'}</td><td>${assign.dueDate.replace('à','') || '<span class="no-data">-</span>'}</td><td>${assign.completedDate || '<span class="no-data">-</span>'}</td><td>${formattedResult}</td>`;
+                    tbody.appendChild(assignRow);
+                });
             });
             return table;
-        }
-
-        // --- NOUVEAU: Fonctions pour le classement ---
-        function calculateAggregateSubjectAverage(subjectCodes) {
-            let averages = [];
-            ['etape1', 'etape2', 'etape3'].forEach(etape => {
-                if(jdlmData[etape]) {
-                    jdlmData[etape].forEach(subject => {
-                        const avg = calculateSubjectAverage(subject, subjectCodes);
-                        if (avg !== null) averages.push(avg);
-                    });
-                }
-            });
-            return averages.length > 0 ? averages.reduce((a, b) => a + b, 0) / averages.length : null;
-        }
-
-        function sendDataToLeaderboard() {
-            const btn = document.getElementById('classement-btn');
-            const originalText = btn.textContent;
-            const settings = jdlmData.settings || {};
-            if (!settings.niveau) {
-                alert("Veuillez sélectionner un niveau (Secondaire 4 ou 5) avant de voir le classement.");
-                return;
-            }
-
-            btn.textContent = 'Envoi...';
-            btn.disabled = true;
-
-            const averages = calculateAverages();
-            const francaisAvg = calculateAggregateSubjectAverage(['FRA']);
-            const mathAvg = calculateAggregateSubjectAverage(['MAT', 'SN', 'CST']);
-            const anglaisAvg = calculateAggregateSubjectAverage(['ANG', 'ELA', 'ESL', 'EESL']);
-
-            const payload = {
-                uniqueID: jdlmData.uniqueID,
-                niveau: settings.niveau,
-                moyenneGenerale: averages.globalAverage,
-                moyenneEtape1: averages.termAverages.etape1,
-                moyenneEtape2: averages.termAverages.etape2,
-                moyenneEtape3: averages.termAverages.etape3,
-                moyenneFrancais: francaisAvg,
-                moyenneMath: mathAvg,
-                moyenneAnglais: anglaisAvg
-            };
-            
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors', // Important for simple POST requests to Apps Script
-                cache: 'no-cache',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            .then(() => {
-                // Since 'no-cors' prevents reading the response, we assume success and redirect.
-                window.location.href = 'classement.html';
-            })
-            .catch(error => {
-                console.error('Error sending data:', error);
-                alert("Une erreur est survenue lors de l'envoi des données.");
-                btn.textContent = originalText;
-                btn.disabled = false;
-            });
         }
     </script>
 </body>
