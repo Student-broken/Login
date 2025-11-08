@@ -121,7 +121,7 @@
         // ==================================================================
         // CONFIGURATION
         // ==================================================================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRT8ogbS1yQKKd7tSKeH2S8Xx3Z_LqrSM0cmMkRGt0gBhihb98JomAHbyt2xAvyJZY/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyroZm4OaSjpQfBXyvzj72O7hPbhGBhomv3ll9xlGV48o4xSgvsbKpyRk9BImpBdqny/exec';
         const gradeMap = {
             'A+': {min: 100, max: 100}, 'A': {min: 95, max: 95}, 'A-': {min: 90, max: 90},
             'B+': {min: 85, max: 85}, 'B': {min: 80, max: 80}, 'B-': {min: 75, max: 75},
@@ -177,7 +177,7 @@
             document.getElementById(activeTab).classList.add('active');
             renderSidePanel();
         }
-
+        
         function saveAndCloseUnitesModal() {
             saveCustomUnits();
             document.getElementById('unites-modal').classList.remove('active');
@@ -197,37 +197,42 @@
             const averages = calculateAverages();
             const subjectAverages = averages.subjectAverages;
 
-            const findSubjectAvg = (courses, etape) => {
-                if (!subjectAverages[etape]) return null;
-                for (const code of courses) {
-                    if (subjectAverages[etape][code] && subjectAverages[etape][code].average !== null) {
-                        return subjectAverages[etape][code].average;
+            const findSubjectAvg = (courses) => {
+                let foundAvg = null;
+                // Check all etapes for a valid grade for this subject type
+                ['etape1', 'etape2', 'etape3'].forEach(etape => {
+                    if (subjectAverages[etape]) {
+                        for (const code of courses) {
+                            if (subjectAverages[etape][code] && subjectAverages[etape][code].average !== null) {
+                                foundAvg = subjectAverages[etape][code].average;
+                                return; // Exit inner loop
+                            }
+                        }
                     }
-                }
-                return null;
+                    if (foundAvg !== null) return; // Exit outer loop
+                });
+                return foundAvg;
             };
 
-            const payload = {
-                userCode: jdlmData.userCode,
-                niveau: niveau,
-                avg_generale: averages.globalAverage,
-                avg_etape1: averages.termAverages.etape1,
-                avg_etape2: averages.termAverages.etape2,
-                avg_etape3: averages.termAverages.etape3,
-                avg_francais: findSubjectAvg(frenchCourses, activeTab),
-                avg_math: findSubjectAvg(mathCourses, activeTab),
-                avg_anglais: findSubjectAvg(englishCourses, activeTab)
-            };
+            const formData = new FormData();
+            formData.append('userCode', jdlmData.userCode);
+            formData.append('niveau', niveau);
+            formData.append('avg_generale', averages.globalAverage);
+            formData.append('avg_etape1', averages.termAverages.etape1);
+            formData.append('avg_etape2', averages.termAverages.etape2);
+            formData.append('avg_etape3', averages.termAverages.etape3);
+            formData.append('avg_francais', findSubjectAvg(frenchCourses));
+            formData.append('avg_math', findSubjectAvg(mathCourses));
+            formData.append('avg_anglais', findSubjectAvg(englishCourses));
             
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors', // Changed to no-cors as the script doesn't return a CORS-compliant response for POST
-                cache: 'no-cache',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            .then(() => {
-                window.location.href = 'classement.html';
+            fetch(SCRIPT_URL, { method: 'POST', body: formData })
+            .then(response => response.json())
+            .then(data => {
+                if (data.result === 'success') {
+                    window.location.href = 'classement.html';
+                } else {
+                    throw new Error(data.error);
+                }
             })
             .catch(error => {
                 console.error('Error sending data:', error);
@@ -308,7 +313,8 @@
                     allSubjectAverages[etape][codePrefix] = { name: subjectList[codePrefix] || subject.name, average: average };
                     let unit;
                     if (mode === 'defaut' && !niveau) { unit = null; } 
-                    else if (mode === 'sans' || mode === 'perso') { unit = units[codePrefix] ?? 1; } 
+                    else if (mode === 'sans') { unit = 1; }
+                    else if (mode === 'perso') { unit = units[codePrefix] ?? 1; } 
                     else if (mode === 'defaut') { unit = units[codePrefix] ?? defaultSubjectUnit; }
                     if (average !== null && unit !== null && niveau) { termWeightedSum += average * unit; termUnitSum += unit; }
                 });
