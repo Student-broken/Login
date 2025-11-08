@@ -59,7 +59,7 @@
         </div>
     </main>
     <script>
-        const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyroZm4OaSjpQfBXyvzj72O7hPbhGBhomv3ll9xlGV48o4xSgvsbKpyRk9BImpBdqny/exec';
         const jdlmData = JSON.parse(localStorage.getItem('jdlmData')) || {};
         let allUsersData = [];
 
@@ -73,7 +73,6 @@
             const etapeSelect = document.getElementById('etape-select');
             const userNiveau = (jdlmData.settings || {}).niveau;
             
-            // Populate niveau select, ensuring user's niveau is an option
             const niveaux = new Set([userNiveau, 'sec4', 'sec5']);
             niveaux.forEach(n => {
                 if (n) {
@@ -114,30 +113,23 @@
             const filteredData = allUsersData.filter(u => u.niveau === niveau);
             const currentUser = filteredData.find(u => u.userCode === userCode);
 
-            // Get previous ranks
             const previousRanks = JSON.parse(localStorage.getItem('jdlmPreviousRanks')) || {};
             const currentRanks = {};
 
-            // Calculate and display for each category
-            displayCategoryRank('generale', 'avg_generale', currentUser, filteredData, etape, currentRanks, previousRanks);
+            displayCategoryRank('generale', etape, currentUser, filteredData, etape, currentRanks, previousRanks);
             displayCategoryRank('francais', 'avg_francais', currentUser, filteredData, etape, currentRanks, previousRanks);
             displayCategoryRank('math', 'avg_math', currentUser, filteredData, etape, currentRanks, previousRanks);
             displayCategoryRank('anglais', 'avg_anglais', currentUser, filteredData, etape, currentRanks, previousRanks);
 
-            // Store current ranks for next comparison
             localStorage.setItem('jdlmPreviousRanks', JSON.stringify(currentRanks));
         }
         
         function displayCategoryRank(category, avgKey, currentUser, data, etape, currentRanks, previousRanks) {
             const container = document.getElementById(`rank-${category}`);
-            const grade = currentUser ? (etape === 'avg_generale' ? currentUser['avg_generale'] : currentUser[etape]) : null;
-            
-            let keyToRank = etape;
-            // For subject ranks, we use the specific subject average for the selected 'etape', not the overall etape average
-            if (['francais', 'math', 'anglais'].includes(category)) {
-                keyToRank = avgKey;
-            }
 
+            // The key to sort by depends on the category
+            const keyToRank = (category === 'generale') ? avgKey : avgKey;
+            
             const rankedList = data
                 .filter(u => u[keyToRank] !== null && u[keyToRank] !== '')
                 .sort((a, b) => b[keyToRank] - a[keyToRank]);
@@ -149,7 +141,8 @@
             let content = `<p>Moyenne: <span class="grade">${userGrade !== null && userGrade !== '' ? parseFloat(userGrade).toFixed(2) + '%' : 'N/A'}</span></p>`;
             
             if (userRank > 0) {
-                const prevRank = previousRanks[`${etape}_${category}`];
+                const rankKey = `${niveau}_${etape}_${category}`;
+                const prevRank = previousRanks[rankKey];
                 const change = prevRank ? prevRank - userRank : 0; // Positive is up, negative is down
                 
                 let changeHTML = '<span class="rank-change same"><span class="arrow">●</span>Stable</span>';
@@ -162,8 +155,7 @@
                 content += `<p>Classement: <span class="rank-details">${userRank} sur ${totalRanked}</span></p>`;
                 content += `<p>Comparaison: ${changeHTML}</p>`;
 
-                // Store current rank for next visit
-                currentRanks[`${etape}_${category}`] = userRank;
+                currentRanks[rankKey] = userRank;
             } else {
                 content += `<p>Classement: <span class="rank-details">Non classé</span></p>`;
             }
