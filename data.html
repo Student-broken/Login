@@ -5,15 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ajouter des Données - Outil JDLM</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <!-- Google Font Playfair Display pour le titre -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2980b9; /* Bleu plus riche */
-            --secondary-color: #2c3e50; /* Gris foncé pour le texte principal */
-            --background-color: #f7f9fb; /* Arrière-plan très léger */
+            --primary-color: #2980b9; 
+            --secondary-color: #2c3e50; 
+            --background-color: #f7f9fb; 
             --widget-background: #ffffff;
-            --text-color: #34495e; /* Un peu plus doux que le noir pur */
+            --text-color: #34495e; 
             --light-grey: #bdc3c7;
             --footer-grey: #95a5a6;
             --danger-color: #e74c3c;
@@ -29,14 +28,22 @@
             min-height: 100vh;
         }
 
-        /* STYLES DEMANDÉS POUR LE TITRE */
+        .site-header-container {
+            background-color: var(--widget-background);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
+            border-bottom: 1px solid #e0e6eb; 
+            padding: 15px 0; 
+            position: relative; 
+        }
+        
         .site-header {
             text-align: center;
-            padding: 20px 0;
+            padding: 0; 
+            margin: 0;
             color: var(--secondary-color);
-            font-size: 2.2em; /* Augmenté */
+            font-size: 2.2em;
             font-weight: 700;
-            font-family: 'Playfair Display', serif; /* Nouvelle police */
+            font-family: 'Playfair Display', serif;
             letter-spacing: 0.05em;
         }
 
@@ -44,12 +51,12 @@
             flex-grow: 1;
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* Alignement en haut pour une meilleure apparence sur les grands écrans */
+            align-items: flex-start;
             padding: 40px 20px;
         }
         .back-arrow {
             position: absolute;
-            top: 30px;
+            top: 30px; 
             left: 25px;
             font-size: 2.2em;
             color: var(--secondary-color);
@@ -67,7 +74,7 @@
             border-radius: 16px;
             box-shadow: var(--shadow);
             width: 100%;
-            max-width: 650px; /* Légèrement plus large pour l'espace */
+            max-width: 650px;
             margin-top: 20px;
         }
         textarea {
@@ -89,7 +96,6 @@
             outline: none;
         }
         
-        /* Nouveau texte d'acceptation */
         .terms-acceptance {
             font-size: 0.85em;
             text-align: center;
@@ -129,10 +135,9 @@
             opacity: 0.8;
         }
 
-        /* Nouveau bouton tutoriel (icône) */
         .info-btn {
             position: absolute;
-            top: 30px;
+            top: 30px; /* Ajusté */
             right: 25px;
             width: 45px;
             height: 45px;
@@ -156,7 +161,6 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        /* Styles de la modale conservés, mais épurés */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -223,16 +227,18 @@
             color: var(--footer-grey);
             font-style: italic;
             border-top: 1px solid #eee;
-            margin-top: auto; /* Pousse le footer vers le bas */
+            margin-top: auto;
         }
     </style>
 </head>
 <body>
 
-    <header class="site-header">Outil JDLM*</header>
+    <div class="site-header-container">
+        <header class="site-header">Outil JDLM*</header>
+    </div>
+
     <a href="main.html" class="back-arrow" title="Retour">←</a>
     
-    <!-- Nouveau bouton tutoriel (icône) -->
     <button class="info-btn" id="open-modal-btn" title="Ouvrir le tutoriel">?</button>
 
     <main class="content">
@@ -240,7 +246,7 @@
             <form id="data-form">
                 <textarea id="raw-text" placeholder="Collez les données du portail ici... (CTRL+A, CTRL+C, CTRL+V)"></textarea>
                 
-                <!-- Nouveau texte d'acceptation implicite -->
+                <!-- Texte d'acceptation implicite -->
                 <p class="terms-acceptance">
                     En cliquant sur "Enregistrer et continuer", vous acceptez les <a href="conditions.html" target="_blank">Conditions d’utilisation</a> et la <a href="confidentialite.html" target="_blank">Politique de confidentialité</a>.
                 </p>
@@ -250,17 +256,15 @@
         </div>
     </main>
     
-    <!-- L'ancien bouton tutorial-btn a été supprimé -->
-
     <div class="modal-overlay" id="tutorial-modal">
         <div class="modal-content">
             <span class="modal-close" id="close-modal-btn">&times;</span>
             <h3>Comment utiliser l'outil</h3>
             <p>1. Allez dans la section "Travaux" du portail.</p>
-            <p>2. Faites les touches CTRL + A pour tout sélectionner.</p>
-            <p>3. Faites CTRL + C pour copier la sélection.</p>
-            <p>4. Collez le texte dans la zone ci-dessus avec CTRL + V.</p>
-            <p>5. Cliquez sur Enregistrer et continuer.</p>
+            <p>2. Faites les touches **CTRL + A** pour tout sélectionner.</p>
+            <p>3. Faites **CTRL + C** pour copier la sélection.</p>
+            <p>4. Collez le texte dans la zone ci-dessus avec **CTRL + V**.</p>
+            <p>5. Cliquez sur **Enregistrer et continuer**.</p>
         </div>
     </div>
 
@@ -283,19 +287,12 @@
         const dataForm = document.getElementById('data-form');
         const rawTextArea = document.getElementById('raw-text');
 
-        // NOUVELLE LOGIQUE : Le bouton est désactivé si la zone de texte est vide.
         const checkTextarea = () => {
             submitBtn.disabled = rawTextArea.value.trim().length === 0;
         };
 
-        // Initialiser l'état du bouton
         checkTextarea();
-
-        // Écouter l'entrée pour activer/désactiver le bouton
         rawTextArea.addEventListener('input', checkTextarea);
-
-        // La logique d'acceptation des termes est maintenant implicite, 
-        // donc la vérification du checkbox a été retirée.
 
         dataForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -305,7 +302,6 @@
                 return;
             }
             
-            // Le reste de la logique de traitement des données (parsePortalData) est conservé tel quel.
             const parsedResult = parsePortalData(rawText);
             if (!parsedResult.nom || !parsedResult.etapeData) {
                 alert("Erreur lors de l'analyse des données. Le nom ou le numéro d'étape n'a pas pu être trouvé. Vérifiez le texte collé.");
@@ -317,7 +313,6 @@
             window.location.href = 'main.html';
         });
 
-        // Fonction de parsing conservée inchangée
         function parsePortalData(text) {
             const nameMatch = text.match(/Photo\s*\n(.+)/);
             const semesterMatch = text.match(/Classe\s*\n\s*(\d)/);
@@ -364,7 +359,7 @@
                             currentAssignment.assignedDate = trimmedLine.split('à')[0].trim();
                         }
                         currentAssignment.dueDate = trimmedLine;
-                    } else { // It's a text line
+                    } else { 
                         if (currentAssignment.pond || currentAssignment.assignedDate) {
                             finalizeAssignment();
                             currentAssignment = createNewAssignment();
