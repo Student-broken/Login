@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de Bord - Outil JDLM</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <!-- Updated Font Link -->
-    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
     <style>
+        /* ================================================================== */
+        /* BASE & THEME */
+        /* ================================================================== */
         :root {
             --primary-color: #3498db;
             --secondary-color: #2c3e50;
@@ -19,36 +20,58 @@
             --light-grey: #bdc3c7;
             --footer-grey: #7f8c8d;
             --danger-color: #e74c3c;
+            --premium-font: "Momo Trust Display", "Georgia", serif;
+            --normal-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
         body {
             margin: 0;
-            font-family: 'Josefin Sans', sans-serif; 
+            font-family: var(--normal-font);
             background-color: var(--background-color);
             color: var(--text-color);
         }
         .site-header {
             text-align: center;
-            padding: 25px 0 15px 0;
+            padding: 20px 0;
             color: var(--secondary-color);
-            font-size: 2.2em;
-            font-weight: 700;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            background-color: var(--widget-background);
+            font-size: 1.5em;
+            font-weight: bold;
+            position: relative;
         }
+        .site-header-title {
+            font-size: 2.5em;
+            line-height: 1;
+        }
+        .site-header-title .jdlm {
+            font-family: var(--premium-font);
+            font-size: 1.2em; /* Bigger JDLM */
+            font-weight: 900;
+        }
+        .home-arrow {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            font-size: 2em;
+            color: var(--secondary-color);
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+        .home-arrow:hover {
+            transform: scale(1.1);
+        }
+
+        /* ================================================================== */
+        /* LAYOUT & WIDGETS */
+        /* ================================================================== */
         .main-container {
             display: flex;
             max-width: 1600px;
-            margin: 20px auto;
+            margin: 0 auto;
             padding: 0 20px;
             align-items: flex-start;
-            gap: 30px;
+            gap: 20px;
         }
         .data-section {
             flex: 3;
-            background-color: var(--widget-background);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
         }
         .side-panel {
             flex: 1;
@@ -57,56 +80,131 @@
             background-color: var(--side-panel-color);
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1); /* Premium Shadow */
+            transition: box-shadow 0.3s;
         }
-        .quit-btn {
-            position: absolute;
-            top: 25px;
-            left: 25px;
-            font-size: 2.2em; /* Matches title height */
-            color: var(--secondary-color);
-            cursor: pointer;
-            transition: color 0.2s, transform 0.2s;
-            line-height: 1;
-            text-decoration: none;
-            font-weight: 700;
+        .moyenne-widgets {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
         }
-        .quit-btn:hover {
-            color: var(--danger-color);
-            transform: scale(1.1);
-        }
-        .moyenne-widgets { display: flex; gap: 15px; margin-bottom: 20px; }
         .moyenne-widget {
             flex: 1;
             background-color: var(--widget-darker-color);
             border-radius: 8px;
             padding: 15px;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .moyenne-widget h4 { margin: 0 0 10px 0; font-size: 0.9em; color: var(--secondary-color); font-family: sans-serif; }
-        .moyenne-value { font-size: 2em; font-weight: bold; color: var(--primary-color); }
-        .moyenne-value.invalid { color: var(--danger-color); }
-        .control-group { margin-bottom: 20px; }
-        .control-group select, .control-group .btn { width: 100%; }
-        select { padding: 10px; border-radius: 8px; border: 1px solid var(--light-grey); background-color: white; font-family: sans-serif; }
-        .subject-averages h4 { margin-top: 0; color: var(--secondary-color); border-bottom: 1px solid var(--light-grey); padding-bottom: 5px; font-family: sans-serif; }
-        #subject-averages-list { list-style: none; padding: 0; margin: 0; font-size: 0.9em; font-family: sans-serif; }
-        #subject-averages-list li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0; }
-        #subject-averages-list strong { font-weight: 700; }
-        .btn { display: block; width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 1em; font-weight: bold; cursor: pointer; text-decoration: none; color: white; transition: background-color 0.2s, transform 0.2s; text-align: center; font-family: sans-serif; }
-        .btn-main-action { background-color: var(--secondary-color); margin-top: 20px; }
-        .btn-main-action:hover { background-color: #212f3c; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-        .btn-control { background-color: var(--primary-color); }
+        .moyenne-widget h4 {
+            margin: 0 0 10px 0;
+            font-size: 0.9em;
+            color: var(--secondary-color);
+        }
+        .moyenne-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        .moyenne-value.invalid {
+            color: var(--danger-color);
+        }
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        /* Buttons, Selects, Inputs */
+        select {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--light-grey);
+            background-color: white;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            width: 100%;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            color: white;
+            transition: background-color 0.2s, transform 0.1s;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        .btn-main-action {
+            background-color: var(--secondary-color);
+            margin-top: 20px;
+        }
+        .btn-main-action:hover {
+            background-color: #212f3c;
+        }
+        .btn-control {
+            background-color: var(--primary-color);
+        }
+        .btn-control:hover {
+            background-color: #2980b9;
+        }
+        
+        /* Data Table Styling */
+        .subject-table {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .subject-table th {
+            background-color: var(--secondary-color);
+        }
+        .subject-table td strong {
+            font-weight: 700; /* Bold percentages */
+        }
+        .subject-table td i {
+            font-style: normal;
+            font-weight: 500;
+            color: #7f8c8d;
+        }
+        
+        /* Modal Animations & Styling */
+        .modal-overlay {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            transform: scale(0.9);
+            transition: transform 0.3s;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 15px;
+            font-size: 0.8em;
+            color: var(--footer-grey);
+            font-style: italic;
+        }
+        
+        /* Reused styles from previous versions for clarity */
         .tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 20px; }
-        .tab-btn { padding: 10px 20px; cursor: pointer; border: none; background: none; font-size: 1em; font-weight: bold; color: var(--light-grey); position: relative; font-family: sans-serif; }
+        .tab-btn { padding: 10px 20px; cursor: pointer; border: none; background: none; font-size: 1em; font-weight: bold; color: var(--light-grey); position: relative; }
         .tab-btn.active { color: var(--primary-color); }
+        .tab-btn.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px; background-color: var(--primary-color); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .subject-table th, .subject-table td { font-family: sans-serif; }
-        .subject-table td strong { font-weight: 700; } /* Bold grades in table */
-        footer { text-align: center; padding: 15px; font-size: 0.8em; color: var(--footer-grey); font-style: italic; font-family: sans-serif; }
-        /* Modal and Table styles remain from previous version to avoid cluttering this section */
         .subject-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: var(--widget-background); border-radius: 8px; overflow: hidden; }
         .subject-table th, .subject-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; vertical-align: top; }
         .subject-table th { background-color: var(--secondary-color); color: white; font-size: 14px; }
@@ -114,10 +212,7 @@
         .subject-table tr:last-child td { border-bottom: none; }
         .competency-row td { background-color: #eaf2f8; color: var(--secondary-color); font-weight: bold; font-style: italic; }
         .no-data { color: var(--light-grey); }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
-        .modal-content { background-color: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative; max-width: 90%; width: 450px; transform: scale(0.9); transition: transform 0.3s; }
-        .modal-overlay.active .modal-content { transform: scale(1); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000;}
         .modal-close { position: absolute; top: 10px; right: 15px; font-size: 1.8em; cursor: pointer; color: var(--light-grey); }
         #unites-list { max-height: 300px; overflow-y: auto; margin-top: 15px; }
         .unite-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-radius: 4px; }
@@ -129,8 +224,10 @@
 </head>
 <body>
 
-    <header class="site-header">Outil JDLM*</header>
-    <a href="https://student-broken.github.io" class="quit-btn" title="Quitter">&#x2190;</a>
+    <header class="site-header">
+        <a href="index.html" class="home-arrow">←</a>
+        <div class="site-header-title">Outil <span class="jdlm">JDLM</span>*</div>
+    </header>
 
     <main class="main-container">
         <section class="data-section">
@@ -221,7 +318,24 @@
 
         let jdlmData, activeTab = 'etape1';
 
+        // --- CORE FUNCTIONALITY ---
+        
+        function autoLogoutCheck() {
+            const lastActive = localStorage.getItem('jdlm_last_active');
+            const now = Date.now();
+            
+            // Check for 1 hour (3600000 milliseconds)
+            if (lastActive && (now - parseInt(lastActive, 10)) > 3600000) {
+                localStorage.removeItem('jdlmData');
+                localStorage.removeItem('jdlm_last_active');
+                alert("Session expirée. Veuillez vous reconnecter.");
+                window.location.href = 'index.html';
+            }
+            localStorage.setItem('jdlm_last_active', now);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            autoLogoutCheck();
             jdlmData = JSON.parse(localStorage.getItem('jdlmData')) || {};
             if (!jdlmData.nom) {
                 document.getElementById('tab-contents').innerHTML = "<p>Aucune donnée disponible. Veuillez ajouter les données.</p>";
@@ -230,6 +344,9 @@
             loadSettings();
             setupEventListeners();
             renderAll();
+            
+            // Set a timer to check every 5 minutes (for a soft, non-intrusive check)
+            setInterval(autoLogoutCheck, 300000); 
         });
 
         function setupEventListeners() {
@@ -253,23 +370,31 @@
                 populateUnitesModal();
                 unitesModal.classList.add('active');
             });
+            // Update on modal CLOSE (via X or click outside)
             document.getElementById('close-unites-modal').addEventListener('click', () => {
                 saveCustomUnits();
                 unitesModal.classList.remove('active');
-                renderAll();
+                renderAll(); // RENDER on close
             });
             unitesModal.addEventListener('click', (e) => {
                 if(e.target === unitesModal) {
                     saveCustomUnits();
                     unitesModal.classList.remove('active');
-                    renderAll();
+                    renderAll(); // RENDER on close
+                }
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && unitesModal.classList.contains('active')) {
+                    saveCustomUnits();
+                    unitesModal.classList.remove('active');
+                    renderAll(); // RENDER on close
                 }
             });
             document.getElementById('unites-mode').addEventListener('change', (e) => {
                 jdlmData.settings = { ...jdlmData.settings, unitesMode: e.target.value };
                 localStorage.setItem('jdlmData', JSON.stringify(jdlmData));
                 populateUnitesModal();
-                renderAll();
+                renderAll(); // RENDER on mode change
             });
         }
         
@@ -348,71 +473,38 @@
             const niveau = (jdlmData.settings || {}).niveau;
             let allTermAverages = {};
             let allSubjectAverages = {};
-            
-            // Check if the current Étape has data
-            const currentEtapeData = jdlmData[activeTab];
-            
-            // If the current Étape is empty, reset averages and exit early for this Étape
-            if (!currentEtapeData || currentEtapeData.length === 0) {
-                 allTermAverages[activeTab] = null;
-                 allSubjectAverages[activeTab] = {};
-            } else {
+            ['etape1', 'etape2', 'etape3'].forEach(etape => {
+                if (!jdlmData[etape]) return;
                 let termWeightedSum = 0;
                 let termUnitSum = 0;
-                allSubjectAverages[activeTab] = {};
-                
-                currentEtapeData.forEach(subject => {
+                allSubjectAverages[etape] = {};
+                jdlmData[etape].forEach(subject => {
                     const average = calculateSubjectAverage(subject);
                     const codePrefix = subject.code.substring(0,3);
-                    allSubjectAverages[activeTab][codePrefix] = { name: subjectList[codePrefix] || subject.name, average: average };
+                    allSubjectAverages[etape][codePrefix] = { name: subjectList[codePrefix] || subject.name, average: average };
                     
-                    const unit = units[codePrefix] ?? 2;
+                    const unit = units[codePrefix] ?? (mode === 'perso' ? 1 : 2);
                     
                     if (average !== null && unit !== null && niveau) {
                         termWeightedSum += average * unit;
                         termUnitSum += unit;
                     }
                 });
-                allTermAverages[activeTab] = termUnitSum > 0 ? termWeightedSum / termUnitSum : null;
-            }
-
-            // Calculate Global Average using all terms
+                allTermAverages[etape] = termUnitSum > 0 ? termWeightedSum / termUnitSum : null;
+            });
             let globalWeightedSum = 0;
             let globalTermCount = 0;
-            // Iterate over all three etapes in local storage, not just the currently active one
-            ['etape1', 'etape2', 'etape3'].forEach(etape => {
-                // If data for this etape was already calculated, use it. Otherwise, calculate.
-                let avg = (etape === activeTab) ? allTermAverages[etape] : calculateSingleTermAverage(jdlmData[etape], units, niveau);
-
+            Object.values(allTermAverages).forEach(avg => {
                 if (avg !== null) {
                     globalWeightedSum += avg;
                     globalTermCount++;
                 }
             });
-
             return {
                 subjectAverages: allSubjectAverages,
                 termAverages: allTermAverages,
                 globalAverage: globalTermCount > 0 ? globalWeightedSum / globalTermCount : null
             };
-        }
-
-        function calculateSingleTermAverage(termData, units, niveau) {
-             if (!termData || termData.length === 0) return null;
-             let termWeightedSum = 0;
-             let termUnitSum = 0;
-             
-             termData.forEach(subject => {
-                 const average = calculateSubjectAverage(subject);
-                 const codePrefix = subject.code.substring(0,3);
-                 const unit = units[codePrefix] ?? 2;
-                 
-                 if (average !== null && unit !== null && niveau) {
-                     termWeightedSum += average * unit;
-                     termUnitSum += unit;
-                 }
-             });
-             return termUnitSum > 0 ? termWeightedSum / termUnitSum : null;
         }
         
         function renderAll() {
@@ -433,12 +525,11 @@
             const termAvgEl = document.getElementById('moyenne-etape');
             globalAvgEl.classList.toggle('invalid', !niveau);
             termAvgEl.classList.toggle('invalid', !niveau);
-            globalAvgEl.innerHTML = !niveau ? 'N/A' : (averages.globalAverage !== null ? `<strong>${averages.globalAverage.toFixed(2)}%</strong>` : '--');
-            termAvgEl.innerHTML = !niveau ? 'N/A' : (averages.termAverages[activeTab] !== null ? `<strong>${averages.termAverages[activeTab].toFixed(2)}%</strong>` : '--');
+            globalAvgEl.textContent = !niveau ? 'N/A' : (averages.globalAverage !== null ? averages.globalAverage.toFixed(2) + '%' : '--');
+            termAvgEl.textContent = !niveau ? 'N/A' : (averages.termAverages[activeTab] !== null ? averages.termAverages[activeTab].toFixed(2) + '%' : '--');
             const subjectListEl = document.getElementById('subject-averages-list');
             subjectListEl.innerHTML = '';
             const activeTermSubjects = averages.subjectAverages[activeTab];
-            
             if (activeTermSubjects && Object.keys(activeTermSubjects).length > 0) {
                 Object.entries(activeTermSubjects).forEach(([code, subj]) => {
                     const li = document.createElement('li');
@@ -475,7 +566,7 @@
                 item.className = 'unite-item';
                 let valueDisplay = '';
                 if (mode === 'perso') {
-                    const currentValue = (settings.customUnites || {})[code] || 2;
+                    const currentValue = (settings.customUnites || {})[code] || 1;
                     valueDisplay = `<input type="number" data-code="${code}" value="${currentValue}" min="0" step="1">`;
                 } else {
                     const units = getUnits();
@@ -516,13 +607,11 @@
                     let formattedResult = '<span class="no-data">-</span>';
                     if (assign.result) {
                         const isLetterGrade = !!gradeMap[assign.result.trim()];
-                        const hasPercentage = assign.result.includes('%');
                         if (isLetterGrade && numGrade !== null) {
                             formattedResult = `<strong>${assign.result}</strong> <i>(~${numGrade.toFixed(1)}%)</i>`;
-                        } else if (hasPercentage) {
-                            formattedResult = `<strong>${assign.result}</strong>`;
                         } else {
-                             formattedResult = assign.result;
+                            // Bold the numerical result for better viewing
+                            formattedResult = `<strong>${assign.result}</strong>`;
                         }
                     }
                     assignRow.innerHTML = `
