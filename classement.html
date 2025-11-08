@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classement - Outil JDLM</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/Student-broken/student-broken.github.io/refs/heads/main/favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2980b9; --secondary-color: #2c3e50; --background-color: #f7f9fb; --widget-background: #ffffff;
+            --text-color: #34495e; --light-grey: #bdc3c7; --footer-grey: #95a5a6; --danger-color: #e74c3c;
+            --success-color: #27ae60; --neutral-color: #7f8c8d; --shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+        }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--background-color); color: var(--text-color); }
+        .site-header-container { background-color: var(--widget-background); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); border-bottom: 1px solid #e0e6eb; padding: 15px 0; position: relative; }
+        .site-header { text-align: center; padding: 0; margin: 0; color: var(--secondary-color); font-size: 2.2em; font-weight: 700; font-family: 'Playfair Display', serif; letter-spacing: 0.05em; }
+        .back-arrow { position: absolute; top: 50%; left: 25px; transform: translateY(-50%); font-size: 2.2em; color: var(--secondary-color); text-decoration: none; line-height: 1; transition: color 0.2s, transform 0.2s; }
+        .back-arrow:hover { color: var(--primary-color); transform: translateY(-50%) scale(1.05); }
+        main { max-width: 1200px; margin: 20px auto; padding: 20px; }
+        .filters { display: flex; justify-content: center; align-items: center; gap: 20px; background-color: var(--widget-background); padding: 20px; border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 30px; }
+        .filter-group { display: flex; gap: 10px; }
+        .filter-btn { padding: 10px 20px; border: 1px solid #ddd; background-color: #fff; border-radius: 8px; cursor: pointer; font-weight: 600; transition: background-color 0.2s, color 0.2s, border-color 0.2s; }
+        .filter-btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .analysis-card { background-color: var(--widget-background); border-radius: 12px; box-shadow: var(--shadow); padding: 25px; margin-bottom: 30px; text-align: center; }
+        .analysis-card h2 { margin-top: 0; color: var(--secondary-color); }
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .stat-item { background-color: #f7f9fb; padding: 20px; border-radius: 10px; border: 1px solid #e0e6eb; }
+        .stat-item h4 { margin: 0 0 10px 0; color: var(--secondary-color); }
+        .stat-item .grade { font-size: 2em; font-weight: bold; color: var(--primary-color); }
+        .stat-item .rank { font-size: 0.9em; color: var(--text-color); }
+        .rank-change { font-weight: bold; }
+        .rank-change.up { color: var(--success-color); }
+        .rank-change.down { color: var(--danger-color); }
+        .rank-change.same { color: var(--neutral-color); }
+        .loader { text-align: center; font-size: 1.2em; padding: 50px; }
+    </style>
+</head>
+<body>
+    <div class="site-header-container">
+        <a href="main.html" class="back-arrow" title="Retour">←</a>
+        <header class="site-header">Classement</header>
+    </div>
+    <main>
+        <div class="filters">
+            <div class="filter-group" id="niveau-filter">
+                <button class="filter-btn" data-niveau="sec4">Secondaire 4</button>
+                <button class="filter-btn" data-niveau="sec5">Secondaire 5</button>
+            </div>
+            <div class="filter-group" id="moyenne-filter">
+                <button class="filter-btn active" data-moyenne="moyenneGenerale">Générale</button>
+                <button class="filter-btn" data-moyenne="moyenneEtape1">Étape 1</button>
+                <button class="filter-btn" data-moyenne="moyenneEtape2">Étape 2</button>
+                <button class="filter-btn" data-moyenne="moyenneEtape3">Étape 3</button>
+            </div>
+        </div>
+
+        <div id="analysis-container">
+            <div class="loader">Chargement des données du classement...</div>
+        </div>
+    </main>
+
+    <script>
+        const SCRIPT_URL = "VOTRE_URL_DE_WEB_APP_ICI"; // <-- IMPORTANT: Collez votre URL ici
+
+        let leaderboardData = [];
+        let currentUser = {};
+        let activeNiveau, activeMoyenne;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const jdlmData = JSON.parse(localStorage.getItem('jdlmData')) || {};
+            currentUser = {
+                uniqueID: jdlmData.uniqueID,
+                niveau: (jdlmData.settings || {}).niveau
+            };
+            
+            if (!currentUser.niveau) {
+                document.getElementById('analysis-container').innerHTML = `<p>Veuillez d'abord sélectionner un niveau sur la page principale.</p>`;
+                return;
+            }
+            
+            activeNiveau = currentUser.niveau;
+            activeMoyenne = 'moyenneGenerale';
+
+            setupFilters();
+            fetchLeaderboardData();
+        });
+
+        function setupFilters() {
+            document.querySelector(`.filter-btn[data-niveau="${activeNiveau}"]`).classList.add('active');
+            
+            document.querySelectorAll('#niveau-filter .filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelector('#niveau-filter .active').classList.remove('active');
+                    btn.classList.add('active');
+                    activeNiveau = btn.dataset.niveau;
+                    renderAnalysis();
+                });
+            });
+
+            document.querySelectorAll('#moyenne-filter .filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelector('#moyenne-filter .active').classList.remove('active');
+                    btn.classList.add('active');
+                    activeMoyenne = btn.dataset.moyenne;
+                    renderAnalysis();
+                });
+            });
+        }
+
+        function fetchLeaderboardData() {
+            fetch(SCRIPT_URL)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) throw new Error(data.error);
+                    leaderboardData = data;
+                    renderAnalysis();
+                })
+                .catch(error => {
+                    console.error("Failed to fetch leaderboard data:", error);
+                    document.getElementById('analysis-container').innerHTML = `<p>Erreur lors du chargement du classement.</p>`;
+                });
+        }
+        
+        function getRank(data, userId, key) {
+            const sortedData = data
+                .filter(u => u.niveau === activeNiveau && u[key] !== null && u[key] !== "")
+                .sort((a, b) => b[key] - a[key]);
+            
+            const rank = sortedData.findIndex(u => u.uniqueID === userId) + 1;
+            const total = sortedData.length;
+            
+            return { rank, total };
+        }
+
+        function renderAnalysis() {
+            const container = document.getElementById('analysis-container');
+            const userRecord = leaderboardData.find(u => u.uniqueID === currentUser.uniqueID);
+
+            if (!userRecord) {
+                container.innerHTML = `<p>Vos données ne sont pas encore dans le classement. Retournez à la page principale et cliquez sur "Voir le classement" pour les envoyer.</p>`;
+                return;
+            }
+
+            // Store previous rankings if they exist
+            const prevRankings = JSON.parse(sessionStorage.getItem('prevRankings')) || {};
+            
+            const currentRankings = {};
+            const keysToAnalyze = [
+                { key: activeMoyenne, title: document.querySelector(`button[data-moyenne="${activeMoyenne}"]`).textContent },
+                { key: 'moyenneFrancais', title: 'Français' },
+                { key: 'moyenneMath', title: 'Mathématique' },
+                { key: 'moyenneAnglais', title: 'Anglais' },
+            ];
+            
+            let gridHTML = '';
+
+            keysToAnalyze.forEach(({ key, title }) => {
+                const { rank, total } = getRank(leaderboardData, currentUser.uniqueID, key);
+                currentRankings[key] = rank;
+                
+                const grade = userRecord[key];
+                let rankHTML = '';
+                if (rank > 0) {
+                    const prevRank = prevRankings[key];
+                    let changeHTML = '';
+                    if (prevRank) {
+                        if (rank < prevRank) changeHTML = `<span class="rank-change up">↑${prevRank - rank}</span>`;
+                        else if (rank > prevRank) changeHTML = `<span class="rank-change down">↓${rank - prevRank}</span>`;
+                        else changeHTML = `<span class="rank-change same">=</span>`;
+                    }
+                    rankHTML = `<p class="rank">Top <strong>${rank}</strong> sur ${total} ${changeHTML}</p>`;
+                } else {
+                    rankHTML = `<p class="rank">Non classé</p>`;
+                }
+
+                gridHTML += `
+                    <div class="stat-item">
+                        <h4>${title}</h4>
+                        <div class="grade">${grade ? parseFloat(grade).toFixed(2) + '%' : 'N/A'}</div>
+                        ${rankHTML}
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = `
+                <div class="analysis-card">
+                    <h2>Votre Performance (${activeNiveau === 'sec4' ? 'Sec. 4' : 'Sec. 5'})</h2>
+                    <div class="stat-grid">${gridHTML}</div>
+                </div>
+            `;
+            
+            sessionStorage.setItem('prevRankings', JSON.stringify(currentRankings));
+        }
+    </script>
+</body>
+</html>
