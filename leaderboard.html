@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classement - Outil JDLM</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/Student-broken/student-broken.github.io/refs/heads/main/favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2980b9;
+            --secondary-color: #2c3e50;
+            --background-color: #f7f9fb;
+            --widget-background: #ffffff;
+            --text-color: #34495e;
+            --light-grey: #bdc3c7;
+            --footer-grey: #95a5a6;
+            --gold: #FFD700;
+            --silver: #C0C0C0;
+            --bronze: #CD7F32;
+            --shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+        }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .site-header-container {
+            background-color: var(--widget-background);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid #e0e6eb;
+            padding: 15px 0;
+            position: relative;
+        }
+        .site-header {
+            text-align: center;
+            padding: 0;
+            margin: 0;
+            color: var(--secondary-color);
+            font-size: 2.2em;
+            font-weight: 700;
+            font-family: 'Playfair Display', serif;
+            letter-spacing: 0.05em;
+        }
+        .back-arrow {
+            position: absolute;
+            top: 50%;
+            left: 25px;
+            transform: translateY(-50%);
+            font-size: 2.2em;
+            color: var(--secondary-color);
+            text-decoration: none;
+            transition: color 0.2s, transform 0.2s;
+            line-height: 1;
+        }
+        .back-arrow:hover {
+            color: var(--primary-color);
+            transform: translateY(-50%) scale(1.05);
+        }
+        .content {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+        }
+        .leaderboard-widget {
+            background-color: var(--widget-background);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 800px;
+        }
+        .leaderboard-widget h2 {
+            margin-top: 0;
+            color: var(--secondary-color);
+            text-align: center;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: var(--light-grey);
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+        .filter-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .filter-controls select {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background-color: white;
+            transition: box-shadow 0.2s, border-color 0.2s;
+            font-size: 0.95em;
+        }
+        .filter-controls select:focus {
+            box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.2);
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--light-grey);
+            font-style: italic;
+        }
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+        .leaderboard-row {
+            background-color: #f8f9fa;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: default;
+        }
+        .leaderboard-row:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .leaderboard-row.current-user {
+            background-color: #e3f2fd;
+            border: 2px solid var(--primary-color);
+        }
+        .leaderboard-row td {
+            padding: 15px;
+            vertical-align: middle;
+        }
+        .leaderboard-row td:first-child {
+            border-radius: 8px 0 0 8px;
+        }
+        .leaderboard-row td:last-child {
+            border-radius: 0 8px 8px 0;
+        }
+        .rank {
+            font-size: 1.5em;
+            font-weight: bold;
+            text-align: center;
+            width: 80px;
+        }
+        .rank.gold { color: var(--gold); }
+        .rank.silver { color: var(--silver); }
+        .rank.bronze { color: var(--bronze); }
+        .username {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        .average {
+            text-align: right;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--primary-color);
+            width: 120px;
+        }
+        .stats-widget {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-label {
+            font-size: 0.85em;
+            color: var(--light-grey);
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: var(--light-grey);
+            font-style: italic;
+        }
+        footer {
+            text-align: center;
+            padding: 15px;
+            font-size: 0.8em;
+            color: var(--footer-grey);
+            font-style: italic;
+            border-top: 1px solid #eee;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="site-header-container">
+        <a href="main.html" class="back-arrow" title="Retour">←</a>
+        <header class="site-header">Classement</header>
+    </div>
+
+    <main class="content">
+        <div class="leaderboard-widget">
+            <h2>🏆 Classement des Moyennes</h2>
+            <p class="subtitle">Comparaison anonyme des performances</p>
+            
+            <div class="stats-widget" id="stats-widget">
+                <div class="stat-item">
+                    <div class="stat-label">Participants</div>
+                    <div class="stat-value" id="total-participants">--</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Moyenne Globale</div>
+                    <div class="stat-value" id="global-average">--</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Votre Rang</div>
+                    <div class="stat-value" id="user-rank">--</div>
+                </div>
+            </div>
+
+            <div class="filter-controls">
+                <select id="filter-niveau">
+                    <option value="all">Tous les niveaux</option>
+                    <option value="sec4">Secondaire 4</option>
+                    <option value="sec5">Secondaire 5</option>
+                </select>
+                <select id="filter-etape">
+                    <option value="generale">Moyenne Générale</option>
+                    <option value="etape1">Étape 1</option>
+                    <option value="etape2">Étape 2</option>
+                    <option value="etape3">Étape 3</option>
+                </select>
+            </div>
+
+            <div id="leaderboard-content">
+                <div class="loading">Chargement du classement...</div>
+            </div>
+        </div>
+    </main>
+
+    <footer>*jauge de la moyenne</footer>
+
+    <script>
+        const gradeMap = {
+            'A+': {min: 95, max: 100}, 'A': {min: 90, max: 94}, 'A-': {min: 85, max: 89},
+            'B+': {min: 80, max: 84}, 'B': {min: 75, max: 79}, 'B-': {min: 70, max: 74},
+            'C+': {min: 65, max: 69}, 'C': {min: 62, max: 64}, 'C-': {min: 60, max: 61},
+            'D+': {min: 55, max: 59}, 'D': {min: 50, max: 54}, 'E': {min: 0, max: 49}
+        };
+
+        const defaultUnits = {
+            sec4: { 'ART': 2, 'MUS': 2, 'DRM': 2, 'FRA': 6, 'ELA': 4, 'EESL': 6, 'ESL': 4, 'MAT': 6, 'CST': 6, 'ST': 4, 'STE': 4, 'HQC': 4, 'CCQ': 2, 'EPS': 2, 'ENT': 2, 'INF': 2, 'PSY': 2 },
+            sec5: { 'ART': 2, 'MUS': 2, 'DRM': 2, 'CAT': 4, 'FRA': 6, 'ELA': 6, 'EESL': 6, 'ESL': 4, 'MAT': 6, 'CST': 4, 'MED': 4, 'PSY': 4, 'ENT': 4, 'FIN': 4, 'CHI': 4, 'PHY': 4, 'MON': 2, 'HQC': 4, 'CCQ': 2, 'EPS': 2 }
+        };
+
+        let currentUserData = null;
+        let allLeaderboardData = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            currentUserData = JSON.parse(localStorage.getItem('jdlmData')) || null;
+            
+            document.getElementById('filter-niveau').addEventListener('change', renderLeaderboard);
+            document.getElementById('filter-etape').addEventListener('change', renderLeaderboard);
+            
+            await loadLeaderboardData();
+        });
+
+        async function loadLeaderboardData() {
+            try {
+                const result = await window.storage.list('leaderboard:', true);
+                
+                if (!result || !result.keys || result.keys.length === 0) {
+                    document.getElementById('leaderboard-content').innerHTML = '<div class="no-data">Aucune donnée de classement disponible.</div>';
+                    return;
+                }
+
+                allLeaderboardData = [];
+                for (const key of result.keys) {
+                    try {
+                        const entryResult = await window.storage.get(key, true);
+                        if (entryResult && entryResult.value) {
+                            const data = JSON.parse(entryResult.value);
+                            allLeaderboardData.push(data);
+                        }
+                    } catch (err) {
+                        console.error(`Error loading entry ${key}:`, err);
+                    }
+                }
+
+                renderLeaderboard();
+            } catch (error) {
+                console.error('Error loading leaderboard:', error);
+                document.getElementById('leaderboard-content').innerHTML = '<div class="no-data">Erreur lors du chargement du classement.</div>';
+            }
+        }
+
+        function renderLeaderboard() {
+            const niveauFilter = document.getElementById('filter-niveau').value;
+            const etapeFilter = document.getElementById('filter-etape').value;
+
+            let filteredData = allLeaderboardData.filter(entry => {
+                if (niveauFilter !== 'all' && entry.niveau !== niveauFilter) return false;
+                return true;
+            });
+
+            filteredData = filteredData.map(entry => {
+                let average;
+                if (etapeFilter === 'generale') {
+                    average = entry.globalAverage;
+                } else {
+                    average = entry.termAverages[etapeFilter];
+                }
+                return { ...entry, displayAverage: average };
+            }).filter(entry => entry.displayAverage !== null && entry.displayAverage !== undefined);
+
+            filteredData.sort((a, b) => b.displayAverage - a.displayAverage);
+
+            renderStats(filteredData);
+            renderTable(filteredData);
+        }
+
+        function renderStats(data) {
+            const totalParticipants = data.length;
+            const globalAverage = totalParticipants > 0 
+                ? (data.reduce((sum, entry) => sum + entry.displayAverage, 0) / totalParticipants).toFixed(2) 
+                : '--';
+
+            let userRank = '--';
+            if (currentUserData && currentUserData.userId) {
+                const userIndex = data.findIndex(entry => entry.userId === currentUserData.userId);
+                if (userIndex !== -1) {
+                    userRank = userIndex + 1;
+                }
+            }
+
+            document.getElementById('total-participants').textContent = totalParticipants;
+            document.getElementById('global-average').textContent = globalAverage !== '--' ? globalAverage + '%' : '--';
+            document.getElementById('user-rank').textContent = userRank !== '--' ? `#${userRank}` : '--';
+        }
+
+        function renderTable(data) {
+            const container = document.getElementById('leaderboard-content');
+
+            if (data.length === 0) {
+                container.innerHTML = '<div class="no-data">Aucune donnée pour ces filtres.</div>';
+                return;
+            }
+
+            const table = document.createElement('table');
+            table.className = 'leaderboard-table';
+
+            data.forEach((entry, index) => {
+                const row = document.createElement('tr');
+                row.className = 'leaderboard-row';
+                
+                if (currentUserData && currentUserData.userId === entry.userId) {
+                    row.classList.add('current-user');
+                }
+
+                const rank = index + 1;
+                let rankClass = '';
+                let rankDisplay = rank;
+
+                if (rank === 1) {
+                    rankClass = 'gold';
+                    rankDisplay = '🥇';
+                } else if (rank === 2) {
+                    rankClass = 'silver';
+                    rankDisplay = '🥈';
+                } else if (rank === 3) {
+                    rankClass = 'bronze';
+                    rankDisplay = '🥉';
+                }
+
+                row.innerHTML = `
+                    <td class="rank ${rankClass}">${rankDisplay}</td>
+                    <td class="username">${entry.displayName}</td>
+                    <td class="average">${entry.displayAverage.toFixed(2)}%</td>
+                `;
+
+                table.appendChild(row);
+            });
+
+            container.innerHTML = '';
+            container.appendChild(table);
+        }
+    </script>
+</body>
+</html>
