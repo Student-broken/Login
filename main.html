@@ -419,11 +419,17 @@
             const settings = jdlmData.settings || {};
             const niveau = settings.niveau;
             const mode = settings.unitesMode || 'defaut';
-            if (mode === 'sans') return new Proxy({}, { get: () => 1 });
-            if (mode === 'perso') return settings.customUnites || {};
-            if (mode === 'defaut' && niveau) return defaultUnits[niveau] || {};
-            return {};
-        }
+
+            if (mode === 'sans') {
+                return new Proxy({}, { get: () => 1 });
+            }
+    
+            if (mode === 'perso') {
+                const customUnits = settings.customUnites || {};
+                return new Proxy(customUnits, {
+                    get: (target, prop) => target[prop] !== undefined ? target[prop] : 1
+              });
+         }
 
         function calculateAverages() {
             const units = getUnits();
