@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -320,6 +319,27 @@
             border-top: 1px solid #eee;
             margin-top: auto;
         }
+
+        .status-message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+        .status-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        .status-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -334,6 +354,8 @@
 
     <main class="content">
         <div class="data-widget">
+            <div id="status-message" class="status-message"></div>
+            
             <form id="data-form">
                 <textarea id="raw-text" placeholder="Collez les données du portail ici... 
 (Appuyez sur le bouton Aide pour un tutoriel)"></textarea>
@@ -341,11 +363,11 @@
                 <div class="sharing-section">
                     <h4>📊 Partager au Classement</h4>
                     <div class="checkbox-container">
-                        <input type="checkbox" id="share-checkbox">
+                        <input type="checkbox" id="share-checkbox" checked>
                         <label for="share-checkbox">Partager ma moyenne de manière anonyme au classement</label>
                     </div>
                     
-                    <div class="display-name-input" id="display-name-section">
+                    <div class="display-name-input active" id="display-name-section">
                         <label for="display-name">Nom d'affichage (optionnel):</label>
                         <input type="text" id="display-name" placeholder="Ex: Étudiant123" maxlength="30">
                     </div>
@@ -424,6 +446,15 @@
         const submitBtn = document.getElementById('submit-btn');
         const dataForm = document.getElementById('data-form');
         const rawTextArea = document.getElementById('raw-text');
+        const statusMessage = document.getElementById('status-message');
+
+        function showStatus(message, isError = false) {
+            statusMessage.textContent = message;
+            statusMessage.className = 'status-message ' + (isError ? 'error' : 'success');
+            setTimeout(() => {
+                statusMessage.className = 'status-message';
+            }, 5000);
+        }
 
         const checkTextarea = () => {
             submitBtn.disabled = rawTextArea.value.trim().length === 0;
@@ -436,37 +467,55 @@
             e.preventDefault();
             const rawText = rawTextArea.value;
             if (!rawText.trim()) {
-                alert("Veuillez coller des données avant d'enregistrer.");
+                showStatus("Veuillez coller des données avant d'enregistrer.", true);
                 return;
             }
             
-            const parsedResult = parsePortalData(rawText);
-            if (!parsedResult.nom || !parsedResult.etapeData) {
-                alert("Erreur lors de l'analyse des données. Le nom ou le numéro d'étape n'a pas pu être trouvé. Vérifiez le texte collé.");
-                return;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Enregistrement...';
+            
+            try {
+                const parsedResult = parsePortalData(rawText);
+                if (!parsedResult.nom || !parsedResult.etapeData) {
+                    showStatus("Erreur lors de l'analyse des données. Le nom ou le numéro d'étape n'a pas pu être trouvé.", true);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Enregistrer et continuer';
+                    return;
+                }
+                
+                const existingData = JSON.parse(localStorage.getItem('jdlmData')) || {};
+                
+                if (!existingData.userId) {
+                    existingData.userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                }
+                
+                const updatedData = { 
+                    ...existingData, 
+                    nom: parsedResult.nom, 
+                    [parsedResult.etapeKey]: parsedResult.etapeData,
+                    shareToLeaderboard: shareCheckbox.checked,
+                    displayName: displayNameInput.value.trim() || parsedResult.nom
+                };
+                
+                localStorage.setItem('jdlmData', JSON.stringify(updatedData));
+                
+                if (shareCheckbox.checked) {
+                    await updateLeaderboard(updatedData);
+                    showStatus('Données enregistrées et partagées au classement!');
+                } else {
+                    showStatus('Données enregistrées localement!');
+                }
+                
+                setTimeout(() => {
+                    window.location.href = 'main.html';
+                }, 1500);
+                
+            } catch (error) {
+                console.error('Error saving data:', error);
+                showStatus('Erreur lors de l\'enregistrement: ' + error.message, true);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Enregistrer et continuer';
             }
-            
-            const existingData = JSON.parse(localStorage.getItem('jdlmData')) || {};
-            
-            if (!existingData.userId) {
-                existingData.userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            }
-            
-            const updatedData = { 
-                ...existingData, 
-                nom: parsedResult.nom, 
-                [parsedResult.etapeKey]: parsedResult.etapeData,
-                shareToLeaderboard: shareCheckbox.checked,
-                displayName: displayNameInput.value.trim() || parsedResult.nom
-            };
-            
-            localStorage.setItem('jdlmData', JSON.stringify(updatedData));
-            
-            if (shareCheckbox.checked) {
-                await updateLeaderboard(updatedData);
-            }
-            
-            window.location.href = 'main.html';
         });
 
         async function updateLeaderboard(userData) {
@@ -491,6 +540,7 @@
                 console.log('Leaderboard updated successfully');
             } catch (error) {
                 console.error('Error updating leaderboard:', error);
+                throw error;
             }
         }
 
