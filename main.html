@@ -7,6 +7,23 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
+        /* AD OVERLAY STYLES */
+        #ad-overlay-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 99999;
+            background: white;
+        }
+        #ad-overlay-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        /* EXISTING STYLES */
         :root {
             --primary-color: #3498db;
             --secondary-color: #2c3e50;
@@ -198,6 +215,12 @@
 </head>
 <body>
 
+    <!-- AD OVERLAY -->
+    <div id="ad-overlay-container">
+        <iframe src="ad.html" id="ad-iframe"></iframe>
+    </div>
+
+    <!-- MAIN CONTENT -->
     <a href="index.html" class="logout-arrow">←</a>
     <header class="site-header">Outil JDLM*</header>
 
@@ -264,6 +287,18 @@
     <footer>*jauge de la moyenne</footer>
 
     <script>
+        // Listen for message from ad.html to close the overlay
+        window.addEventListener('message', function(event) {
+            if (event.data === 'closeAd') {
+                const adOverlay = document.getElementById('ad-overlay-container');
+                adOverlay.style.transition = 'opacity 1s ease';
+                adOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    adOverlay.remove();
+                }, 1000);
+            }
+        });
+
         // ==================================================================
         // CONFIGURATION
         // ==================================================================
@@ -425,12 +460,10 @@
             if (mode === 'sans') return new Proxy({}, { get: () => 1 });
             if (mode === 'perso') return settings.customUnites || {};
             
-            // Fix: Correctly access defaultUnits based on niveau
             if (mode === 'defaut' && niveau && defaultUnits[niveau]) {
                 return defaultUnits[niveau];
             }
 
-            // Return empty object if no valid unit source is found
             return {};
         }
 
@@ -443,7 +476,7 @@
             let allTermAverages = {};
             let allSubjectAverages = {};
             
-            const defaultSubjectUnit = 2; // Default for missing unit if 'defaut' is selected
+            const defaultSubjectUnit = 2;
             
             ['etape1', 'etape2', 'etape3'].forEach(etape => {
                 if (!jdlmData[etape]) return;
@@ -457,12 +490,10 @@
                     
                     let unit;
                     if (mode === 'defaut' && !niveau) {
-                        unit = null; // Highlighted red N/A if Niveau is not set
+                        unit = null;
                     } else if (mode === 'sans' || mode === 'perso') {
-                        // For sans and perso, look up unit (defaulting to 1 if not found)
                         unit = units[codePrefix] ?? 1;
                     } else if (mode === 'defaut') {
-                        // For defaut mode, use the explicit unit or 2 (if not found in the list)
                         unit = units[codePrefix] ?? defaultSubjectUnit;
                     }
 
@@ -549,7 +580,7 @@
                 return;
             }
             const units = getUnits();
-            const defaultSubjectUnit = 2; // For displaying default value
+            const defaultSubjectUnit = 2;
             
             allSubjects.forEach((name, code) => {
                 const item = document.createElement('div');
@@ -589,43 +620,3 @@
                 <tr><th colspan="7">${subject.code} - ${subject.name}</th></tr>
                 <tr><th>Catégorie</th><th>Travail</th><th>Pond.</th><th>Date assignée</th><th>Date due</th><th>Date complétée</th><th>Résultat</th></tr>
             </thead>
-            <tbody></tbody>`;
-            const tbody = table.querySelector('tbody');
-            subject.competencies.forEach(comp => {
-                const compRow = document.createElement('tr');
-                compRow.className = 'competency-row';
-                compRow.innerHTML = `<td colspan="7">${comp.name}</td>`;
-                tbody.appendChild(compRow);
-                comp.assignments.forEach(assign => {
-                    const assignRow = document.createElement('tr');
-                    const numGrade = getNumericGrade(assign.result);
-                    let formattedResult = '<span class="no-data">-</span>';
-                    if (assign.result) {
-                        const isLetterGrade = !!gradeMap[assign.result.trim()];
-                        const isSimplePercentage = assign.result.includes('%') && !assign.result.includes('/');
-                        
-                        if (isLetterGrade && numGrade !== null) {
-                            formattedResult = `${assign.result} <i>(~<span class="grade-percentage">${numGrade.toFixed(1)}%</span>)</i>`;
-                        } else if (isSimplePercentage || assign.result.match(/(\d+[,.]?\d*)\s*\/\s*(\d+[,.]?\d*)/)) {
-                            formattedResult = assign.result.replace(/(\d+[,.]?\d*\s*\/.*|(\d+[,.]?\d*\s*%))/g, (match) => `<span class="grade-percentage">${match}</span>`);
-                        } else {
-                            formattedResult = assign.result;
-                        }
-                    }
-                    assignRow.innerHTML = `
-                        <td>${assign.category || '<span class="no-data">-</span>'}</td>
-                        <td>${assign.work || '<span class="no-data">-</span>'}</td>
-                        <td>${assign.pond || '<span class="no-data">-</span>'}</td>
-                        <td>${assign.assignedDate || '<span class="no-data">-</span>'}</td>
-                        <td>${assign.dueDate.replace('à','') || '<span class="no-data">-</span>'}</td>
-                        <td>${assign.completedDate || '<span class="no-data">-</span>'}</td>
-                        <td>${formattedResult}</td>`;
-                    tbody.appendChild(assignRow);
-                });
-            });
-            return table;
-        }
-
-    </script>
-</body>
-</html>
