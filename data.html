@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -310,45 +311,6 @@
             line-height: 1;
         }
 
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s, visibility 0.3s;
-        }
-        .loading-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        .loading-content {
-            background-color: white;
-            padding: 30px 50px;
-            border-radius: 12px;
-            text-align: center;
-        }
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         footer {
             text-align: center;
             padding: 15px;
@@ -389,7 +351,7 @@
                     </div>
                     
                     <div class="sharing-note">
-                        ℹ️ Vos moyennes seront partagées de façon anonyme. Seul votre nom d'affichage sera visible. Les données sont stockées de manière permanente sur GitHub.
+                        ℹ️ Vos moyennes seront partagées de façon anonyme. Seul votre nom d'affichage sera visible.
                     </div>
                 </div>
                 
@@ -423,24 +385,10 @@
         </div>
     </div>
 
-    <div class="loading-overlay" id="loading-overlay">
-        <div class="loading-content">
-            <div class="spinner"></div>
-            <p>Synchronisation avec GitHub...</p>
-        </div>
-    </div>
-
     <footer>*jauge de la moyenne</footer>
                 
-    <script>
-        // GitHub Configuration - UPDATE THESE VALUES
-        const GITHUB_CONFIG = {
-            owner: 'Student-broken',  // Your GitHub username
-            repo: 'student-broken.github.io',  // Your repository name
-            token: 'YOUR_GITHUB_TOKEN_HERE',  // You need to create a Personal Access Token
-            dataFile: 'leaderboard-data.json'  // File to store leaderboard data
-        };
 
+    <script>
         const gradeMap = {
             'A+': {min: 95, max: 100}, 'A': {min: 90, max: 94}, 'A-': {min: 85, max: 89},
             'B+': {min: 80, max: 84}, 'B': {min: 75, max: 79}, 'B-': {min: 70, max: 74},
@@ -456,7 +404,6 @@
         const openModalBtn = document.getElementById('open-modal-btn');
         const closeModalBtn = document.getElementById('close-modal-btn');
         const tutorialModal = document.getElementById('tutorial-modal');
-        const loadingOverlay = document.getElementById('loading-overlay');
         
         const openModal = () => tutorialModal.classList.add('active');
         const closeModal = () => tutorialModal.classList.remove('active');
@@ -516,99 +463,34 @@
             localStorage.setItem('jdlmData', JSON.stringify(updatedData));
             
             if (shareCheckbox.checked) {
-                loadingOverlay.classList.add('active');
-                try {
-                    await updateGitHubLeaderboard(updatedData);
-                    loadingOverlay.classList.remove('active');
-                } catch (error) {
-                    loadingOverlay.classList.remove('active');
-                    alert("Erreur lors de la synchronisation avec GitHub. Vos données locales ont été sauvegardées.");
-                    console.error(error);
-                }
+                await updateLeaderboard(updatedData);
             }
             
             window.location.href = 'main.html';
         });
 
-        async function updateGitHubLeaderboard(userData) {
-            if (GITHUB_CONFIG.token === 'YOUR_GITHUB_TOKEN_HERE') {
-                console.error('GitHub token not configured');
-                return;
-            }
-
-            const averages = calculateAverages(userData);
-            
-            const leaderboardEntry = {
-                userId: userData.userId,
-                displayName: userData.displayName,
-                niveau: userData.settings?.niveau || 'unknown',
-                globalAverage: averages.globalAverage,
-                termAverages: averages.termAverages,
-                lastUpdated: new Date().toISOString()
-            };
-
+        async function updateLeaderboard(userData) {
             try {
-                // Get current file content
-                let existingData = [];
-                let sha = null;
+                const averages = calculateAverages(userData);
                 
-                try {
-                    const getResponse = await fetch(
-                        `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.dataFile}`,
-                        {
-                            headers: {
-                                'Authorization': `token ${GITHUB_CONFIG.token}`,
-                                'Accept': 'application/vnd.github.v3+json'
-                            }
-                        }
-                    );
-                    
-                    if (getResponse.ok) {
-                        const fileData = await getResponse.json();
-                        sha = fileData.sha;
-                        const content = atob(fileData.content);
-                        existingData = JSON.parse(content);
-                    }
-                } catch (error) {
-                    console.log('File does not exist yet, creating new one');
-                }
-
-                // Update or add user entry
-                const userIndex = existingData.findIndex(entry => entry.userId === userData.userId);
-                if (userIndex >= 0) {
-                    existingData[userIndex] = leaderboardEntry;
-                } else {
-                    existingData.push(leaderboardEntry);
-                }
-
-                // Encode and upload
-                const content = btoa(unescape(encodeURIComponent(JSON.stringify(existingData, null, 2))));
+                const leaderboardEntry = {
+                    userId: userData.userId,
+                    displayName: userData.displayName,
+                    niveau: userData.settings?.niveau || 'unknown',
+                    globalAverage: averages.globalAverage,
+                    termAverages: averages.termAverages,
+                    lastUpdated: new Date().toISOString()
+                };
                 
-                const updateResponse = await fetch(
-                    `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.dataFile}`,
-                    {
-                        method: 'PUT',
-                        headers: {
-                            'Authorization': `token ${GITHUB_CONFIG.token}`,
-                            'Accept': 'application/vnd.github.v3+json',
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            message: `Update leaderboard for ${leaderboardEntry.displayName}`,
-                            content: content,
-                            sha: sha
-                        })
-                    }
+                await window.storage.set(
+                    `leaderboard:${userData.userId}`,
+                    JSON.stringify(leaderboardEntry),
+                    true
                 );
-
-                if (!updateResponse.ok) {
-                    throw new Error('Failed to update GitHub file');
-                }
-
-                console.log('Leaderboard updated successfully on GitHub');
+                
+                console.log('Leaderboard updated successfully');
             } catch (error) {
-                console.error('Error updating GitHub leaderboard:', error);
-                throw error;
+                console.error('Error updating leaderboard:', error);
             }
         }
 
@@ -745,3 +627,61 @@
                     }
                     assignments.push(currentAssignment);
                 };
+
+                for (const line of lines) {
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine) continue;
+
+                    if (RESULT_REGEX.test(trimmedLine)) {
+                        currentAssignment.result = trimmedLine;
+                        finalizeAssignment();
+                        currentAssignment = createNewAssignment();
+                    } else if (POND_REGEX.test(trimmedLine)) {
+                        currentAssignment.pond = trimmedLine;
+                    } else if (DATE_REGEX.test(trimmedLine)) {
+                        if (!currentAssignment.assignedDate) {
+                            currentAssignment.assignedDate = trimmedLine.split('à')[0].trim();
+                        }
+                        currentAssignment.dueDate = trimmedLine;
+                    } else { 
+                        if (currentAssignment.pond || currentAssignment.assignedDate) {
+                            finalizeAssignment();
+                            currentAssignment = createNewAssignment();
+                        }
+                        currentAssignment.textBuffer.push(trimmedLine);
+                    }
+                }
+                finalizeAssignment();
+                return assignments;
+            };
+
+            const subjects = [];
+            const subjectRegex = /([A-Z]{3}\d{3}[A-Z]?) - (.+)/g;
+            const subjectsText = text.split(subjectRegex).slice(1);
+
+            for (let i = 0; i < subjectsText.length; i += 3) {
+                const subjectData = { code: subjectsText[i], name: subjectsText[i + 1], competencies: [] };
+                let subjectContent = subjectsText[i + 2] || '';
+                const competencyBlocks = subjectContent.split('Compétence - ').slice(1);
+
+                for (const block of competencyBlocks) {
+                    const blockLines = block.trim().split('\n');
+                    const compName = blockLines.shift();
+                    const cleanLines = blockLines.filter(line => line.trim() && !line.includes('Catégorie\tTravail\tPond.'));
+                    const competencyData = {
+                        name: `Compétence - ${compName.trim()}`,
+                        assignments: parseAssignments(cleanLines)
+                    };
+                    if (competencyData.assignments.length > 0) {
+                        subjectData.competencies.push(competencyData);
+                    }
+                }
+                if (subjectData.competencies.length > 0) {
+                    subjects.push(subjectData);
+                }
+            }
+            return { nom, etapeKey, etapeData: subjects };
+        }
+    </script>
+</body>
+</html>
