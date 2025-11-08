@@ -536,7 +536,7 @@
         function renderTermData(termData, container) {
             container.innerHTML = '';
             if (!termData || termData.length === 0) {
-                container.innerHTML = '<p class="no-data">Aucune donnée pour cette étape.</p>';
+                container.innerHTML = '<p class="no-data">Aucune donnée pour cette étape. Veuillez ajouter les données.</p>';
                 return;
             }
             termData.forEach(subject => container.appendChild(renderSubjectTable(subject)));
