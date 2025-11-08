@@ -52,27 +52,24 @@
 
     <main class="content">
         <div class="data-widget">
-            <div id="data-form-container">
+            <form id="data-form">
                 <textarea id="raw-text" placeholder="Collez les données du portail ici..."></textarea>
                 <p class="terms-acceptance">
                     En cliquant sur "Enregistrer et continuer", vos données seront sauvegardées localement et synchronisées anonymement au classement. Vous acceptez les <a href="conditions.html" target="_blank">Conditions d’utilisation</a>.
                 </p>
-                <button id="submit-btn" class="btn" disabled>Enregistrer et continuer</button>
-            </div>
+                <button type="submit" id="submit-btn" class="btn" disabled>Enregistrer et continuer</button>
+            </form>
         </div>
     </main>
-    
-    <!-- HIDDEN FORM AND IFRAME FOR GOOGLE SHEET SUBMISSION -->
-    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-    <form id="sheet-form" method="post" target="hidden_iframe">
-        <input type="hidden" name="payload" id="sheet-payload">
-    </form>
     
     <div class="modal-overlay" id="tutorial-modal">
         <div class="modal-content">
             <span class="modal-close" id="close-modal-btn">&times;</span>
             <h3>Comment utiliser l'outil</h3>
-            <div class="important-message"><span class="icon">⚠</span><span><strong>Important!</strong> Pour avoir des informations à jour, vous devez refaire ces étapes souvent.</span></div>
+            <div class="important-message">
+                <span class="icon">⚠</span>
+                <span><strong>Important!</strong> Pour avoir des informations à jour, vous devez refaire ces étapes souvent.</span>
+            </div>
             <p>1. Allez dans la section "Travaux" du portail.</p>
             <p>2. Faites <strong>CTRL + A</strong> pour tout sélectionner.</p>
             <p>3. Faites <strong>CTRL + C</strong> pour copier la sélection.</p>
@@ -84,8 +81,9 @@
     <footer>*jauge de la moyenne</footer>
                 
     <script>
+        // CONFIGURATION
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw38nksrTAeWZWKrTGos-C3S5hCJdyE4_k24dmZDoKC5Pvud9nqkJHChghw8KJlW-5T/exec';
-
+        // --- Modal Logic ---
         const openModalBtn = document.getElementById('open-modal-btn');
         const closeModalBtn = document.getElementById('close-modal-btn');
         const tutorialModal = document.getElementById('tutorial-modal');
@@ -96,13 +94,15 @@
         tutorialModal.addEventListener('click', (e) => { if (e.target === tutorialModal) closeModal(); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
+        // --- Form Logic ---
         const submitBtn = document.getElementById('submit-btn');
+        const dataForm = document.getElementById('data-form');
         const rawTextArea = document.getElementById('raw-text');
         const checkTextarea = () => { submitBtn.disabled = rawTextArea.value.trim().length === 0; };
         checkTextarea();
         rawTextArea.addEventListener('input', checkTextarea);
 
-        submitBtn.addEventListener('click', async (e) => {
+        dataForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             submitBtn.textContent = 'Traitement...';
             submitBtn.disabled = true;
@@ -132,6 +132,7 @@
             window.location.href = 'main.html';
         });
 
+        // --- Sync and Code Generation ---
         function getOrGenerateUserCode() {
             let userCode = localStorage.getItem('jdlmUserCode');
             if (!userCode) {
@@ -142,61 +143,54 @@
         }
 
         async function syncDataToSheet(data) {
-            return new Promise((resolve) => {
-                if (!WEB_APP_URL || WEB_APP_URL === 'YOUR_WEB_APP_URL') {
-                    console.error("L'URL de l'application web n'est pas configurée.");
-                    resolve();
-                    return;
+            if (!WEB_APP_URL || WEB_APP_URL === 'YOUR_WEB_APP_URL') {
+                console.error("L'URL de l'application web n'est pas configurée.");
+                return; // Fail silently so user can still use the app offline
+            }
+
+            // We must recalculate averages here before sending
+            const averages = calculateAverages(data);
+            const findSubjectAverage = (etape, subjectCodes) => {
+                for(const code of subjectCodes) {
+                    const subject = averages.subjectAverages[etape]?.[code];
+                    if(subject?.average) return subject.average;
                 }
+                return null;
+            };
 
-                const averages = calculateAverages(data);
-                const findSubjectAverage = (etape, subjectCodes) => {
-                    for(const code of subjectCodes) {
-                        const subject = averages.subjectAverages[etape]?.[code];
-                        if(subject?.average) return subject.average;
-                    }
-                    return null;
-                };
+            const payload = {
+                code: getOrGenerateUserCode(),
+                niveau: data.settings.niveau,
+                moyenneGenerale: averages.globalAverage,
+                moyenneEtape1: averages.termAverages.etape1,
+                moyenneEtape2: averages.termAverages.etape2,
+                moyenneEtape3: averages.termAverages.etape3,
+                francaisEtape1: findSubjectAverage('etape1', ['FRA']),
+                mathEtape1: findSubjectAverage('etape1', ['SN', 'CST']),
+                anglaisEtape1: findSubjectAverage('etape1', ['ELA', 'ESL', 'EESL']),
+                francaisEtape2: findSubjectAverage('etape2', ['FRA']),
+                mathEtape2: findSubjectAverage('etape2', ['SN', 'CST']),
+                anglaisEtape2: findSubjectAverage('etape2', ['ELA', 'ESL', 'EESL']),
+                francaisEtape3: findSubjectAverage('etape3', ['FRA']),
+                mathEtape3: findSubjectAverage('etape3', ['SN', 'CST']),
+                anglaisEtape3: findSubjectAverage('etape3', ['ELA', 'ESL', 'EESL']),
+            };
 
-                const payload = {
-                    code: getOrGenerateUserCode(),
-                    niveau: data.settings.niveau,
-                    moyenneGenerale: averages.globalAverage,
-                    moyenneEtape1: averages.termAverages.etape1,
-                    moyenneEtape2: averages.termAverages.etape2,
-                    moyenneEtape3: averages.termAverages.etape3,
-                    francaisEtape1: findSubjectAverage('etape1', ['FRA']),
-                    mathEtape1: findSubjectAverage('etape1', ['SN', 'CST']),
-                    anglaisEtape1: findSubjectAverage('etape1', ['ELA', 'ESL', 'EESL']),
-                    francaisEtape2: findSubjectAverage('etape2', ['FRA']),
-                    mathEtape2: findSubjectAverage('etape2', ['SN', 'CST']),
-                    anglaisEtape2: findSubjectAverage('etape2', ['ELA', 'ESL', 'EESL']),
-                    francaisEtape3: findSubjectAverage('etape3', ['FRA']),
-                    mathEtape3: findSubjectAverage('etape3', ['SN', 'CST']),
-                    anglaisEtape3: findSubjectAverage('etape3', ['ELA', 'ESL', 'EESL']),
-                };
-                
-                const form = document.getElementById('sheet-form');
-                const payloadInput = document.getElementById('sheet-payload');
-                
-                form.action = WEB_APP_URL;
-                payloadInput.value = JSON.stringify(payload);
-                form.submit();
-                
-                // We can't get a real success message, so we assume success after a short delay
-                setTimeout(() => {
-                    resolve();
-                }, 1500); // 1.5 seconds to allow for submission
-            });
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    redirect: 'follow',
+                    body: JSON.stringify(payload)
+                });
+            } catch (error) {
+                console.error("Erreur lors de la synchronisation : ", error);
+            }
         }
         
-        const gradeMap = { /* ... */ };
-        const defaultUnits = { /* ... */ };
-        function getNumericGrade(result) { /* ... */ }
-        function calculateSubjectAverage(subject) { /* ... */ }
-        function calculateAverages(data) { /* ... */ }
-        function parsePortalData(text) { /* ... */ }
-        // Copy the full functions from the previous main.html file to here
+        // --- Calculation and Parsing Logic (Needed for sync) ---
         const gradeMap = {
             'A+': {min: 100, max: 100}, 'A': {min: 95, max: 95}, 'A-': {min: 90, max: 90},
             'B+': {min: 85, max: 85}, 'B': {min: 80, max: 80}, 'B-': {min: 75, max: 75},
@@ -207,6 +201,7 @@
             sec4: { 'ART': 2, 'MUS': 2, 'DRM': 2, 'FRA': 6, 'ELA': 4, 'EESL': 6, 'ESL': 4, 'MAT': 6, 'CST': 6, 'ST': 4, 'STE': 4, 'HQC': 4, 'CCQ': 2, 'EPS': 2, 'ENT': 2, 'INF': 2, 'PSY': 2, },
             sec5: { 'ART': 2, 'MUS': 2, 'DRM': 2, 'CAT': 4, 'FRA': 6, 'ELA': 6, 'EESL': 6, 'ESL': 4, 'MAT': 6, 'CST': 4, 'MED': 4, 'PSY': 4, 'ENT': 4, 'FIN': 4, 'CHI': 4, 'PHY': 4, 'MON': 2, 'HQC': 4, 'CCQ': 2, 'EPS': 2, 'FIN': 2 }
         };
+
         function getNumericGrade(result) {
             if (!result) return null;
             const trimmedResult = result.trim();
@@ -219,6 +214,11 @@
             }
             return null;
         }
+
+        function calculateSubjectAverage(subject) { /* ... same as main.html ... */ }
+        function calculateAverages(data) { /* ... same as main.html ... */ }
+        // The full functions are omitted here for brevity but are needed for the script to run.
+        // Copy them from the full main.html file's script if running this standalone.
         function calculateSubjectAverage(subject) {
             let totalWeightedGrade = 0; let totalCompetencyWeight = 0;
             subject.competencies.forEach(comp => {
