@@ -122,16 +122,8 @@
         // CONFIGURATION
         // ==================================================================
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyroZm4OaSjpQfBXyvzj72O7hPbhGBhomv3ll9xlGV48o4xSgvsbKpyRk9BImpBdqny/exec';
-        const gradeMap = {
-            'A+': {min: 100, max: 100}, 'A': {min: 95, max: 95}, 'A-': {min: 90, max: 90},
-            'B+': {min: 85, max: 85}, 'B': {min: 80, max: 80}, 'B-': {min: 75, max: 75},
-            'C+': {min: 70, max: 70}, 'C': {min: 65, max: 65}, 'C-': {min: 60, max: 60},
-            'D+': {min: 55, max: 55}, 'D': {min: 50, max: 50}, 'E': {min: 45, max: 45}
-        };
-        const defaultUnits = {
-            sec4: { 'ART': 2, 'MUS': 2, 'DRM': 2, 'FRA': 6, 'ELA': 4, 'EESL': 6, 'ESL': 4, 'MAT': 6, 'CST': 6, 'ST': 4, 'STE': 4, 'HQC': 4, 'CCQ': 2, 'EPS': 2, 'ENT': 2, 'INF': 2, 'PSY': 2 },
-            sec5: { 'ART': 2, 'MUS': 2, 'DRM': 2, 'CAT': 4, 'FRA': 6, 'ELA': 6, 'EESL': 6, 'ESL': 4, 'MAT': 6, 'CST': 4, 'MED': 4, 'PSY': 4, 'ENT': 4, 'FIN': 4, 'CHI': 4, 'PHY': 4, 'MON': 2, 'HQC': 4, 'CCQ': 2, 'EPS': 2, 'FIN': 2 }
-        };
+        const gradeMap = { 'A+':{min:100,max:100},'A':{min:95,max:95},'A-':{min:90,max:90},'B+':{min:85,max:85},'B':{min:80,max:80},'B-':{min:75,max:75},'C+':{min:70,max:70},'C':{min:65,max:65},'C-':{min:60,max:60},'D+':{min:55,max:55},'D':{min:50,max:50},'E':{min:45,max:45} };
+        const defaultUnits = { sec4:{'ART':2,'MUS':2,'DRM':2,'FRA':6,'ELA':4,'EESL':6,'ESL':4,'MAT':6,'CST':6,'ST':4,'STE':4,'HQC':4,'CCQ':2,'EPS':2,'ENT':2,'INF':2,'PSY':2}, sec5:{'ART':2,'MUS':2,'DRM':2,'CAT':4,'FRA':6,'ELA':6,'EESL':6,'ESL':4,'MAT':6,'CST':4,'MED':4,'PSY':4,'ENT':4,'FIN':4,'CHI':4,'PHY':4,'MON':2,'HQC':4,'CCQ':2,'EPS':2,'FIN':2} };
         const subjectList = { 'ART':"Arts Plastiques",'MUS':"Musique",'DRM':"Art Dramatique",'CAT':"Conception et Application Technologique",'FRA':"Français, Langue d'enseignement",'ELA':"English Language Arts",'EESL':"Enriched English as a Second Language",'ESL':"English as a Second Language",'SN':"Mathématique, Science Nature",'CST':"Mathématique, Culture, Société et Technique",'ST':"Science et Technologie",'STE':"Science et Technologie de l'Environnement",'HQC':"Histoire du Québec et du Canada",'CCQ':"Culture et Citoyenneté Québécoise",'EPS':"Éducation Physique et à la Santé",'CHI':"Chimie",'PHY':"Physique",'MON':"Monde Contemporain",'MED':"Média",'ENT':"Entrepreneuriat",'INF':"Informatique",'PSY':"Psychologie",'FIN':"Éducation Financière" };
         const mathCourses = ['SN', 'CST', 'MAT'];
         const frenchCourses = ['FRA'];
@@ -184,6 +176,7 @@
             renderAll();
         }
 
+        // --- MODIFICATION CLÉ ICI ---
         function handleClassementClick() {
             const button = document.getElementById('classement-btn');
             const niveau = (jdlmData.settings || {}).niveau;
@@ -197,21 +190,14 @@
             const averages = calculateAverages();
             const subjectAverages = averages.subjectAverages;
 
-            const findSubjectAvg = (courses) => {
-                let foundAvg = null;
-                // Check all etapes for a valid grade for this subject type
-                ['etape1', 'etape2', 'etape3'].forEach(etape => {
-                    if (subjectAverages[etape]) {
-                        for (const code of courses) {
-                            if (subjectAverages[etape][code] && subjectAverages[etape][code].average !== null) {
-                                foundAvg = subjectAverages[etape][code].average;
-                                return; // Exit inner loop
-                            }
-                        }
+            const findSubjectAvg = (courses, etape) => {
+                if (!subjectAverages[etape]) return null;
+                for (const code of courses) {
+                    if (subjectAverages[etape][code] && subjectAverages[etape][code].average !== null) {
+                        return subjectAverages[etape][code].average;
                     }
-                    if (foundAvg !== null) return; // Exit outer loop
-                });
-                return foundAvg;
+                }
+                return null;
             };
 
             const formData = new FormData();
@@ -221,22 +207,19 @@
             formData.append('avg_etape1', averages.termAverages.etape1);
             formData.append('avg_etape2', averages.termAverages.etape2);
             formData.append('avg_etape3', averages.termAverages.etape3);
-            formData.append('avg_francais', findSubjectAvg(frenchCourses));
-            formData.append('avg_math', findSubjectAvg(mathCourses));
-            formData.append('avg_anglais', findSubjectAvg(englishCourses));
+            formData.append('avg_francais', findSubjectAvg(frenchCourses, 'etape1') || findSubjectAvg(frenchCourses, 'etape2') || findSubjectAvg(frenchCourses, 'etape3'));
+            formData.append('avg_math', findSubjectAvg(mathCourses, 'etape1') || findSubjectAvg(mathCourses, 'etape2') || findSubjectAvg(mathCourses, 'etape3'));
+            formData.append('avg_anglais', findSubjectAvg(englishCourses, 'etape1') || findSubjectAvg(englishCourses, 'etape2') || findSubjectAvg(englishCourses, 'etape3'));
             
+            // This 'fire and forget' method is more reliable with Google Scripts to avoid CORS errors
             fetch(SCRIPT_URL, { method: 'POST', body: formData })
-            .then(response => response.json())
-            .then(data => {
-                if (data.result === 'success') {
-                    window.location.href = 'classement.html';
-                } else {
-                    throw new Error(data.error);
-                }
+            .then(() => {
+                // We don't wait for a response, just assume it worked and redirect.
+                window.location.href = 'classement.html';
             })
             .catch(error => {
                 console.error('Error sending data:', error);
-                alert("Une erreur est survenue lors de l'envoi des données. Veuillez réessayer.");
+                alert("Une erreur réseau est survenue. Veuillez vérifier votre connexion et réessayer.");
                 button.textContent = "Classement";
                 button.disabled = false;
             });
