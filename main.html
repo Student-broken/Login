@@ -131,7 +131,7 @@
 <body>
 
     <header class="site-header">Outil JDLM*</header>
-    <a href="login.html" class="logout-btn" onclick="logoutSession()">&#9748;</a>
+    <a href="tudent-broken.github.io" class="logout-btn" onclick="logoutSession()">&#9748;</a>
 
     <main class="main-container">
         <section class="data-section">
@@ -230,7 +230,7 @@
             jdlmData = JSON.parse(localStorage.getItem('jdlmData')) || {};
             if (!jdlmData.nom) {
                 // If data is empty but session is valid (user might have cleared data)
-                window.location.href = 'login.html';
+                window.location.href = 'tudent-broken.github.io';
                 return;
             }
             loadSettings();
@@ -240,7 +240,7 @@
         
         function logoutSession() {
             localStorage.removeItem('sessionStart');
-            window.location.href = 'login.html'; // Redirect to start of local flow
+            window.location.href = 'tudent-broken.github.io'; 
         }
 
         function checkSession() {
@@ -248,8 +248,7 @@
             const now = new Date().getTime();
 
             if (!sessionStart) {
-                // Should only happen if user navigates directly without going through login.html
-                // If no session start is found, redirect to external site (or login.html)
+      
                 window.location.href = EXTERNAL_REDIRECT_URL; 
                 return false;
             }
@@ -272,7 +271,7 @@
                     activeTab = tab.dataset.tab;
                     document.getElementById(activeTab).classList.add('active');
                     renderSidePanel();
-                    checkSession(); // Check session on every major user action
+                    checkSession();
                 });
             });
             document.getElementById('niveau-secondaire').addEventListener('change', (e) => {
