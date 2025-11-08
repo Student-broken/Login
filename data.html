@@ -81,116 +81,12 @@
     <footer>*jauge de la moyenne</footer>
                 
     <script>
+        // ==================================================================
         // CONFIGURATION
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw38nksrTAeWZWKrTGos-C3S5hCJdyE4_k24dmZDoKC5Pvud9nqkJHChghw8KJlW-5T/exec';
-        // --- Modal Logic ---
-        const openModalBtn = document.getElementById('open-modal-btn');
-        const closeModalBtn = document.getElementById('close-modal-btn');
-        const tutorialModal = document.getElementById('tutorial-modal');
-        const openModal = () => tutorialModal.classList.add('active');
-        const closeModal = () => tutorialModal.classList.remove('active');
-        openModalBtn.addEventListener('click', openModal);
-        closeModalBtn.addEventListener('click', closeModal);
-        tutorialModal.addEventListener('click', (e) => { if (e.target === tutorialModal) closeModal(); });
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+        // ==================================================================
+        const WEB_APP_URL = 'YOUR_WEB_APP_URL'; // <-- IMPORTANT: PASTEZ VOTRE URL ICI
 
-        // --- Form Logic ---
-        const submitBtn = document.getElementById('submit-btn');
-        const dataForm = document.getElementById('data-form');
-        const rawTextArea = document.getElementById('raw-text');
-        const checkTextarea = () => { submitBtn.disabled = rawTextArea.value.trim().length === 0; };
-        checkTextarea();
-        rawTextArea.addEventListener('input', checkTextarea);
-
-        dataForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            submitBtn.textContent = 'Traitement...';
-            submitBtn.disabled = true;
-
-            const rawText = rawTextArea.value;
-            const parsedResult = parsePortalData(rawText);
-
-            if (!parsedResult.nom || !parsedResult.etapeData) {
-                alert("Erreur: Le nom ou le numéro d'étape n'a pas pu être trouvé. Vérifiez le texte collé.");
-                submitBtn.textContent = 'Enregistrer et continuer';
-                checkTextarea();
-                return;
-            }
-
-            const existingData = JSON.parse(localStorage.getItem('jdlmData')) || {};
-            const updatedData = { ...existingData, nom: parsedResult.nom, [parsedResult.etapeKey]: parsedResult.etapeData };
-            localStorage.setItem('jdlmData', JSON.stringify(updatedData));
-
-            const settings = updatedData.settings || {};
-            if (!settings.niveau) {
-                alert("Veuillez d'abord sélectionner votre niveau (Sec 4/5) sur la page principale avant de synchroniser.");
-                window.location.href = 'main.html';
-                return;
-            }
-
-            await syncDataToSheet(updatedData);
-            window.location.href = 'main.html';
-        });
-
-        // --- Sync and Code Generation ---
-        function getOrGenerateUserCode() {
-            let userCode = localStorage.getItem('jdlmUserCode');
-            if (!userCode) {
-                userCode = 'user-' + Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
-                localStorage.setItem('jdlmUserCode', userCode);
-            }
-            return userCode;
-        }
-
-        async function syncDataToSheet(data) {
-            if (!WEB_APP_URL || WEB_APP_URL === 'YOUR_WEB_APP_URL') {
-                console.error("L'URL de l'application web n'est pas configurée.");
-                return; // Fail silently so user can still use the app offline
-            }
-
-            // We must recalculate averages here before sending
-            const averages = calculateAverages(data);
-            const findSubjectAverage = (etape, subjectCodes) => {
-                for(const code of subjectCodes) {
-                    const subject = averages.subjectAverages[etape]?.[code];
-                    if(subject?.average) return subject.average;
-                }
-                return null;
-            };
-
-            const payload = {
-                code: getOrGenerateUserCode(),
-                niveau: data.settings.niveau,
-                moyenneGenerale: averages.globalAverage,
-                moyenneEtape1: averages.termAverages.etape1,
-                moyenneEtape2: averages.termAverages.etape2,
-                moyenneEtape3: averages.termAverages.etape3,
-                francaisEtape1: findSubjectAverage('etape1', ['FRA']),
-                mathEtape1: findSubjectAverage('etape1', ['SN', 'CST']),
-                anglaisEtape1: findSubjectAverage('etape1', ['ELA', 'ESL', 'EESL']),
-                francaisEtape2: findSubjectAverage('etape2', ['FRA']),
-                mathEtape2: findSubjectAverage('etape2', ['SN', 'CST']),
-                anglaisEtape2: findSubjectAverage('etape2', ['ELA', 'ESL', 'EESL']),
-                francaisEtape3: findSubjectAverage('etape3', ['FRA']),
-                mathEtape3: findSubjectAverage('etape3', ['SN', 'CST']),
-                anglaisEtape3: findSubjectAverage('etape3', ['ELA', 'ESL', 'EESL']),
-            };
-
-            try {
-                await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    cache: 'no-cache',
-                    headers: { 'Content-Type': 'application/json' },
-                    redirect: 'follow',
-                    body: JSON.stringify(payload)
-                });
-            } catch (error) {
-                console.error("Erreur lors de la synchronisation : ", error);
-            }
-        }
-        
-        // --- Calculation and Parsing Logic (Needed for sync) ---
+        // Copied from main.html for calculations
         const gradeMap = {
             'A+': {min: 100, max: 100}, 'A': {min: 95, max: 95}, 'A-': {min: 90, max: 90},
             'B+': {min: 85, max: 85}, 'B': {min: 80, max: 80}, 'B-': {min: 75, max: 75},
@@ -201,61 +97,178 @@
             sec4: { 'ART': 2, 'MUS': 2, 'DRM': 2, 'FRA': 6, 'ELA': 4, 'EESL': 6, 'ESL': 4, 'MAT': 6, 'CST': 6, 'ST': 4, 'STE': 4, 'HQC': 4, 'CCQ': 2, 'EPS': 2, 'ENT': 2, 'INF': 2, 'PSY': 2, },
             sec5: { 'ART': 2, 'MUS': 2, 'DRM': 2, 'CAT': 4, 'FRA': 6, 'ELA': 6, 'EESL': 6, 'ESL': 4, 'MAT': 6, 'CST': 4, 'MED': 4, 'PSY': 4, 'ENT': 4, 'FIN': 4, 'CHI': 4, 'PHY': 4, 'MON': 2, 'HQC': 4, 'CCQ': 2, 'EPS': 2, 'FIN': 2 }
         };
+        // ==================================================================
 
+        // --- Modal & Form UI Logic ---
+        const openModalBtn = document.getElementById('open-modal-btn');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const tutorialModal = document.getElementById('tutorial-modal');
+        const openModal = () => tutorialModal.classList.add('active');
+        const closeModal = () => tutorialModal.classList.remove('active');
+        openModalBtn.addEventListener('click', openModal);
+        closeModalBtn.addEventListener('click', closeModal);
+        tutorialModal.addEventListener('click', (e) => { if (e.target === tutorialModal) closeModal(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+        const submitBtn = document.getElementById('submit-btn');
+        const dataForm = document.getElementById('data-form');
+        const rawTextArea = document.getElementById('raw-text');
+        const checkTextarea = () => { submitBtn.disabled = rawTextArea.value.trim().length === 0; };
+        checkTextarea();
+        rawTextArea.addEventListener('input', checkTextarea);
+
+        // --- Main Form Submission Handler ---
+        dataForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const rawText = rawTextArea.value;
+            if (!rawText.trim()) return alert("Veuillez coller des données avant d'enregistrer.");
+            
+            submitBtn.textContent = 'Analyse en cours...';
+            submitBtn.disabled = true;
+
+            const parsedResult = parsePortalData(rawText);
+            if (!parsedResult.nom || !parsedResult.etapeData) {
+                alert("Erreur: Le nom ou le numéro d'étape n'a pas pu être trouvé. Vérifiez le texte.");
+                submitBtn.textContent = 'Enregistrer et continuer';
+                checkTextarea();
+                return;
+            }
+
+            const existingData = JSON.parse(localStorage.getItem('jdlmData')) || {};
+            const updatedData = { ...existingData, nom: parsedResult.nom, [parsedResult.etapeKey]: parsedResult.etapeData };
+            localStorage.setItem('jdlmData', JSON.stringify(updatedData));
+            
+            // --- Conditional Auto-Sync to Google Sheet ---
+            const settings = updatedData.settings || {};
+            if (settings.niveau && WEB_APP_URL !== 'YOUR_WEB_APP_URL') {
+                submitBtn.textContent = 'Synchronisation...';
+                await syncDataToSheet(updatedData);
+            }
+
+            window.location.href = 'main.html';
+        });
+
+        // --- Unique Code Generation ---
+        function getOrGenerateUserCode() {
+            let userCode = localStorage.getItem('jdlmUserCode');
+            if (!userCode) {
+                userCode = 'user-' + Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+                localStorage.setItem('jdlmUserCode', userCode);
+            }
+            return userCode;
+        }
+
+        // --- Data Sync Function ---
+        async function syncDataToSheet(data) {
+            const averages = calculateAverages(data);
+            const settings = data.settings || {};
+            const findSubjectAverage = (etape, subjectCode) => {
+                const subject = averages.subjectAverages[etape]?.[subjectCode];
+                return subject?.average ?? null;
+            };
+
+            const payload = {
+                Code: getOrGenerateUserCode(),
+                Niveau: settings.niveau || null,
+                'Moyenne Générale': averages.globalAverage,
+                'Moyenne Étape 1': averages.termAverages.etape1 || null,
+                'Moyenne Étape 2': averages.termAverages.etape2 || null,
+                'Français (Étape 1)': findSubjectAverage('etape1', 'FRA'),
+                'Math (Étape 1)': findSubjectAverage('etape1', 'MAT') || findSubjectAverage('etape1', 'CST'),
+                'Anglais (Étape 1)': findSubjectAverage('etape1', 'ELA') || findSubjectAverage('etape1', 'ESL') || findSubjectAverage('etape1', 'EESL'),
+                'Français (Étape 2)': findSubjectAverage('etape2', 'FRA'),
+                'Math (Étape 2)': findSubjectAverage('etape2', 'MAT') || findSubjectAverage('etape2', 'CST'),
+                'Anglais (Étape 2)': findSubjectAverage('etape2', 'ELA') || findSubjectAverage('etape2', 'ESL') || findSubjectAverage('etape2', 'EESL'),
+            };
+            
+            const formData = new FormData();
+            for (const key in payload) {
+                // Ensure null values are sent as empty strings, as FormData requires string values
+                formData.append(key, payload[key] !== null ? payload[key] : '');
+            }
+
+            try {
+                const response = await fetch(WEB_APP_URL, { method: 'POST', body: formData });
+                const result = await response.json();
+                if (result.result !== 'success') {
+                    console.error('Apps Script Error:', result.error);
+                }
+            } catch (error) {
+                console.error("Erreur de synchronisation:", error);
+            }
+        }
+        
+        // --- Calculation Helpers (ported from main.html) ---
         function getNumericGrade(result) {
             if (!result) return null;
             const trimmedResult = result.trim();
-            if (gradeMap[trimmedResult]) return (gradeMap[trimmedResult].min + gradeMap[trimmedResult].max) / 2;
+            if (gradeMap[trimmedResult]) { return (gradeMap[trimmedResult].min + gradeMap[trimmedResult].max) / 2; }
             const scoreMatch = trimmedResult.match(/(\d+[,.]?\d*)\s*\/\s*(\d+[,.]?\d*)/);
             if (scoreMatch) {
                 const score = parseFloat(scoreMatch[1].replace(',', '.'));
                 const maxScore = parseFloat(scoreMatch[2].replace(',', '.'));
-                if (!isNaN(score) && !isNaN(maxScore) && maxScore > 0) return (score / maxScore) * 100;
+                if (!isNaN(score) && !isNaN(maxScore) && maxScore > 0) { return (score / maxScore) * 100; }
             }
             return null;
         }
 
-        function calculateSubjectAverage(subject) { /* ... same as main.html ... */ }
-        function calculateAverages(data) { /* ... same as main.html ... */ }
-        // The full functions are omitted here for brevity but are needed for the script to run.
-        // Copy them from the full main.html file's script if running this standalone.
         function calculateSubjectAverage(subject) {
-            let totalWeightedGrade = 0; let totalCompetencyWeight = 0;
+            let totalWeightedGrade = 0, totalCompetencyWeight = 0;
             subject.competencies.forEach(comp => {
-                const compWeightMatch = comp.name.match(/\((\d+)%\)/); if (!compWeightMatch) return;
-                const compWeight = parseFloat(compWeightMatch[1]); let totalAssignmentGrade = 0; let totalAssignmentWeight = 0;
+                const compWeightMatch = comp.name.match(/\((\d+)%\)/);
+                if (!compWeightMatch) return;
+                const compWeight = parseFloat(compWeightMatch[1]);
+                let totalAssignmentGrade = 0, totalAssignmentWeight = 0;
                 comp.assignments.forEach(assign => {
-                    const grade = getNumericGrade(assign.result); const weight = parseFloat(assign.pond);
-                    if (grade !== null && !isNaN(weight)) { totalAssignmentGrade += grade * weight; totalAssignmentWeight += weight; }
+                    const grade = getNumericGrade(assign.result);
+                    const weight = parseFloat(assign.pond);
+                    if (grade !== null && !isNaN(weight)) {
+                        totalAssignmentGrade += grade * weight;
+                        totalAssignmentWeight += weight;
+                    }
                 });
-                if (totalAssignmentWeight > 0) { const competencyAverage = totalAssignmentGrade / totalAssignmentWeight; totalWeightedGrade += competencyAverage * compWeight; totalCompetencyWeight += compWeight; }
+                if (totalAssignmentWeight > 0) {
+                    const competencyAverage = totalAssignmentGrade / totalAssignmentWeight;
+                    totalWeightedGrade += competencyAverage * compWeight;
+                    totalCompetencyWeight += compWeight;
+                }
             });
             return totalCompetencyWeight > 0 ? totalWeightedGrade / totalCompetencyWeight : null;
         }
-        function calculateAverages(data) {
-            const settings = data.settings || {}; const niveau = settings.niveau; const mode = settings.unitesMode || 'defaut';
-            let units = {};
-            if (mode === 'sans') units = new Proxy({}, { get: () => 1 });
-            else if (mode === 'perso') units = settings.customUnites || {};
-            else if (mode === 'defaut' && niveau && defaultUnits[niveau]) units = defaultUnits[niveau];
-            let allTermAverages = {}; let allSubjectAverages = {}; const defaultSubjectUnit = 2;
+
+        function calculateAverages(dataToCalc) {
+            const settings = dataToCalc.settings || {};
+            const niveau = settings.niveau;
+            const units = (niveau && defaultUnits[niveau]) ? defaultUnits[niveau] : {};
+            let allTermAverages = {}, allSubjectAverages = {};
+            const defaultSubjectUnit = 2;
             ['etape1', 'etape2', 'etape3'].forEach(etape => {
-                if (!data[etape]) return; let termWeightedSum = 0; let termUnitSum = 0; allSubjectAverages[etape] = {};
-                data[etape].forEach(subject => {
-                    const average = calculateSubjectAverage(subject); const codePrefix = subject.code.substring(0,3);
+                if (!dataToCalc[etape]) return;
+                let termWeightedSum = 0, termUnitSum = 0;
+                allSubjectAverages[etape] = {};
+                dataToCalc[etape].forEach(subject => {
+                    const average = calculateSubjectAverage(subject);
+                    const codePrefix = subject.code.substring(0,3);
                     allSubjectAverages[etape][codePrefix] = { average: average };
-                    let unit;
-                    if (mode === 'defaut' && !niveau) unit = null;
-                    else if (mode === 'sans' || mode === 'perso') unit = units[codePrefix] ?? 1;
-                    else if (mode === 'defaut') unit = units[codePrefix] ?? defaultSubjectUnit;
-                    if (average !== null && unit !== null && niveau) { termWeightedSum += average * unit; termUnitSum += unit; }
+                    const unit = units[codePrefix] ?? defaultSubjectUnit;
+                    if (average !== null && unit !== null && niveau) {
+                        termWeightedSum += average * unit;
+                        termUnitSum += unit;
+                    }
                 });
                 allTermAverages[etape] = termUnitSum > 0 ? termWeightedSum / termUnitSum : null;
             });
-            let globalWeightedSum = 0; let globalTermCount = 0;
-            Object.values(allTermAverages).forEach(avg => { if (avg !== null) { globalWeightedSum += avg; globalTermCount++; } });
-            return { subjectAverages: allSubjectAverages, termAverages: allTermAverages, globalAverage: globalTermCount > 0 ? globalWeightedSum / globalTermCount : null };
+            let globalWeightedSum = 0, globalTermCount = 0;
+            Object.values(allTermAverages).forEach(avg => {
+                if (avg !== null) { globalWeightedSum += avg; globalTermCount++; }
+            });
+            return {
+                subjectAverages: allSubjectAverages,
+                termAverages: allTermAverages,
+                globalAverage: globalTermCount > 0 ? globalWeightedSum / globalTermCount : null
+            };
         }
+
+        // --- Data Parser (no changes) ---
         function parsePortalData(text) {
             const nameMatch = text.match(/Photo\s*\n(.+)/);
             const semesterMatch = text.match(/Classe\s*\n\s*(\d)/);
@@ -263,37 +276,56 @@
             const etapeNumber = semesterMatch ? semesterMatch[1].trim() : null;
             if (!nom || !etapeNumber) return {};
             const etapeKey = `etape${etapeNumber}`;
-            const POND_REGEX = /^\d{1,3}$/; const DATE_REGEX = /^\d{4}-\d{2}-\d{2}/; const RESULT_REGEX = /^(\d{1,3},\d\s\/\s\d{1,3}\s\(.+\)|[A-DF][+-]?)$/;
+            const POND_REGEX = /^\d{1,3}$/;
+            const DATE_REGEX = /^\d{4}-\d{2}-\d{2}/;
+            const RESULT_REGEX = /^(\d{1,3},\d\s\/\s\d{1,3}\s\(.+\)|[A-DF][+-]?)$/;
             const createNewAssignment = () => ({ textBuffer: [], category: '', work: '', pond: '', assignedDate: '', dueDate: '', result: '' });
             const parseAssignments = (lines) => {
-                let assignments = []; if (lines.length === 0) return assignments; let currentAssignment = createNewAssignment();
+                let assignments = [];
+                if (lines.length === 0) return assignments;
+                let currentAssignment = createNewAssignment();
                 const finalizeAssignment = () => {
                     if (currentAssignment.textBuffer.length === 0 && !currentAssignment.pond) return;
                     const buffer = currentAssignment.textBuffer;
-                    if (buffer.length === 1) currentAssignment.work = buffer[0];
-                    else if (buffer.length > 1) { currentAssignment.category = buffer[0]; currentAssignment.work = buffer.slice(1).join('<br>'); }
+                    if (buffer.length === 1) { currentAssignment.work = buffer[0]; }
+                    else if (buffer.length > 1) { currentAssignment.category = buffer[0]; currentAssignment.work = buffer.slice(1).join('<br>');}
                     assignments.push(currentAssignment);
                 };
                 for (const line of lines) {
-                    const trimmedLine = line.trim(); if (!trimmedLine) continue;
-                    if (RESULT_REGEX.test(trimmedLine)) { currentAssignment.result = trimmedLine; finalizeAssignment(); currentAssignment = createNewAssignment(); }
-                    else if (POND_REGEX.test(trimmedLine)) currentAssignment.pond = trimmedLine;
-                    else if (DATE_REGEX.test(trimmedLine)) { if (!currentAssignment.assignedDate) currentAssignment.assignedDate = trimmedLine.split('à')[0].trim(); currentAssignment.dueDate = trimmedLine; }
-                    else { if (currentAssignment.pond || currentAssignment.assignedDate) { finalizeAssignment(); currentAssignment = createNewAssignment(); } currentAssignment.textBuffer.push(trimmedLine); }
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine) continue;
+                    if (RESULT_REGEX.test(trimmedLine)) {
+                        currentAssignment.result = trimmedLine;
+                        finalizeAssignment();
+                        currentAssignment = createNewAssignment();
+                    } else if (POND_REGEX.test(trimmedLine)) {
+                        currentAssignment.pond = trimmedLine;
+                    } else if (DATE_REGEX.test(trimmedLine)) {
+                        if (!currentAssignment.assignedDate) { currentAssignment.assignedDate = trimmedLine.split('à')[0].trim(); }
+                        currentAssignment.dueDate = trimmedLine;
+                    } else {
+                        if (currentAssignment.pond || currentAssignment.assignedDate) { finalizeAssignment(); currentAssignment = createNewAssignment(); }
+                        currentAssignment.textBuffer.push(trimmedLine);
+                    }
                 }
-                finalizeAssignment(); return assignments;
+                finalizeAssignment();
+                return assignments;
             };
-            const subjects = []; const subjectRegex = /([A-Z]{3}\d{3}[A-Z]?) - (.+)/g; const subjectsText = text.split(subjectRegex).slice(1);
+            const subjects = [];
+            const subjectRegex = /([A-Z]{3}\d{3}[A-Z]?) - (.+)/g;
+            const subjectsText = text.split(subjectRegex).slice(1);
             for (let i = 0; i < subjectsText.length; i += 3) {
-                const subjectData = { code: subjectsText[i], name: subjectsText[i + 1], competencies: [] }; let subjectContent = subjectsText[i + 2] || '';
+                const subjectData = { code: subjectsText[i], name: subjectsText[i + 1], competencies: [] };
+                let subjectContent = subjectsText[i + 2] || '';
                 const competencyBlocks = subjectContent.split('Compétence - ').slice(1);
                 for (const block of competencyBlocks) {
-                    const blockLines = block.trim().split('\n'); const compName = blockLines.shift();
+                    const blockLines = block.trim().split('\n');
+                    const compName = blockLines.shift();
                     const cleanLines = blockLines.filter(line => line.trim() && !line.includes('Catégorie\tTravail\tPond.'));
                     const competencyData = { name: `Compétence - ${compName.trim()}`, assignments: parseAssignments(cleanLines) };
-                    if (competencyData.assignments.length > 0) subjectData.competencies.push(competencyData);
+                    if (competencyData.assignments.length > 0) { subjectData.competencies.push(competencyData); }
                 }
-                if (subjectData.competencies.length > 0) subjects.push(subjectData);
+                if (subjectData.competencies.length > 0) { subjects.push(subjectData); }
             }
             return { nom, etapeKey, etapeData: subjects };
         }
