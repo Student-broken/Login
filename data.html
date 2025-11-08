@@ -5,122 +5,165 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ajouter des Données - Outil JDLM</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <!-- Google Font Playfair Display pour le titre -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #3498db;
-            --secondary-color: #2c3e50;
-            --background-color: #f4f7f6;
+            --primary-color: #2980b9; /* Bleu plus riche */
+            --secondary-color: #2c3e50; /* Gris foncé pour le texte principal */
+            --background-color: #f7f9fb; /* Arrière-plan très léger */
             --widget-background: #ffffff;
-            --text-color: #333;
+            --text-color: #34495e; /* Un peu plus doux que le noir pur */
             --light-grey: #bdc3c7;
-            --footer-grey: #7f8c8d;
+            --footer-grey: #95a5a6;
             --danger-color: #e74c3c;
+            --shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
         }
         body {
             margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, 'Playfair Display';
             background-color: var(--background-color);
             color: var(--text-color);
             display: flex;
             flex-direction: column;
             min-height: 100vh;
         }
+
+        /* STYLES DEMANDÉS POUR LE TITRE */
         .site-header {
             text-align: center;
             padding: 20px 0;
             color: var(--secondary-color);
-            font-size: 1.5em;
-            font-weight: bold;
+            font-size: 2.2em; /* Augmenté */
+            font-weight: 700;
+            font-family: 'Playfair Display', serif; /* Nouvelle police */
+            letter-spacing: 0.05em;
         }
+
         .content {
             flex-grow: 1;
             display: flex;
             justify-content: center;
-            align-items: center;
-            padding: 20px;
+            align-items: flex-start; /* Alignement en haut pour une meilleure apparence sur les grands écrans */
+            padding: 40px 20px;
         }
         .back-arrow {
             position: absolute;
-            top: 25px;
+            top: 30px;
             left: 25px;
-            font-size: 2em;
+            font-size: 2.2em;
             color: var(--secondary-color);
             text-decoration: none;
-            transition: transform 0.2s;
+            transition: color 0.2s, transform 0.2s;
+            line-height: 1;
         }
         .back-arrow:hover {
-            transform: scale(1.1);
+            color: var(--primary-color);
+            transform: scale(1.05);
         }
         .data-widget {
             background-color: var(--widget-background);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
             width: 100%;
-            max-width: 600px;
+            max-width: 650px; /* Légèrement plus large pour l'espace */
+            margin-top: 20px;
         }
         textarea {
             width: 100%;
-            height: 300px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
+            height: 350px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
             font-family: monospace;
-            font-size: 13px;
-            margin-bottom: 20px;
+            font-size: 14px;
+            margin-bottom: 30px;
             box-sizing: border-box;
+            resize: vertical;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .terms {
-            margin-bottom: 20px;
-            font-size: 0.9em;
+        textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.2);
+            outline: none;
         }
-        .terms a {
+        
+        /* Nouveau texte d'acceptation */
+        .terms-acceptance {
+            font-size: 0.85em;
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--text-color);
+        }
+        .terms-acceptance a {
             color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
         }
+        .terms-acceptance a:hover {
+            text-decoration: underline;
+        }
+
         .btn {
             display: block;
             width: 100%;
-            padding: 15px;
+            padding: 16px;
             border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            font-weight: bold;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
             cursor: pointer;
             text-decoration: none;
             color: white;
             background-color: var(--primary-color);
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .btn:not(:disabled):hover {
+            background-color: #3498db;
+            transform: translateY(-1px);
         }
         .btn:disabled {
             background-color: var(--light-grey);
             cursor: not-allowed;
+            opacity: 0.8;
         }
-        .tutorial-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            background-color: var(--danger-color);
-            color: white;
-            border: none;
+
+        /* Nouveau bouton tutoriel (icône) */
+        .info-btn {
+            position: absolute;
+            top: 30px;
+            right: 25px;
+            width: 45px;
+            height: 45px;
+            background: none;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
             border-radius: 50%;
-            font-size: 0.8em;
-            font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            transition: transform 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+            padding: 0;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-decoration: none;
         }
-        .tutorial-btn:hover {
-            transform: scale(1.05);
+        .info-btn:hover {
+            background-color: var(--primary-color);
+            color: var(--widget-background);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+
+        /* Styles de la modale conservés, mais épurés */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
+            background-color: rgba(0, 0, 0, 0.7);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -137,68 +180,87 @@
             background-color: white;
             padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             position: relative;
             max-width: 90%;
-            width: 500px;
-            transform: scale(0.9);
-            transition: transform 0.3s;
+            width: 450px;
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: transform 0.3s, opacity 0.3s;
         }
         .modal-overlay.active .modal-content {
-            transform: scale(1);
+            transform: translateY(0);
+            opacity: 1;
         }
         .modal-close {
             position: absolute;
             top: 10px;
             right: 15px;
-            font-size: 1.8em;
+            font-size: 2em;
             cursor: pointer;
             color: var(--light-grey);
+            line-height: 1;
+            transition: color 0.2s;
         }
-        .modal-content img {
-            width: 100%;
+        .modal-close:hover {
+            color: var(--danger-color);
+        }
+        .modal-content h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+        .modal-content p {
+            line-height: 1.5;
             margin-bottom: 10px;
-            background-color: #eee;
+            border-left: 3px solid var(--primary-color);
+            padding-left: 10px;
         }
+
         footer {
             text-align: center;
             padding: 15px;
             font-size: 0.8em;
             color: var(--footer-grey);
             font-style: italic;
+            border-top: 1px solid #eee;
+            margin-top: auto; /* Pousse le footer vers le bas */
         }
     </style>
 </head>
 <body>
 
     <header class="site-header">Outil JDLM*</header>
-    <a href="main.html" class="back-arrow">←</a>
+    <a href="main.html" class="back-arrow" title="Retour">←</a>
+    
+    <!-- Nouveau bouton tutoriel (icône) -->
+    <button class="info-btn" id="open-modal-btn" title="Ouvrir le tutoriel">?</button>
 
     <main class="content">
         <div class="data-widget">
             <form id="data-form">
-                <textarea id="raw-text" placeholder="Collez les données du portail ici..."></textarea>
-                <div class="terms">
-                    <label>
-                        <input type="checkbox" id="terms-checkbox">
-                        J’accepte les <a href="conditions.html" target="_blank">Conditions d’utilisation</a> et la <a href="confidentialite.html" target="_blank">Politique de confidentialité</a>
-                    </label>
-                </div>
+                <textarea id="raw-text" placeholder="Collez les données du portail ici... (CTRL+A, CTRL+C, CTRL+V)"></textarea>
+                
+                <!-- Nouveau texte d'acceptation implicite -->
+                <p class="terms-acceptance">
+                    En cliquant sur "Enregistrer et continuer", vous acceptez les <a href="conditions.html" target="_blank">Conditions d’utilisation</a> et la <a href="confidentialite.html" target="_blank">Politique de confidentialité</a>.
+                </p>
+
                 <button type="submit" id="submit-btn" class="btn" disabled>Enregistrer et continuer</button>
             </form>
         </div>
     </main>
     
-    <button class="tutorial-btn" id="open-modal-btn">Tutoriel</button>
+    <!-- L'ancien bouton tutorial-btn a été supprimé -->
 
     <div class="modal-overlay" id="tutorial-modal">
         <div class="modal-content">
             <span class="modal-close" id="close-modal-btn">&times;</span>
             <h3>Comment utiliser l'outil</h3>
             <p>1. Allez dans la section "Travaux" du portail.</p>
-            <p>2. Faites les touches CTRL + A et ensuite CTRL + c</p>
-            <p>3. Collez le texte dans la zone ci-dessus avec CTRL + V</p>
-            <p>4. Enregistrez. Cochez la case si pas déja fait.</p>
+            <p>2. Faites les touches CTRL + A pour tout sélectionner.</p>
+            <p>3. Faites CTRL + C pour copier la sélection.</p>
+            <p>4. Collez le texte dans la zone ci-dessus avec CTRL + V.</p>
+            <p>5. Cliquez sur Enregistrer et continuer.</p>
         </div>
     </div>
 
@@ -208,18 +270,32 @@
         const openModalBtn = document.getElementById('open-modal-btn');
         const closeModalBtn = document.getElementById('close-modal-btn');
         const tutorialModal = document.getElementById('tutorial-modal');
+        
         const openModal = () => tutorialModal.classList.add('active');
         const closeModal = () => tutorialModal.classList.remove('active');
+        
         openModalBtn.addEventListener('click', openModal);
         closeModalBtn.addEventListener('click', closeModal);
         tutorialModal.addEventListener('click', (e) => { if (e.target === tutorialModal) closeModal(); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
-        const termsCheckbox = document.getElementById('terms-checkbox');
         const submitBtn = document.getElementById('submit-btn');
         const dataForm = document.getElementById('data-form');
         const rawTextArea = document.getElementById('raw-text');
-        termsCheckbox.addEventListener('change', () => { submitBtn.disabled = !termsCheckbox.checked; });
+
+        // NOUVELLE LOGIQUE : Le bouton est désactivé si la zone de texte est vide.
+        const checkTextarea = () => {
+            submitBtn.disabled = rawTextArea.value.trim().length === 0;
+        };
+
+        // Initialiser l'état du bouton
+        checkTextarea();
+
+        // Écouter l'entrée pour activer/désactiver le bouton
+        rawTextArea.addEventListener('input', checkTextarea);
+
+        // La logique d'acceptation des termes est maintenant implicite, 
+        // donc la vérification du checkbox a été retirée.
 
         dataForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -228,6 +304,8 @@
                 alert("Veuillez coller des données avant d'enregistrer.");
                 return;
             }
+            
+            // Le reste de la logique de traitement des données (parsePortalData) est conservé tel quel.
             const parsedResult = parsePortalData(rawText);
             if (!parsedResult.nom || !parsedResult.etapeData) {
                 alert("Erreur lors de l'analyse des données. Le nom ou le numéro d'étape n'a pas pu être trouvé. Vérifiez le texte collé.");
@@ -239,6 +317,7 @@
             window.location.href = 'main.html';
         });
 
+        // Fonction de parsing conservée inchangée
         function parsePortalData(text) {
             const nameMatch = text.match(/Photo\s*\n(.+)/);
             const semesterMatch = text.match(/Classe\s*\n\s*(\d)/);
