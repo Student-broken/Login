@@ -1,1 +1,65 @@
+insert this in the part right after the first body
+
+<body>
+
+    <!-- AD OVERLAY - ADD THIS -->
+    <div id="ad-overlay-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; background: white;">
+        <iframe src="ad.html" id="ad-iframe" style="width: 100%; height: 100%; border: none;"></iframe>
+    </div>
+    <!-- END AD OVERLAY -->
+  <script>
+    // Check ad settings immediately
+    (async function() {
+        try {
+            const response = await fetch('ad_settings.json');
+            const settings = await response.json();
+            
+            // Get the ad overlay element
+            const adOverlay = document.getElementById('ad-overlay-container');
+            
+            // Check if the element exists before trying to modify it
+            if (!adOverlay) {
+                console.log('Ad overlay container not found.');
+                return; // Stop if the container doesn't exist
+            }
+
+            if (settings.enabled === true) {
+                // Ad is enabled: show it (assuming default CSS is hidden)
+                adOverlay.style.display = 'block'; 
+                adOverlay.style.opacity = '1';
+                adOverlay.style.pointerEvents = 'auto'; // Re-enable interaction
+            } else if (settings.enabled === false) {
+                // Ad is explicitly disabled: Set opacity 0 and disable interaction
+                // You can also use adOverlay.remove(); here, but opacity/pointer-events is what you asked for.
+                adOverlay.style.display = 'block'; // Keep it in the DOM but hidden
+                adOverlay.style.opacity = '0'; // Hide visually
+                adOverlay.style.pointerEvents = 'none'; // CRUCIAL: Disables all interaction/clicks
+            } else {
+                // Catch-all for undefined, null, or any other value: remove it to be safe
+                adOverlay.remove();
+            }
+        } catch (error) {
+            console.log('Ad settings not found or error loading:', error);
+            // If file doesn't exist or error, remove the ad overlay
+            document.getElementById('ad-overlay-container')?.remove();
+        }
+    })();
+</script>
+
+
+insert this right at the end of script
+
+  // Listen for message from ad.html to close the overlay
+        window.addEventListener('message', function(event) {
+            if (event.data === 'closeAd') {
+                const adOverlay = document.getElementById('ad-overlay-container');
+                if (adOverlay) {
+                    adOverlay.style.transition = 'opacity 1s ease';
+                    adOverlay.style.opacity = '0';
+                    setTimeout(() => {
+                        adOverlay.remove();
+                    }, 1000);
+                }
+            }
+        });
 
