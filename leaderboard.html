@@ -29,6 +29,76 @@
             flex-direction: column;
             min-height: 100vh;
         }
+        /* --- NOUVEAU CSS POUR LE VEROUILLAGE --- */
+        .password-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(44, 62, 80, 1); /* secondary-color with opacity */
+            z-index: 10000; /* Extrêmement haut pour couvrir tous les éléments */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s ease;
+            flex-direction: column;
+        }
+
+        .overlay-content {
+            background-color: var(--widget-background);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .overlay-content h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .overlay-content input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1.1em;
+            box-sizing: border-box;
+        }
+
+        .overlay-content button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .overlay-content button:hover {
+            background-color: #1e6fa3;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 20px;
+        }
+        .hidden {
+            display: none !important;
+        }
+        /* --- FIN NOUVEAU CSS --- */
+
         .site-header-container {
             background-color: var(--widget-background);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -203,6 +273,16 @@
     </style>
 </head>
 <body>
+
+    <div class="password-overlay" id="password-lock">
+        <div class="overlay-content">
+            <h3>🔒 Accès Restreint</h3>
+            <p>Veuillez entrer le mot de passe pour accéder au classement.</p>
+            <input type="password" id="password-input" placeholder="Mot de passe" required>
+            <button id="password-submit-btn">Déverrouiller</button>
+            <div class="error-message" id="password-error"></div>
+        </div>
+    </div>
     <div class="site-header-container">
         <a href="main.html" class="back-arrow" title="Retour">←</a>
         <header class="site-header">Classement</header>
@@ -252,11 +332,16 @@
 
     <script>
         // !! IMPORTANT !! REMPLACEZ CETTE VALEUR PAR L'URL DE DÉPLOIEMENT DE VOTRE GOOGLE APPS SCRIPT
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_2_NDulMDkqlQDwPO4CLis57K8NMFmosMCW5Peah1EDR-H4U4Xx8L6ir4kQxVJGouTw/exec"; 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw75y1TIt3sP12OtUShkJK6aPu2r7xm41DLdVcv5Dn7h9uMlWJAS1vI-X9VUgBBC3RXrw/exec"; 
         
+        // ** NOUVELLES VARIABLES POUR LE VEROUILLAGE **
+        const PASSWORD_API_URL = "https://script.google.com/macros/s/AKfycbwNnr7yofbZsalVH9-V4TJRgSnaIT93Q6uNR7Gt-J7owpPdwmFMODisawKWqFL_Jbs3Pw/exec";
+        const UNLOCK_KEY = 'leaderboardUnlocked';
+        // ** FIN NOUVELLES VARIABLES **
+
         // Mappage des niveaux pour le filtre (doit correspondre aux valeurs utilisées dans la feuille)
         const LEVEL_MAP = {
-            'sec4': 'sec4', 
+            'sec4': 'sec4', 
             'sec5': 'sec5',
         };
 
@@ -265,6 +350,9 @@
         let cleanUserData = {}; // Student's cleaned ID for comparison
 
         document.addEventListener('DOMContentLoaded', async () => {
+            // [NOUVEAU] Initialiser le verrouillage AVANT de charger les données
+            setupPasswordLock();
+            
             // Récupérer les données de l'utilisateur local
             currentUserData = JSON.parse(localStorage.getItem('jdlmData')) || null;
             
@@ -274,8 +362,7 @@
                 
                 // Assumer que le niveau est stocké séparément ou déduit si nécessaire
                 // Pour l'exemple, si vous stockez le niveau dans localStorage
-                // (Note: La logique de niveau est simplifiée ici)
-                const storedNiveau = localStorage.getItem('jdlmNiveau') || 'sec4'; 
+                const storedNiveau = localStorage.getItem('jdlmNiveau') || 'sec4'; 
                 cleanUserData.niveau = LEVEL_MAP[storedNiveau] || 'Sec4';
 
                 // Initialiser le filtre sur le niveau de l'utilisateur
@@ -290,10 +377,84 @@
             document.getElementById('filter-niveau').addEventListener('change', renderLeaderboard);
             document.getElementById('filter-etape').addEventListener('change', renderLeaderboard);
             
+            // Le chargement des données attendra que le verrouillage soit traité dans setupPasswordLock
             await loadLeaderboardData();
         });
 
+        // ** FONCTION POUR LE VEROUILLAGE **
+        function setupPasswordLock() {
+            const passwordLock = document.getElementById('password-lock');
+            const passwordInput = document.getElementById('password-input');
+            const submitBtn = document.getElementById('password-submit-btn');
+            const errorDiv = document.getElementById('password-error');
+            
+            // 1. Vérifier si l'utilisateur a déjà déverrouillé pendant cette session
+            if (sessionStorage.getItem(UNLOCK_KEY) === 'true') {
+                passwordLock.classList.add('hidden');
+                return; // Ne pas installer les événements si déjà déverrouillé
+            }
+            
+            // 2. Fonction de vérification
+            const checkPassword = async () => {
+                const password = passwordInput.value;
+                if (!password) {
+                    errorDiv.textContent = 'Veuillez entrer un mot de passe.';
+                    return;
+                }
+                
+                submitBtn.textContent = 'Vérification...';
+                errorDiv.textContent = '';
+                submitBtn.disabled = true;
+                
+                try {
+                    // LIGNE CORRIGÉE : Utilise le paramètre 'password' pour correspondre à votre Apps Script
+                    const fullUrl = `${PASSWORD_API_URL}?password=${encodeURIComponent(password)}`;
+                    
+                    const response = await fetch(fullUrl);
+                    
+                    const result = await response.json(); 
+                    
+                    if (result.success === true) {
+                        // Mot de passe correct: supprimer l'overlay
+                        passwordLock.classList.add('hidden'); 
+                        sessionStorage.setItem(UNLOCK_KEY, 'true'); // Stocker l'état
+                        passwordInput.value = ''; // Nettoyer l'input
+                        
+                        // Recharger les données du classement maintenant que l'accès est autorisé
+                        await loadLeaderboardData(); 
+
+                    } else {
+                        // Mot de passe incorrect
+                        errorDiv.textContent = 'Mot de passe incorrect. Veuillez réessayer.';
+                        passwordInput.value = '';
+                    }
+                } catch (error) {
+                    console.error('Erreur API de mot de passe:', error);
+                    errorDiv.textContent = 'Erreur de connexion au serveur de vérification.';
+                } finally {
+                    submitBtn.textContent = 'Déverrouiller';
+                    submitBtn.disabled = false;
+                }
+            };
+            
+            // 3. Ajouter les écouteurs d'événements
+            submitBtn.addEventListener('click', checkPassword);
+            passwordInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Empêche l'envoi d'un formulaire si existant
+                    checkPassword();
+                }
+            });
+        }
+        // ** FIN NOUVELLE FONCTION **
+
         async function loadLeaderboardData() {
+            // [MODIFICATION] Ne charge les données que si l'overlay est masqué
+            if (sessionStorage.getItem(UNLOCK_KEY) !== 'true') {
+                 document.getElementById('leaderboard-content').innerHTML = '<div class="no-data">Classement verrouillé. Veuillez entrer le mot de passe.</div>';
+                 return;
+            }
+
             try {
                 // Utiliser l'URL du script pour charger toutes les données du classement
                 const response = await fetch(SCRIPT_URL);
@@ -303,9 +464,7 @@
                 
                 if (data.error) throw new Error(data.error);
                 
-                // Les données brutes du serveur Apps Script sont désormais la source de vérité
-                // Elles contiennent les clés en français (Nom/ID, Niveau, Etape1, etc.)
-                allLeaderboardData = data; 
+                allLeaderboardData = data; 
                 
                 renderLeaderboard();
             } catch (error) {
@@ -330,8 +489,8 @@
 
             // Ajouter la moyenne d'affichage pour le tri
             filteredData = filteredData.map(entry => {
-                return { 
-                    ...entry, 
+                return { 
+                    ...entry, 
                     displayAverage: entry[etapeFilter], // Utilise la colonne sélectionnée comme moyenne d'affichage
                     // Créer l'ID nettoyé pour la comparaison utilisateur/rang
                     cleanId: (entry['Nom/ID'] || '').toString().replace(/\s+/g, '').toLowerCase()
