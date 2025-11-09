@@ -258,7 +258,44 @@
         .unite-item input, .unite-item span { width: 70px; text-align: center; padding: 6px; border: 1px solid #ddd; border-radius: 6px; }
         .unite-item span { background-color: var(--widget-darker-color); font-weight: bold; border: none; }
         .unite-item input:focus { border-color: var(--primary-color); outline: none; }
+
+.bottom-right-actions {
+    position: fixed; /* Fixer le conteneur par rapport à la fenêtre */
+    bottom: 25px; /* Marge par rapport au bas */
+    right: 25px; /* Marge par rapport à la droite */
+    display: flex; /* Aligner les boutons horizontalement */
+    flex-direction: column; /* Aligner les boutons verticalement (pour un meilleur placement) */
+    gap: 15px; /* Espacement entre les boutons */
+    z-index: 990; /* Assurer qu'ils sont au-dessus des autres éléments */
+}
+
+/* Style de base pour les boutons flottants (peut être fusionné avec .btn) */
+.btn-action-float {
+    display: inline-block;
+    width: 200px; /* Largeur fixe pour la visibilité */
+    padding: 15px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.05em;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    color: white;
+    background-color: var(--secondary-color); /* Utiliser la couleur secondaire pour un look distinct */
+    transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.btn-action-float:hover {
+    background-color: #34495e; /* Couleur légèrement plus foncée au survol */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+}
+
+        
     </style>
+
 </head>
 <body>
     
@@ -267,6 +304,7 @@
         <header class="site-header">Outil JDLM*</header>
         <!-- Bouton Ajouter des données déplacé dans le header -->
         <a href="data.html" class="btn btn-header-action">Ajouter des données</a>
+
     </div>
     
     <main class="main-container">
@@ -683,5 +721,12 @@
         }
 
     </script>
+
+    <div class="bottom-right-actions">
+    <a href="leaderboard.html" class="btn btn-action-float">Leaderboard</a>
+    <a href="datacenter.html" class="btn btn-action-float">Data center</a>
+
+        
+</div>
 </body>
 </html>
