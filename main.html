@@ -138,11 +138,7 @@
             localStorage.setItem('jdlmLastActive', Date.now().toString()); 
             loadSettings(); 
             setupEventListeners(); 
-            renderAll(); 
-            
-            // --- NEW LOGIC ---
-            // On page load, immediately try to send data if conditions are met.
-            attemptToSendRankingData();
+            renderAll();
         });
 
         function checkLogoutTimer() { const lastActiveTime = localStorage.getItem('jdlmLastActive'); const ONE_HOUR = 3600000; if (lastActiveTime && (Date.now() - parseInt(lastActiveTime)) > ONE_HOUR) { window.location.href = 'index.html'; } setInterval(() => { const checkTime = localStorage.getItem('jdlmLastActive'); if (checkTime && (Date.now() - parseInt(checkTime)) > ONE_HOUR) { window.location.href = 'index.html'; } }, 300000); }
@@ -154,11 +150,19 @@
                 jdlmData.settings = { ...jdlmData.settings, niveau: e.target.value }; 
                 localStorage.setItem('jdlmData', JSON.stringify(jdlmData)); 
                 renderAll(); 
-                
-                // --- NEW LOGIC ---
-                // When the user changes the level, attempt to send the data.
-                attemptToSendRankingData();
             }); 
+
+            // --- NEW LOGIC: Event Listener for the "Classement" button ---
+            document.getElementById('classement-btn').addEventListener('click', function(event) {
+                // Try to send the data. The function will return true or false.
+                const canProceed = sendRankingData();
+                
+                // If the function returns false (because data is missing),
+                // prevent the link from navigating.
+                if (!canProceed) {
+                    event.preventDefault();
+                }
+            });
 
             const unitesModal = document.getElementById('unites-modal'); 
             document.getElementById('unites-btn').addEventListener('click', () => { populateUnitesModal(); unitesModal.classList.add('active'); }); 
@@ -181,7 +185,7 @@
         function renderSubjectTable(subject) { const table = document.createElement('table'); table.className = 'subject-table'; table.innerHTML = `<thead><tr><th colspan="7">${subject.code} - ${subject.name}</th></tr><tr><th>Catégorie</th><th>Travail</th><th>Pond.</th><th>Date assignée</th><th>Date due</th><th>Date complétée</th><th>Résultat</th></tr></thead><tbody></tbody>`; const tbody = table.querySelector('tbody'); subject.competencies.forEach(comp => { const compRow = document.createElement('tr'); compRow.className = 'competency-row'; compRow.innerHTML = `<td colspan="7">${comp.name}</td>`; tbody.appendChild(compRow); comp.assignments.forEach(assign => { const assignRow = document.createElement('tr'); const numGrade = getNumericGrade(assign.result); let formattedResult = '<span class="no-data">-</span>'; if (assign.result) { const isLetterGrade = !!gradeMap[assign.result.trim()]; const isSimplePercentage = assign.result.includes('%') && !assign.result.includes('/'); if (isLetterGrade && numGrade !== null) { formattedResult = `${assign.result} <i>(~<span class="grade-percentage">${numGrade.toFixed(1)}%</span>)</i>`; } else if (isSimplePercentage || assign.result.match(/(\d+[,.]?\d*)\s*\/\s*(\d+[,.]?\d*)/)) { formattedResult = assign.result.replace(/(\d+[,.]?\d*\s*\/.*|(\d+[,.]?\d*\s*%))/g, (match) => `<span class="grade-percentage">${match}</span>`); } else { formattedResult = assign.result; } } assignRow.innerHTML = `<td>${assign.category || '<span class="no-data">-</span>'}</td><td>${assign.work || '<span class="no-data">-</span>'}</td><td>${assign.pond || '<span class="no-data">-</span>'}</td><td>${assign.assignedDate || '<span class="no-data">-</span>'}</td><td>${assign.dueDate.replace('à','') || '<span class="no-data">-</span>'}</td><td>${assign.completedDate || '<span class="no-data">-</span>'}</td><td>${formattedResult}</td>`; tbody.appendChild(assignRow); }); }); return table; }
 
         // =======================================================
-        // START: AUTOMATIC AND SESSION-AWARE RANKING SCRIPT
+        // START: FINAL RANKING SCRIPT WITH TIMESTAMP
         // =======================================================
 
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxOay6sGNlL_f4MfhHkmwBTi0J3ONrCxv2dg1y5pqKjgKmAN07xttJtlrXjNqLbxdYR/exec";
@@ -209,40 +213,30 @@
         }
 
         /**
-         * This is the main controller function. It checks all conditions
-         * before allowing data to be sent.
+         * This is the primary function triggered before going to the dashboard.
+         * It validates, prepares, and sends data.
+         * @returns {boolean} - Returns true if sending is successful, false otherwise.
          */
-        function attemptToSendRankingData() {
-            const hasAlreadySentThisSession = sessionStorage.getItem('jdlmDataSent');
-            
-            // 1. Check if data has already been sent in this session
-            if (hasAlreadySentThisSession) {
-                console.log("Data has already been sent in this session. Skipping.");
-                return;
-            }
-
+        function sendRankingData() {
             const niveau = document.getElementById('niveau-secondaire').value;
             const userCode = getUserCode();
 
-            // 2. Check if the necessary data is available
-            if (!niveau || !userCode) {
-                console.log("Conditions not yet met for sending data (missing name or level).");
-                return;
+            // 1. Validate that necessary data exists.
+            if (!userCode) {
+                alert("Erreur: Le nom de l'élève est introuvable. Veuillez recharger la page ou recoller vos données.");
+                return false; // Block navigation
             }
+            if (!niveau) {
+                alert("Veuillez sélectionner votre niveau (Secondaire 4 ou 5) avant de consulter le classement.");
+                return false; // Block navigation
+            }
+            
+            console.log(`Validation successful. Preparing to send data for user '${userCode}'...`);
 
-            // 3. If all checks pass, send the data and set the session flag
-            console.log(`Conditions met. Sending data for user '${userCode}'...`);
-            sendDataToServer(userCode, niveau);
-            sessionStorage.setItem('jdlmDataSent', 'true');
-        }
-        
-        /**
-         * This function handles the actual data preparation and fetch call.
-         */
-        function sendDataToServer(userCode, niveau) {
-            // Save the selected level for the classement page to use
+            // 2. Save the selected level for the classement page to use.
             localStorage.setItem('jdlmNiveau', niveau);
 
+            // 3. Prepare data payload.
             const averages = calculateAverages();
             const mathAvg = getAggregatedSubjectAverage(averages.subjectAverages, ['MAT', 'CST', 'SN']);
             const englishAvg = getAggregatedSubjectAverage(averages.subjectAverages, ['ELA', 'ESL', 'EESL']);
@@ -259,13 +253,20 @@
             formData.append('avg_anglais', englishAvg ? englishAvg.toFixed(2) : '');
             formData.append('avg_francais', frenchAvg ? frenchAvg.toFixed(2) : '');
             
+            // 4. Add the new timestamp.
+            formData.append('last_updated', new Date().toISOString());
+            
+            // 5. Send the data.
             fetch(SCRIPT_URL, { method: 'POST', body: formData })
             .then(response => response.json())
             .then(data => {
-                if(data.result === 'success') console.log("Data successfully sent and updated for user:", data.userCode);
+                if(data.result === 'success') console.log("Data sent and updated successfully:", data.userCode);
                 else console.error("Script Error:", data.error);
             })
             .catch(error => console.error("Network Error:", error));
+
+            // 6. Allow navigation to proceed.
+            return true;
         }
     </script>
 </body>
