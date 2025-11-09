@@ -9,7 +9,7 @@
     <style>
         :root {
             --primary-color: #2980b9; --secondary-color: #2c3e50; --background-color: #f7f9fb;
-            --widget-background: #ffffff; --text-color: #34495e; --light-grey: #bdc3c7;
+            --widget-background: #ffffff; --text-color: #34495e; --light-grey: #e0e6eb;
             --danger-color: #e74c3c; --success-color: #27ae60; --shadow-widget: 0 8px 15px rgba(0, 0, 0, 0.08);
         }
         body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--background-color); color: var(--text-color); }
@@ -17,26 +17,38 @@
         .site-header { text-align: center; padding: 0; margin: 0; color: var(--secondary-color); font-size: 2.2em; font-weight: 700; font-family: 'Playfair Display', serif; }
         .back-arrow { position: absolute; top: 50%; left: 25px; transform: translateY(-50%); font-size: 2.2em; color: var(--secondary-color); text-decoration: none; transition: color 0.2s; }
         .back-arrow:hover { color: var(--primary-color); }
-        .main-container { max-width: 900px; margin: 20px auto; padding: 0 20px; }
-        .controls { background: var(--widget-background); padding: 20px; border-radius: 12px; box-shadow: var(--shadow-widget); margin-bottom: 25px; border: 1px solid #e0e6eb; }
+        .main-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+        .controls { background: var(--widget-background); padding: 20px; border-radius: 12px; box-shadow: var(--shadow-widget); margin-bottom: 25px; border: 1px solid var(--light-grey); }
         .controls label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.9em; }
-        select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background-color: white; -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%2...%3E"); background-repeat: no-repeat; background-position: right 10px top 50%; background-size: 10px auto; }
-        .dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
-        .stat-widget { background: var(--widget-background); border-radius: 12px; padding: 20px; box-shadow: var(--shadow-widget); border: 1px solid #e0e6eb; transition: transform 0.2s, box-shadow 0.2s; }
-        .stat-widget:hover { transform: translateY(-3px); box-shadow: 0 12px 20px rgba(0,0,0,0.1); }
-        .main-widget { grid-column: 1 / -1; text-align: center; }
-        .widget-title { font-size: 1em; font-weight: bold; color: var(--secondary-color); margin: 0 0 10px 0; }
-        .widget-value { font-size: 2.8em; font-weight: 700; margin-bottom: 5px; }
-        .small-widget .widget-value { font-size: 2em; }
-        .widget-rank { font-size: 1.1em; font-weight: 600; color: var(--secondary-color); opacity: 0.9; }
+        select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background-color: white; font-size: 1em; }
+        .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: auto auto auto; gap: 25px; }
+        .stat-widget { background: var(--widget-background); border-radius: 16px; padding: 25px; box-shadow: var(--shadow-widget); border: 1px solid var(--light-grey); display: flex; flex-direction: column; }
+        .main-widget { grid-column: 1 / 2; grid-row: 1 / 3; }
+        .graph-widget { grid-column: 1 / 2; grid-row: 3 / 4; }
+        .overall-avg-widget { grid-column: 2 / 3; grid-row: 1 / 2; }
+        .francais-widget { grid-column: 2 / 3; grid-row: 2 / 3; }
+        .math-widget, .anglais-widget { grid-column: 2 / 3; grid-row: 3 / 4; }
+        .split-widget-container { display: grid; grid-template-columns: 1fr; gap: 25px; }
+        .widget-header { text-align: center; }
+        .widget-title { font-size: 1.1em; font-weight: bold; color: var(--secondary-color); margin: 0 0 10px 0; }
+        .widget-value { font-weight: 700; }
+        .main-widget .widget-value { font-size: 4em; }
+        .overall-avg-widget .widget-value { font-size: 2.5em; color: var(--primary-color); }
+        .small-widget .widget-value { font-size: 2.5em; }
+        .widget-rank { font-size: 1.2em; font-weight: 600; color: var(--secondary-color); margin-top: 5px; }
+        .rank-trend { font-weight: bold; margin-left: 8px; }
+        .rank-trend-up { color: var(--success-color); } .rank-trend-down { color: var(--danger-color); }
+        .rank-trend-up::before { content: '▲'; } .rank-trend-down::before { content: '▼'; }
+        .mini-leaderboard { margin-top: auto; padding-top: 20px; height: 165px; overflow: hidden; position: relative; cursor: grab; }
+        .mini-leaderboard ul { list-style: none; padding: 0; margin: 0; position: absolute; width: 100%; transition: transform 0.3s ease-out; }
+        .leaderboard-entry { display: flex; align-items: center; justify-content: space-between; padding: 5px 10px; border-radius: 8px; height: 33px; box-sizing: border-box; }
+        .leaderboard-entry.is-user { background-color: #eaf2f8; font-weight: bold; }
+        .leaderboard-rank { font-weight: 600; min-width: 60px; }
+        .leaderboard-trophy { font-size: 1.2em; }
+        .leaderboard-grade { font-weight: 700; color: var(--primary-color); }
+        .graph-svg { width: 100%; height: auto; }
         .loader, .error-message, .no-data { text-align: center; padding: 40px; font-size: 1.2em; color: var(--light-grey); }
         .error-message { color: var(--danger-color); background-color: #fdd; border: 1px solid var(--danger-color); border-radius: 8px; }
-        .rank-trend { font-weight: bold; margin-left: 8px; }
-        .rank-trend-up { color: var(--success-color); }
-        .rank-trend-down { color: var(--danger-color); }
-        .rank-trend-up::before { content: '▲'; }
-        .rank-trend-down::before { content: '▼'; }
-        footer { text-align: center; padding: 25px; font-size: 0.8em; color: #95a5a6; font-style: italic; }
     </style>
 </head>
 <body>
@@ -64,7 +76,6 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxOay6sGNlL_f4MfhHkmwBTi0J3ONrCxv2dg1y5pqKjgKmAN07xttJtlrXjNqLbxdYR/exec";
         
         const dashboardContainer = document.getElementById('dashboard-container');
-        // This object will store the new ranks to be saved at the end
         let currentRanks = {}; 
         
         async function initializeDashboard() {
@@ -97,84 +108,164 @@
         }
 
         function renderDashboard(allData, userCode, selectedLevel, oldRanks) {
-            currentRanks = {}; // Reset ranks for the current session
+            currentRanks = {};
             const selectedTermKey = document.getElementById('term-select').value;
             const levelData = allData.filter(d => d.niveau === selectedLevel);
             
             if (levelData.length === 0) {
-                dashboardContainer.innerHTML = `<div class="no-data">Aucune donnée de classement n'a encore été enregistrée pour ce niveau.</div>`;
-                return;
+                dashboardContainer.innerHTML = `<div class="no-data">Aucune donnée de classement n'a encore été enregistrée pour ce niveau.</div>`; return;
+            }
+            const currentUserData = levelData.find(d => d.userCode === userCode);
+            if (!currentUserData) {
+                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur :</strong> Vos données n'ont pas été trouvées dans le classement pour ce niveau.</div>`; return;
             }
 
-            const currentUserData = levelData.find(d => d.userCode === userCode);
-            
-            if (!currentUserData) {
-                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur :</strong> Vos données n'ont pas été trouvées dans le classement pour ce niveau.</div>`;
-                return;
-            }
-            
-            const mainWidgetHTML = createWidgetHTML(selectedTermKey, document.getElementById('term-select').options[document.getElementById('term-select').selectedIndex].text, levelData, currentUserData, oldRanks);
+            const termName = document.getElementById('term-select').options[document.getElementById('term-select').selectedIndex].text;
+            const overallAverage = levelData.map(u => parseFloat(u[selectedTermKey])).filter(g => !isNaN(g)).reduce((acc, g) => acc + g, 0) / levelData.filter(u => u[selectedTermKey] && !isNaN(parseFloat(u[selectedTermKey]))).length;
+
+            const mainWidgetHTML = createWidgetHTML(selectedTermKey, termName, levelData, currentUserData, oldRanks);
             const francaisWidgetHTML = createWidgetHTML('avg_francais', 'Moyenne Français', levelData, currentUserData, oldRanks);
             const mathWidgetHTML = createWidgetHTML('avg_math', 'Moyenne Math', levelData, currentUserData, oldRanks);
             const anglaisWidgetHTML = createWidgetHTML('avg_anglais', 'Moyenne Anglais', levelData, currentUserData, oldRanks);
+            const graphHTML = createGraphHTML(parseFloat(currentUserData[selectedTermKey]), overallAverage, termName);
 
             dashboardContainer.innerHTML = `
                 <div class="dashboard-grid">
                     <div class="stat-widget main-widget">${mainWidgetHTML}</div>
-                    <div class="stat-widget small-widget">${francaisWidgetHTML}</div>
-                    <div class="stat-widget small-widget">${mathWidgetHTML}</div>
-                    <div class="stat-widget small-widget">${anglaisWidgetHTML}</div>
+                    
+                    <div class="stat-widget overall-avg-widget">
+                        <div class="widget-header">
+                            <h3 class="widget-title">Moyenne du Groupe (${termName})</h3>
+                            <div class="widget-value">${isNaN(overallAverage) ? 'N/A' : overallAverage.toFixed(1) + '%'}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-widget francais-widget small-widget">${francaisWidgetHTML}</div>
+
+                    <div class="split-widget-container">
+                       <div class="stat-widget math-widget small-widget">${mathWidgetHTML}</div>
+                       <div class="stat-widget anglais-widget small-widget">${anglaisWidgetHTML}</div>
+                    </div>
+
+                    <div class="stat-widget graph-widget">${graphHTML}</div>
                 </div>
             `;
-
-            // After rendering everything, save the new ranks for the next visit
+            
+            setupLeaderboardScrolling();
             localStorage.setItem('jdlmRankHistory', JSON.stringify(currentRanks));
-            console.log("New ranks saved:", currentRanks);
         }
 
-        function createWidgetHTML(currentKey, title, allUsersData, currentUserData, oldRanks) {
-            const rankedUsers = allUsersData.filter(u => u[currentKey] && !isNaN(parseFloat(u[currentKey]))).sort((a, b) => b[currentKey] - a[currentKey]);
-            const totalUsers = rankedUsers.length;
-            const currentUserRank = rankedUsers.findIndex(u => u.userCode === currentUserData.userCode) + 1;
-            const currentUserGrade = parseFloat(currentUserData[currentKey]);
+        function createWidgetHTML(key, title, allUsers, currentUser, oldRanks) {
+            const rankedUsers = allUsers.filter(u => u[key] && !isNaN(parseFloat(u[key]))).sort((a, b) => b[key] - a[key]);
+            const total = rankedUsers.length;
+            const rank = rankedUsers.findIndex(u => u.userCode === currentUser.userCode) + 1;
+            const grade = parseFloat(currentUser[key]);
             
-            // Store the current rank to be saved later
-            if (currentUserRank > 0) {
-                currentRanks[currentKey] = currentUserRank;
-            }
-            
-            if (isNaN(currentUserGrade) || currentUserRank === 0) {
-                return `<h3 class="widget-title">${title}</h3><div class="no-data" style="padding:10px;">N/A</div>`;
-            }
+            if (!isNaN(rank) && rank > 0) currentRanks[key] = rank;
+            if (isNaN(grade) || rank === 0) return `<div class="widget-header"><h3 class="widget-title">${title}</h3></div><div class="no-data">N/A</div>`;
 
-            const oldRank = oldRanks[currentKey];
+            const oldRank = oldRanks[key];
             let trendHTML = '';
-
-            // If there's no old rank, it's the first time. Show green.
-            if (oldRank === undefined) {
-                trendHTML = `<span class="rank-trend rank-trend-up"></span>`;
-            } 
-            // If the new rank is better (lower number), show green.
-            else if (currentUserRank < oldRank) {
-                trendHTML = `<span class="rank-trend rank-trend-up"></span>`;
-            }
-            // If the new rank is worse (higher number), show red.
-            else if (currentUserRank > oldRank) {
-                trendHTML = `<span class="rank-trend rank-trend-down"></span>`;
-            }
-            // If the rank is the same, still show green as a positive indicator.
-            else {
-                trendHTML = `<span class="rank-trend rank-trend-up"></span>`;
-            }
+            if (oldRank === undefined || rank < oldRank || rank === oldRank) trendHTML = `<span class="rank-trend rank-trend-up"></span>`;
+            else if (rank > oldRank) trendHTML = `<span class="rank-trend rank-trend-down"></span>`;
             
+            const leaderboardHTML = createLeaderboardHTML(rankedUsers, rank);
+
             return `
-                <h3 class="widget-title">${title}</h3>
-                <div class="widget-value">${currentUserGrade.toFixed(1)}%</div>
-                <div class="widget-rank">
-                    <span>Top ${currentUserRank} sur ${totalUsers}</span>
-                    ${trendHTML}
+                <div class="widget-header">
+                    <h3 class="widget-title">${title}</h3>
+                    <div class="widget-value">${grade.toFixed(1)}%</div>
+                    <div class="widget-rank">
+                        <span>Top ${rank} sur ${total}</span>
+                        ${trendHTML}
+                    </div>
                 </div>
+                ${leaderboardHTML}
             `;
+        }
+
+        function createLeaderboardHTML(rankedUsers, userRank) {
+            const entryHeight = 33; // px, must match CSS
+            let start = Math.max(0, userRank - 4);
+            if (userRank <= 2) start = 0;
+            const initialOffset = -start * entryHeight;
+
+            const trophyMap = { 1: '🥇', 2: '🥈', 3: '🥉' };
+            let listItems = rankedUsers.map((user, index) => {
+                const rank = index + 1;
+                const isCurrentUser = rank === userRank;
+                const trophy = trophyMap[rank] || '';
+                return `
+                    <li class="leaderboard-entry ${isCurrentUser ? 'is-user' : ''}">
+                        <span class="leaderboard-rank">#${rank} <span class="leaderboard-trophy">${trophy}</span></span>
+                        <span class="leaderboard-grade">${parseFloat(user[Object.keys(user).find(k => k.startsWith('avg_'))]).toFixed(1)}%</span>
+                    </li>`;
+            }).join('');
+
+            return `<div class="mini-leaderboard"><ul style="transform: translateY(${initialOffset}px);">${listItems}</ul></div>`;
+        }
+
+        function createGraphHTML(userGrade, overallGrade, termName) {
+            if (isNaN(userGrade) || isNaN(overallGrade)) return '<div class="no-data">Données insuffisantes pour le graphique.</div>';
+            const userHeight = userGrade;
+            const overallHeight = overallGrade;
+
+            return `
+                <h3 class="widget-title" style="text-align:center;">Comparaison (${termName})</h3>
+                <svg viewBox="0 0 100 100" class="graph-svg" preserveAspectRatio="xMidYMid meet">
+                    <line x1="0" y1="95" x2="100" y2="95" stroke="${'var(--light-grey)'}" stroke-width="0.5"/>
+                    <!-- Overall Average Bar -->
+                    <rect x="20" y="${100 - overallHeight}" width="25" height="${overallHeight}" fill="${'var(--primary-color)'}" opacity="0.7"></rect>
+                    <text x="32.5" y="99" text-anchor="middle" font-size="4" fill="${'var(--text-color)'}">Moyenne Groupe</text>
+                    <text x="32.5" y="${98 - overallHeight}" text-anchor="middle" font-weight="bold" font-size="5" fill="${'var(--secondary-color)'}">${overallGrade.toFixed(1)}%</text>
+                    
+                    <!-- User Bar -->
+                    <rect x="55" y="${100 - userHeight}" width="25" height="${userHeight}" fill="${'var(--success-color)'}"></rect>
+                    <text x="67.5" y="99" text-anchor="middle" font-size="4" fill="${'var(--text-color)'}">Votre Moyenne</text>
+                    <text x="67.5" y="${98 - userHeight}" text-anchor="middle" font-weight="bold" font-size="5" fill="${'var(--secondary-color)'}">${userGrade.toFixed(1)}%</text>
+                </svg>
+            `;
+        }
+
+        function setupLeaderboardScrolling() {
+            document.querySelectorAll('.mini-leaderboard').forEach(lb => {
+                const ul = lb.querySelector('ul');
+                const entryHeight = 33;
+                const maxTranslate = 0;
+                const minTranslate = -(ul.children.length - 5) * entryHeight;
+                let isDragging = false, startY, startTranslate;
+
+                const moveHandler = (y) => {
+                    if (!isDragging) return;
+                    const deltaY = y - startY;
+                    let newTranslate = startTranslate + deltaY;
+                    newTranslate = Math.max(minTranslate, Math.min(maxTranslate, newTranslate)); // Clamp
+                    ul.style.transition = 'none';
+                    ul.style.transform = `translateY(${newTranslate}px)`;
+                };
+
+                const startHandler = (y) => {
+                    isDragging = true;
+                    startY = y;
+                    startTranslate = parseFloat(ul.style.transform.split('(')[1]) || 0;
+                    lb.style.cursor = 'grabbing';
+                };
+
+                const endHandler = () => {
+                    isDragging = false;
+                    lb.style.cursor = 'grab';
+                    ul.style.transition = 'transform 0.3s ease-out';
+                };
+
+                lb.addEventListener('mousedown', (e) => startHandler(e.clientY));
+                lb.addEventListener('mousemove', (e) => moveHandler(e.clientY));
+                lb.addEventListener('mouseup', endHandler);
+                lb.addEventListener('mouseleave', endHandler);
+                
+                lb.addEventListener('touchstart', (e) => startHandler(e.touches[0].clientY), { passive: true });
+                lb.addEventListener('touchmove', (e) => moveHandler(e.touches[0].clientY), { passive: true });
+                lb.addEventListener('touchend', endHandler);
+            });
         }
 
         document.addEventListener('DOMContentLoaded', initializeDashboard);
