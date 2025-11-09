@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classement - Outil JDLM</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/Student-broken/student-broken.github.io/refs/heads/main/favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <!-- Including Chart.js for the graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #2980b9; --secondary-color: #2c3e50; --background-color: #f7f9fb;
+            --widget-background: #ffffff; --text-color: #34495e; --light-grey: #e0e6eb;
+            --danger-color: #e74c3c; --success-color: #27ae60; --shadow-widget: 0 10px 20px rgba(0, 0, 0, 0.07);
+        }
+        html { height: 100%; }
+        body { 
+            margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--background-color); color: var(--text-color);
+            display: flex; flex-direction: column; min-height: 100%;
+        }
+        .site-header-container { background-color: var(--widget-background); box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 15px 0; position: relative; margin-bottom: 20px; flex-shrink: 0; }
+        .site-header { text-align: center; padding: 0; margin: 0; color: var(--secondary-color); font-size: 2.2em; font-weight: 700; font-family: 'Playfair Display', serif; }
+        .back-arrow { position: absolute; top: 50%; left: 25px; transform: translateY(-50%); font-size: 2.2em; color: var(--secondary-color); text-decoration: none; transition: color 0.2s; }
+        .back-arrow:hover { color: var(--primary-color); }
+        .main-container { 
+            max-width: 1200px; margin: auto; /* This centers the container vertically and horizontally */
+            padding: 0 20px; width: 100%; box-sizing: border-box;
+        }
+        .controls { background: var(--widget-background); padding: 20px; border-radius: 12px; box-shadow: var(--shadow-widget); margin-bottom: 25px; border: 1px solid var(--light-grey); }
+        .controls label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.9em; }
+        select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background-color: white; font-size: 1em; }
+        
+        .dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
+        .stat-widget { background: var(--widget-background); border-radius: 16px; padding: 25px; box-shadow: var(--shadow-widget); border: 1px solid var(--light-grey); display: flex; flex-direction: column; }
+        
+        /* WIDGET SIZING */
+        .main-avg-widget { grid-column: span 2; }
+        .graph-widget { grid-column: 1 / -1; } /* Full width */
+
+        .widget-header { text-align: center; margin-bottom: 20px; }
+        .widget-title { font-size: 1.1em; font-weight: bold; color: var(--secondary-color); margin: 0 0 10px 0; }
+        .widget-value { font-size: 3.5em; font-weight: 700; }
+        .small-widget .widget-value { font-size: 2.5em; }
+        .widget-rank { font-size: 1.2em; font-weight: 600; color: var(--secondary-color); display: flex; align-items: center; justify-content: center; }
+        .rank-trend { font-weight: bold; margin-left: 8px; font-size: 1.1em; }
+        .rank-trend-up { color: var(--success-color); } .rank-trend-up::before { content: '▲'; }
+        .rank-trend-down { color: var(--danger-color); } .rank-trend-down::before { content: '▼'; }
+
+        /* MINI LEADERBOARD */
+        .mini-leaderboard-container {
+            flex-grow: 1; overflow-y: auto; /* Make it scrollable */
+            position: relative; margin-top: 15px; border-top: 1px solid var(--light-grey); padding-top: 15px;
+            max-height: 190px; /* Fixed height for ~5 items (5 * (30px item + 8px padding)) */
+        }
+        .leaderboard-list { list-style: none; padding: 0; margin: 0; }
+        .leaderboard-item { display: flex; align-items: center; padding: 8px 10px; border-radius: 8px; font-size: 0.95em; transition: background-color 0.2s; }
+        .leaderboard-item.is-user { background-color: #eaf2f8; font-weight: bold; }
+        .item-rank { width: 45px; font-weight: 600; text-align: left; }
+        .item-name { font-weight: normal; margin-left: 10px; }
+        .is-user .item-name { font-weight: bold; }
+        .item-grade { margin-left: auto; font-weight: 600; }
+        
+        /* GRAPH & OVERALL WIDGET */
+        .graph-container { padding-top: 20px; }
+        .overall-avg-widget { text-align: center; }
+
+        .loader, .error-message, .no-data { text-align: center; padding: 40px; font-size: 1.2em; color: var(--light-grey); }
+        .error-message { color: var(--danger-color); background-color: #fdd; border: 1px solid var(--danger-color); border-radius: 8px; }
+        footer { text-align: center; padding: 25px; font-size: 0.8em; color: #95a5a6; font-style: italic; flex-shrink: 0;}
+    </style>
+</head>
+<body>
+    <div class="site-header-container">
+        <a href="main.html" class="back-arrow" title="Retour">←</a>
+        <header class="site-header">Tableau de Bord du Classement</header>
+    </div>
+    <main class="main-container">
+        <div class="controls">
+            <label for="term-select">Comparer les moyennes pour :</label>
+            <select id="term-select">
+                <option value="avg_generale">Moyenne générale</option>
+                <option value="avg_etape1">Étape 1</option>
+                <option value="avg_etape2">Étape 2</option>
+                <option value="avg_etape3">Étape 3</option>
+            </select>
+        </div>
+        <div id="dashboard-container">
+             <div class="loader" style="color:var(--text-color)">Chargement des données...</div>
+        </div>
+    </main>
+    <footer>*jauge de la moyenne</footer>
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxOay6sGNlL_f4MfhHkmwBTi0J3ONrCxv2dg1y5pqKjgKmAN07xttJtlrXjNqLbxdYR/exec";
+        
+        const dashboardContainer = document.getElementById('dashboard-container');
+        let currentRanks = {}; 
+        let chartInstance = null;
+        
+        async function initializeDashboard() {
+            const localData = JSON.parse(localStorage.getItem('jdlmData')) || {};
+            const userCode = (localData.nom || '').replace(/\s+/g, '').toLowerCase();
+            const selectedLevel = localStorage.getItem('jdlmNiveau');
+
+            if (!selectedLevel || !userCode) {
+                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur :</strong> Niveau ou nom d'utilisateur non trouvé. Retournez à la page principale, sélectionnez votre niveau, puis cliquez sur "Classement".</div>`;
+                return;
+            }
+
+            document.querySelector('.site-header').textContent += ` - ${selectedLevel === 'sec4' ? 'Sec. 4' : 'Sec. 5'}`;
+            
+            try {
+                const response = await fetch(SCRIPT_URL);
+                if (!response.ok) throw new Error(`Network error: ${response.statusText}`);
+                const allData = await response.json();
+                if (allData.error) throw new Error(`Script error: ${allData.error}`);
+
+                const oldRanks = JSON.parse(localStorage.getItem('jdlmRankHistory')) || {};
+                
+                document.getElementById('term-select').addEventListener('change', () => renderDashboard(allData, userCode, selectedLevel, oldRanks));
+                renderDashboard(allData, userCode, selectedLevel, oldRanks);
+
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur de chargement :</strong> Impossible de récupérer les données du classement. Vérifiez la console (F12).</div>`;
+            }
+        }
+
+        function renderDashboard(allData, userCode, selectedLevel, oldRanks) {
+            currentRanks = {}; 
+            const selectedTermKey = document.getElementById('term-select').value;
+            const levelData = allData.filter(d => d.niveau === selectedLevel);
+            
+            if (levelData.length === 0) {
+                dashboardContainer.innerHTML = `<div class="no-data">Aucune donnée de classement n'a encore été enregistrée pour ce niveau.</div>`;
+                return;
+            }
+
+            const currentUserData = levelData.find(d => d.userCode === userCode);
+            
+            if (!currentUserData) {
+                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur :</strong> Vos données n'ont pas été trouvées dans le classement pour ce niveau.</div>`;
+                return;
+            }
+            
+            const mainWidgetHTML = createStatWidgetHTML('main-avg-widget', selectedTermKey, document.getElementById('term-select').options[document.getElementById('term-select').selectedIndex].text, levelData, currentUserData, oldRanks);
+            const francaisWidgetHTML = createStatWidgetHTML('small-widget', 'avg_francais', 'Moyenne Français', levelData, currentUserData, oldRanks);
+            const mathWidgetHTML = createStatWidgetHTML('small-widget', 'avg_math', 'Moyenne Math', levelData, currentUserData, oldRanks);
+            const anglaisWidgetHTML = createStatWidgetHTML('small-widget', 'avg_anglais', 'Moyenne Anglais', levelData, currentUserData, oldRanks);
+            const overallAvgHTML = createOverallAverageWidgetHTML(selectedTermKey, levelData);
+            
+            dashboardContainer.innerHTML = `
+                <div class="dashboard-grid">
+                    ${mainWidgetHTML}
+                    ${overallAvgHTML}
+                    <div class="stat-widget graph-widget">
+                        <h3 class="widget-title" style="text-align:center;">Performance par Étape</h3>
+                        <div class="graph-container"><canvas id="performanceChart"></canvas></div>
+                    </div>
+                    ${francaisWidgetHTML}
+                    ${mathWidgetHTML}
+                    ${anglaisWidgetHTML}
+                </div>
+            `;
+            
+            createPerformanceChart(levelData, currentUserData);
+
+            document.querySelectorAll('.mini-leaderboard-container').forEach(container => {
+                updateLeaderboardScroll(container);
+            });
+
+            localStorage.setItem('jdlmRankHistory', JSON.stringify(currentRanks));
+        }
+
+        function createStatWidgetHTML(widgetClass, currentKey, title, allUsersData, currentUserData, oldRanks) {
+            const rankedUsers = allUsersData.filter(u => u[currentKey] && !isNaN(parseFloat(u[currentKey]))).sort((a, b) => b[currentKey] - a[currentKey]);
+            const totalUsers = rankedUsers.length;
+            const currentUserRank = rankedUsers.findIndex(u => u.userCode === currentUserData.userCode) + 1;
+            const currentUserGrade = parseFloat(currentUserData[currentKey]);
+            
+            if (currentUserRank > 0) currentRanks[currentKey] = currentUserRank;
+            
+            const getTrophy = (rank) => {
+                if (rank === 1) return '🥇'; if (rank === 2) return '🥈'; if (rank === 3) return '🥉';
+                return `#${rank}`;
+            };
+
+            let leaderboardItemsHTML = rankedUsers.map((user, index) => {
+                const rank = index + 1;
+                const isCurrentUser = user.userCode === currentUserData.userCode;
+                const userName = isCurrentUser ? 'Vous' : `Utilisateur ${rank}`;
+                return `<li class="leaderboard-item ${isCurrentUser ? 'is-user' : ''}" data-rank="${rank}">
+                            <span class="item-rank">${getTrophy(rank)}</span>
+                            <span class="item-name">${userName}</span>
+                            <span class="item-grade">${parseFloat(user[currentKey]).toFixed(1)}%</span>
+                        </li>`;
+            }).join('');
+            
+            let widgetContent;
+            if (isNaN(currentUserGrade) || currentUserRank === 0) {
+                widgetContent = `<div class="widget-header"><h3 class="widget-title">${title}</h3><div class="no-data" style="padding:10px;">N/A</div></div>`;
+            } else {
+                const oldRank = oldRanks[currentKey];
+                let trendHTML = '';
+                if (oldRank !== undefined) {
+                    if (currentUserRank < oldRank) {
+                        trendHTML = `<span class="rank-trend rank-trend-up"></span>`;
+                    } else if (currentUserRank > oldRank) {
+                        trendHTML = `<span class="rank-trend rank-trend-down"></span>`;
+                    }
+                }
+                
+                widgetContent = `
+                    <div class="widget-header">
+                        <h3 class="widget-title">${title}</h3>
+                        <div class="widget-value">${currentUserGrade.toFixed(1)}%</div>
+                        <div class="widget-rank">
+                            <span>Top ${currentUserRank} sur ${totalUsers}</span>
+                            ${trendHTML}
+                        </div>
+                    </div>
+                    <div class="mini-leaderboard-container" data-user-rank="${currentUserRank}">
+                        <ul class="leaderboard-list">${leaderboardItemsHTML}</ul>
+                    </div>
+                `;
+            }
+            return `<div class="stat-widget ${widgetClass}">${widgetContent}</div>`;
+        }
+        
+        function updateLeaderboardScroll(container) {
+            const userRank = parseInt(container.dataset.userRank);
+            if (!userRank) return;
+
+            const userItem = container.querySelector('.is-user');
+            if (!userItem) return;
+            
+            const itemHeight = userItem.offsetHeight;
+            const containerHeight = container.clientHeight;
+
+            // Scroll to center the user's item, but don't scroll past the beginning or end
+            const scrollTop = userItem.offsetTop - (containerHeight / 2) + (itemHeight / 2);
+            container.scrollTop = scrollTop;
+        }
+
+        function createOverallAverageWidgetHTML(termKey, levelData) {
+            const validGrades = levelData.map(u => parseFloat(u[termKey])).filter(g => !isNaN(g));
+            const average = validGrades.length > 0 ? validGrades.reduce((a, b) => a + b, 0) / validGrades.length : 0;
+            return `
+                <div class="stat-widget overall-avg-widget">
+                    <div class="widget-header">
+                        <h3 class="widget-title">Moyenne du Niveau</h3>
+                        <div class="widget-value">${average.toFixed(1)}%</div>
+                        <div class="widget-rank" style="opacity:0.8;">Basé sur ${validGrades.length} élèves</div>
+                    </div>
+                </div>`;
+        }
+        
+        function createPerformanceChart(levelData, currentUserData) {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            
+            const calculateGroupAvg = (etapeKey) => {
+                const validGrades = levelData.map(u => parseFloat(u[etapeKey])).filter(g => !isNaN(g) && g > 0);
+                return validGrades.length > 0 ? validGrades.reduce((a,b) => a + b, 0) / validGrades.length : null;
+            };
+
+            const parseUserGrade = (grade) => (parseFloat(grade) > 0 ? parseFloat(grade) : null);
+
+            const userData = [
+                parseUserGrade(currentUserData.avg_etape1), 
+                parseUserGrade(currentUserData.avg_etape2), 
+                parseUserGrade(currentUserData.avg_etape3)
+            ];
+            const groupData = [
+                calculateGroupAvg('avg_etape1'), 
+                calculateGroupAvg('avg_etape2'), 
+                calculateGroupAvg('avg_etape3')
+            ];
+            
+            if(chartInstance) chartInstance.destroy();
+            
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Étape 1', 'Étape 2', 'Étape 3'],
+                    datasets: [
+                        {
+                            label: 'Votre Moyenne',
+                            data: userData,
+                            borderColor: 'rgba(39, 174, 96, 1)',
+                            backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            spanGaps: false // This ensures the line breaks on null values
+                        },
+                        {
+                            label: 'Moyenne du Niveau',
+                            data: groupData,
+                            borderColor: 'rgba(231, 76, 60, 1)',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            spanGaps: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: { 
+                        y: { 
+                            min: 0, 
+                            max: 100,
+                            ticks: { callback: value => `${value}%` } 
+                        } 
+                    },
+                    plugins: { legend: { position: 'top' } }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
+    </script>
+</body>
+</html>
