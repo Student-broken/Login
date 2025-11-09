@@ -5,60 +5,84 @@
     <title>Politique de confidentialité - Outil JDLM</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 20px; color: #333; }
-        h1, h2 { color: #2c3e50; }
+        h1, h2, h3 { color: #2c3e50; }
         p, li { font-size: 16px; }
         strong { color: #2c3e50; }
         .update-date { color: #7f8c8d; font-style: italic; }
         a { color: #2980b9; text-decoration: none; }
         a:hover { text-decoration: underline; }
-        .data-section { border-left: 4px solid #2980b9; padding-left: 15px; margin-bottom: 20px; }
+        .data-section { border-left: 4px solid #2980b9; padding-left: 15px; margin: 20px 0; }
+        .law-compliance { background-color: #f8f9fa; border: 1px solid #e9ecef; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
     <h1>Politique de confidentialité</h1>
-    <p class="update-date">Dernière mise à jour : 8 novembre 2025</p>
-    <p>Cette politique de confidentialité explique comment vos données sont gérées par l'Outil JDLM* ("l'Outil"). Votre vie privée est notre priorité, et nous nous engageons à la transparence la plus totale.</p>
+    <p class="update-date">Dernière mise à jour : 9 novembre 2025</p>
 
-    <h2>1. Stockage des Données : Deux Catégories Distinctes</h2>
-    <p>L'Outil JDLM* gère deux types de données de manière très différente : les données stockées localement sur votre appareil et les données anonymisées envoyées pour la fonctionnalité de classement.</p>
+    <!-- Ajout: Engagement formel envers la Loi 25. -->
+    <div class="law-compliance">
+        <p><strong>Notre engagement envers votre vie privée :</strong> Votre confiance est essentielle. Nous nous engageons à protéger vos renseignements personnels conformément à la <em>Loi sur la protection des renseignements personnels dans le secteur privé</em> du Québec, modernisée par la Loi 25, et aux autres lois applicables. [1, 5]</p>
+    </div>
+    
+    <!-- Ajout: Exigence de la Loi 25. -->
+    <h2>1. Responsable de la protection des renseignements personnels</h2>
+    <p>Conformément à la Loi 25, une personne a été désignée comme Responsable de la protection des renseignements personnels. Pour toute question ou pour exercer vos droits, vous pouvez la contacter :</p>
+    <p><strong>Titre :</strong> Responsable de la protection des renseignements personnels<br>
+       <strong>Courriel :</strong> [adresse_email_confidentialite@exemple.com]</p>
+
+    <h2>2. Collecte et Utilisation des Renseignements</h2>
+    <p>L'Outil JDLM* gère deux catégories de données de manière distincte :</p>
 
     <div class="data-section">
-        <h3>1.1 Données Stockées Localement (sur votre appareil)</h3>
-        <p>Ces données sont stockées <strong>uniquement</strong> dans la mémoire de votre navigateur (localStorage). Elles ne quittent jamais votre appareil, et nous n'y avons pas accès.</p>
+        <h3>2.1 Données stockées localement sur votre appareil</h3>
+        <p>Ces renseignements sont stockés <strong>uniquement</strong> dans la mémoire de votre navigateur (localStorage). Ils ne nous sont jamais transmis et nous n'y avons pas accès.</p>
         <ul>
-            <li><strong>Données scolaires complètes :</strong> L'intégralité des informations que vous collez, incluant le détail de chaque matière, compétence, travail et résultat.</li>
-            <li><strong>Votre nom complet :</strong> Tel qu'il est extrait des données collées.</li>
-            <li><strong>Vos préférences :</strong> Votre niveau secondaire (Sec. 4 ou 5), vos réglages d'unités, etc.</li>
+            <li><strong>Renseignements personnels et scolaires :</strong> L'intégralité des informations que vous collez, incluant votre nom, le détail de chaque matière, compétence, travail et résultat.</li>
+            <li><strong>Vos préférences :</strong> Tous les réglages que vous configurez dans l'Outil.</li>
         </ul>
+        <p><strong>Finalité :</strong> Le stockage local est strictement nécessaire au fonctionnement de l'Outil sur votre session de navigation.</p>
     </div>
 
     <div class="data-section">
-        <h3>1.2 Données Anonymisées Envoyées pour le Classement</h3>
-        <p>Lorsque vous utilisez la fonctionnalité "Classement", un sous-ensemble <strong>strictement limité et anonymisé</strong> de vos données de performance est envoyé et stocké sur une feuille de calcul Google Sheets sécurisée. Le but unique de cette collecte est de générer les classements et les statistiques de groupe.</p>
-        <p>Les données envoyées sont :</p>
+        <h3>2.2 Données pseudonymisées transmises pour le Classement</h3>
+        <p>Lorsque vous consentez explicitement à utiliser la fonctionnalité "Classement", un sous-ensemble <strong>limité et pseudonymisé</strong> de vos données est transmis à une base de données sécurisée (Google Sheets).</p>
+        <p>Les données transmises sont :</p>
         <ul>
-            <li><strong>Un identifiant anonyme :</strong> Votre nom est converti en un identifiant unique et anonyme (par exemple, "Jean Doe" devient "Utilisateur 1"). Cet identifiant ne permet pas de vous identifier personnellement en dehors du contexte de cet outil.</li>
+            <li><strong>Un identifiant pseudonyme :</strong> Un identifiant unique est généré à partir de votre nom (par hachage) pour mettre à jour votre entrée sans stocker votre nom en clair.</li>
             <li><strong>Votre niveau scolaire :</strong> "sec4" ou "sec5".</li>
-            <li><strong>Vos moyennes agrégées :</strong> Uniquement vos moyennes calculées (générale, par étape, et pour les matières principales comme les mathématiques, le français et l'anglais).</li>
-            <li><strong>Un horodatage ("timestamp") :</strong> La date et l'heure de la dernière mise à jour de vos données.</li>
+            <li><strong>Vos moyennes agrégées :</strong> Uniquement les moyennes calculées (générale, par étape, et matières principales).</li>
+            <li><strong>Un horodatage ("timestamp").</strong></li>
         </ul>
-        <p><strong>Ce qui N'EST PAS envoyé :</strong> Votre nom complet, les noms de vos enseignants, les détails de vos travaux, ou vos notes individuelles.</p>
+        <p><strong>Ce qui n'est JAMAIS transmis :</strong> Votre nom complet, les noms de vos enseignants, le détail de vos travaux ou vos notes individuelles.</p>
+        <p><strong>Finalité :</strong> Le seul but de cette collecte est de générer les statistiques de groupe et le classement anonyme, et de vous permettre de vous situer par rapport aux autres utilisateurs consentants. [1, 25]</p>
     </div>
 
-    <h2>2. Finalité de la Collecte</h2>
+    <h2>3. Consentement</h2>
+    <p>L'utilisation de base de l'Outil implique votre acceptation du stockage local de vos données, essentiel à son fonctionnement. Pour la fonctionnalité de "Classement", nous demandons votre <strong>consentement explicite, libre et éclairé</strong> au moment de cliquer sur le bouton. [1, 10] Ce consentement est spécifique à cette finalité et peut être retiré à tout moment (voir section 5).</p>
+
+    <h2>4. Sécurité, Conservation et Transfert</h2>
+    <p><strong>Données locales :</strong> La sécurité de ces données dépend de celle de votre propre appareil et de votre navigateur. Elles sont effacées si vous videz le cache de votre navigateur.</p>
+    <p><strong>Données du classement :</strong>
+        <ul>
+            <li><strong>Sécurité :</strong> Les données pseudonymisées sont stockées sur l'infrastructure sécurisée de Google.</li>
+            <!-- Ajout: Précision sur la conservation, exigée par les lois. -->
+            <li><strong>Durée de conservation :</strong> Vos données de classement sont conservées tant que vous utilisez la fonctionnalité. Chaque nouvelle soumission de votre part remplace la précédente. Les données inactives peuvent être purgées à la fin de chaque année scolaire.</li>
+            <!-- Ajout: Transparence sur les transferts hors Québec, exigée par la Loi 25. [1, 11] -->
+            <li><strong>Transfert hors du Québec :</strong> En utilisant Google Sheets, il est possible que les données pseudonymisées soient hébergées sur des serveurs situés en dehors du Québec. Nous avons procédé à une évaluation des facteurs relatifs à la vie privée pour nous assurer que ces données bénéficient d'une protection adéquate. [11, 13]</li>
+        </ul>
+    </p>
+
+    <!-- Ajout: Section la plus importante pour la conformité avec la Loi 25. [8, 9, 10] -->
+    <h2>5. Vos Droits Concernant Vos Renseignements Personnels</h2>
+    <p>Conformément à la Loi 25, vous disposez de plusieurs droits sur les renseignements personnels que nous détenons dans le cadre de la fonctionnalité de classement. [1, 8] Pour les données stockées localement, vous en avez le plein contrôle via votre navigateur.</p>
     <ul>
-        <li>Les <strong>données locales</strong> servent à faire fonctionner l'Outil pour vous, sur votre appareil.</li>
-        <li>Les <strong>données anonymisées</strong> servent exclusivement à alimenter le tableau de bord du classement, à calculer les moyennes de groupe et à vous permettre de vous situer par rapport aux autres utilisateurs.</li>
+        <li><strong>Droit d'accès :</strong> Vous pouvez demander de savoir quels renseignements pseudonymisés vous concernant sont conservés dans notre base de données de classement.</li>
+        <li><strong>Droit de rectification :</strong> Si vous constatez une erreur dans vos données de classement, vous pouvez la corriger en soumettant à nouveau vos résultats via l'Outil.</li>
+        <li><strong>Droit au retrait du consentement (et à l'effacement) :</strong> Vous pouvez retirer votre consentement à tout moment. Sur simple demande au Responsable de la protection des renseignements personnels, nous supprimerons définitivement vos informations de la base de données du classement.</li>
     </ul>
-
-    <h2>3. Sécurité et Conservation</h2>
-    <p>La sécurité de vos données locales dépend de la sécurité de votre appareil. Si vous effacez les données de votre navigateur, ces informations seront définitivement perdues.</p>
-    <p>Les données anonymisées stockées à distance sont sécurisées par l'infrastructure de Google. Vous conservez le contrôle : chaque nouvelle soumission de données de votre part met à jour ou remplace votre entrée précédente, vous assurant que seules vos informations les plus récentes sont conservées.</p>
-
-    <h2>4. Consentement</h2>
-    <p>En utilisant l'Outil JDLM*, vous consentez au stockage local de vos données. En cliquant sur le bouton "Classement", vous consentez spécifiquement à la transmission des données anonymisées décrites dans la section 1.2.</p>
+    <p>Pour exercer l'un de ces droits, veuillez contacter le Responsable à l'adresse courriel fournie dans la section 1.</p>
     
     <hr>
-    <p style="text-align: center;">Nous nous engageons à ne collecter que les données de performance agrégées et anonymisées strictement nécessaires au fonctionnement du classement. Votre confiance est essentielle.</p>
+    <p style="text-align: center; font-style: italic;">*jauge de la moyenne</p>
 </body>
 </html>
