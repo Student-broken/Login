@@ -8,216 +8,160 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2980b9; --secondary-color: #2c3e50; --side-panel-color: #ffffff;
-            --widget-darker-color: #f0f4f7; --background-color: #f7f9fb; --widget-background: #ffffff;
-            --text-color: #34495e; --light-grey: #bdc3c7; --footer-grey: #95a5a6;
-            --danger-color: #e74c3c; --success-color: #27ae60; --shadow-header: 0 2px 4px rgba(0, 0, 0, 0.05);
-            --shadow-widget: 0 8px 15px rgba(0, 0, 0, 0.08);
+            --primary-color: #2980b9; --secondary-color: #2c3e50; --background-color: #f7f9fb;
+            --widget-background: #ffffff; --text-color: #34495e; --light-grey: #bdc3c7;
+            --danger-color: #e74c3c; --success-color: #27ae60; --shadow-widget: 0 8px 15px rgba(0, 0, 0, 0.08);
         }
         body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--background-color); color: var(--text-color); }
-        .site-header-container { background-color: var(--widget-background); box-shadow: var(--shadow-header); border-bottom: 1px solid #e0e6eb; padding: 15px 0; position: relative; margin-bottom: 20px; }
-        .site-header { text-align: center; padding: 0; margin: 0; color: var(--secondary-color); font-size: 2.2em; font-weight: 700; font-family: 'Playfair Display', serif; letter-spacing: 0.05em; }
-        .back-arrow { position: absolute; top: 50%; left: 25px; transform: translateY(-50%); font-size: 2.2em; color: var(--secondary-color); text-decoration: none; line-height: 1; transition: color 0.2s, transform 0.2s; z-index: 10; }
-        .back-arrow:hover { color: var(--primary-color); transform: translateY(-50%) scale(1.05); }
+        .site-header-container { background-color: var(--widget-background); box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 15px 0; position: relative; margin-bottom: 20px; }
+        .site-header { text-align: center; padding: 0; margin: 0; color: var(--secondary-color); font-size: 2.2em; font-weight: 700; font-family: 'Playfair Display', serif; }
+        .back-arrow { position: absolute; top: 50%; left: 25px; transform: translateY(-50%); font-size: 2.2em; color: var(--secondary-color); text-decoration: none; transition: color 0.2s; }
+        .back-arrow:hover { color: var(--primary-color); }
         .main-container { max-width: 900px; margin: 20px auto; padding: 0 20px; }
-        .controls { display: flex; gap: 15px; margin-bottom: 25px; background: var(--widget-background); padding: 20px; border-radius: 12px; box-shadow: var(--shadow-widget); }
-        .control-group { flex: 1; }
-        .control-group label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.9em; }
-        .control-group select, .control-group .level-tabs { width: 100%; }
-        .level-tabs { display: flex; border: 1px solid #ddd; border-radius: 10px; overflow: hidden; }
-        .level-tab { flex: 1; padding: 12px; text-align: center; background-color: white; border: none; cursor: pointer; font-weight: 600; transition: background-color 0.2s, color 0.2s; }
-        .level-tab.active { background-color: var(--primary-color); color: white; }
-        select { padding: 12px; border-radius: 10px; border: 1px solid #ddd; background-color: white; -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%232c3e50%22%20d%3D%22M287%2069.9L146.7%20209.7%206.4%2069.9%2034.6%2041.7l112.1%20112.1L259.9%2041.7z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 10px top 50%; background-size: 10px auto; }
-        .performance-analysis { background: var(--primary-color); color: white; padding: 25px; border-radius: 12px; box-shadow: var(--shadow-widget); margin-bottom: 25px; }
-        .performance-analysis h3 { margin-top: 0; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 10px; }
-        .analysis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; }
-        .stat-item .label { font-size: 0.9em; opacity: 0.8; }
-        .stat-item .value { font-size: 1.6em; font-weight: bold; }
-        .stat-item .rank { font-size: 0.8em; opacity: 0.9; }
-        .leaderboard-container { background-color: var(--widget-background); border-radius: 12px; box-shadow: var(--shadow-widget); overflow: hidden; }
-        .leaderboard-header { background-color: var(--secondary-color); color: white; padding: 15px 20px; font-weight: bold; display: grid; grid-template-columns: 50px 1fr 100px; gap: 10px; }
-        .leaderboard-list { list-style: none; margin: 0; padding: 0; max-height: 60vh; overflow-y: auto; }
-        .leaderboard-item { display: grid; grid-template-columns: 50px 1fr 100px; gap: 10px; padding: 15px 20px; border-bottom: 1px solid #f0f0f0; align-items: center; }
-        .leaderboard-item:last-child { border-bottom: none; }
-        .leaderboard-item.is-user { background-color: #eaf2f8; font-weight: bold; }
-        .rank { font-size: 1.2em; font-weight: bold; color: var(--primary-color); }
-        .subjects-info { font-size: 0.85em; color: #7f8c8d; }
-        .grade { font-size: 1.2em; font-weight: 700; color: var(--success-color); }
-        .loader { text-align: center; padding: 50px; font-size: 1.2em; }
-        .no-data { text-align: center; padding: 50px; color: var(--light-grey); font-style: italic; }
-        footer { text-align: center; padding: 25px; font-size: 0.8em; color: var(--footer-grey); font-style: italic; }
+        .controls { background: var(--widget-background); padding: 20px; border-radius: 12px; box-shadow: var(--shadow-widget); margin-bottom: 25px; }
+        .controls label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.9em; }
+        select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background-color: white; -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%2...%3E"); background-repeat: no-repeat; background-position: right 10px top 50%; background-size: 10px auto; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
+        .stat-widget { background: var(--widget-background); border-radius: 12px; padding: 20px; box-shadow: var(--shadow-widget); }
+        .main-widget { grid-column: 1 / -1; text-align: center; }
+        .widget-title { font-size: 1em; font-weight: bold; color: var(--secondary-color); margin: 0 0 10px 0; }
+        .widget-value { font-size: 2.8em; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .small-widget .widget-value { font-size: 2em; }
+        .widget-rank { font-size: 0.9em; color: var(--light-grey); margin-top: 5px; }
+        .loader, .no-data { text-align: center; padding: 40px; font-size: 1.2em; color: var(--light-grey); }
+        .trend-up { color: var(--success-color); }
+        .trend-down { color: var(--danger-color); }
+        .trend-neutral { color: var(--text-color); }
+        .trend-indicator::before { font-weight: bold; margin-right: 5px; }
+        .trend-up .trend-indicator::before { content: '▲'; }
+        .trend-down .trend-indicator::before { content: '▼'; }
+        .trend-neutral .trend-indicator::before { content: '–'; }
+        footer { text-align: center; padding: 25px; font-size: 0.8em; color: #95a5a6; font-style: italic; }
     </style>
 </head>
 <body>
-
     <div class="site-header-container">
         <a href="main.html" class="back-arrow" title="Retour">←</a>
-        <header class="site-header">Classement</header>
+        <header class="site-header">Tableau de Bord du Classement</header>
     </div>
-
     <main class="main-container">
         <div class="controls">
-            <div class="control-group">
-                <label>Niveau</label>
-                <div class="level-tabs">
-                    <button class="level-tab active" data-level="sec4">Secondaire 4</button>
-                    <button class="level-tab" data-level="sec5">Secondaire 5</button>
-                </div>
-            </div>
-            <div class="control-group">
-                <label for="term-select">Étape</label>
-                <select id="term-select">
-                    <option value="avg_generale">Moyenne générale</option>
-                    <option value="avg_etape1">Étape 1</option>
-                    <option value="avg_etape2">Étape 2</option>
-                    <option value="avg_etape3">Étape 3</option>
-                </select>
-            </div>
+            <label for="term-select">Comparer les moyennes pour :</label>
+            <select id="term-select">
+                <option value="avg_generale">Moyenne générale</option>
+                <option value="avg_etape1">Étape 1</option>
+                <option value="avg_etape2">Étape 2</option>
+                <option value="avg_etape3">Étape 3</option>
+            </select>
         </div>
-
-        <div id="performance-analysis" class="performance-analysis"></div>
-        
-        <div class="leaderboard-container">
-            <div class="leaderboard-header">
-                <div>Rang</div>
-                <div>Sujets Principaux</div>
-                <div style="text-align: right;">Note</div>
-            </div>
-            <ul id="leaderboard-list" class="leaderboard-list">
-                 <div class="loader">Chargement des données...</div>
-            </ul>
+        <div id="dashboard-container">
+             <div class="loader">Chargement des données...</div>
         </div>
     </main>
-
     <footer>*jauge de la moyenne</footer>
-
     <script>
-        // !! IMPORTANT !!
-        // Collez l'URL de votre Web App de Google Apps Script ici
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxO03QgX292COEJaGxMMKczpaC8SuKYfhx7DzSaYhq5Jo0I_bQGtEmDP3wlzclOLo3L/exec";
+        // !! IMPORTANT !! PASTE YOUR WEB APP URL HERE
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxOay6sGNlL_f4MfhHkmwBTi0J3ONrCxv2dg1y5pqKjgKmAN07xttJtlrXjNqLbxdYR/exec";
         
         let allData = [];
-        const userCode = localStorage.getItem('jdlmUserCode');
-        
-        const levelTabs = document.querySelectorAll('.level-tab');
+        // Get user code from their name stored in jdlmData
+        const jdlmData = JSON.parse(localStorage.getItem('jdlmData')) || {};
+        const userCode = (jdlmData.nom || '').replace(/\s+/g, '').toLowerCase();
+        // Get the level selected on the main page
+        const selectedLevel = localStorage.getItem('jdlmNiveau') || 'sec4'; // Default to sec4 if not found
+
         const termSelect = document.getElementById('term-select');
-        const leaderboardList = document.getElementById('leaderboard-list');
-        const performanceContainer = document.getElementById('performance-analysis');
+        const dashboardContainer = document.getElementById('dashboard-container');
 
         document.addEventListener('DOMContentLoaded', async () => {
-            setupEventListeners();
+            document.querySelector('.site-header').textContent += ` - ${selectedLevel === 'sec4' ? 'Sec. 4' : 'Sec. 5'}`;
+            termSelect.addEventListener('change', renderDashboard);
             await fetchData();
-            renderLeaderboard();
+            renderDashboard();
         });
-
-        function setupEventListeners() {
-            levelTabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    document.querySelector('.level-tab.active').classList.remove('active');
-                    tab.classList.add('active');
-                    renderLeaderboard();
-                });
-            });
-            termSelect.addEventListener('change', renderLeaderboard);
-        }
 
         async function fetchData() {
             try {
                 const response = await fetch(SCRIPT_URL);
-                if (!response.ok) throw new Error('Network response was not ok.');
+                if (!response.ok) throw new Error('Network response error.');
                 const data = await response.json();
                 if (data.error) throw new Error(data.error);
 
-                // Convertir les notes en nombres pour le tri
                 allData = data.map(row => {
                     for (const key in row) {
-                        if (key.startsWith('avg_')) {
-                            row[key] = parseFloat(row[key]) || null;
-                        }
+                        if (key.startsWith('avg_')) row[key] = parseFloat(row[key]) || null;
                     }
                     return row;
                 });
             } catch (error) {
-                console.error("Erreur lors de la récupération des données:", error);
-                leaderboardList.innerHTML = `<div class="no-data">Impossible de charger les données.</div>`;
+                console.error("Fetch Error:", error);
+                dashboardContainer.innerHTML = `<div class="no-data">Impossible de charger les données du classement.</div>`;
             }
         }
 
-        function renderLeaderboard() {
-            const selectedLevel = document.querySelector('.level-tab.active').dataset.level;
-            const selectedTerm = termSelect.value;
-            const termLabel = termSelect.options[termSelect.selectedIndex].text;
+        function renderDashboard() {
+            const selectedTermKey = termSelect.value;
 
-            // 1. Filtrer les données par niveau et s'assurer qu'il y a une note pour le terme sélectionné
-            const filteredData = allData.filter(d => d.niveau === selectedLevel && d[selectedTerm] !== null);
-
-            // 2. Trier les données par la note du terme sélectionné (décroissant)
-            const sortedData = filteredData.sort((a, b) => b[selectedTerm] - a[selectedTerm]);
-
-            leaderboardList.innerHTML = '';
-            performanceContainer.innerHTML = '<div class="no-data">Aucune donnée personnelle pour cette sélection.</div>';
-
-            if (sortedData.length === 0) {
-                leaderboardList.innerHTML = `<div class="no-data">Aucune donnée disponible pour cette sélection.</div>`;
+            const levelData = allData.filter(d => d.niveau === selectedLevel);
+            if (levelData.length === 0) {
+                dashboardContainer.innerHTML = `<div class="no-data">Aucune donnée trouvée pour le ${selectedLevel === 'sec4' ? 'Secondaire 4' : 'Secondaire 5'}.</div>`;
                 return;
             }
 
-            // 3. Trouver les données et le rang de l'utilisateur
-            let userRank = -1;
-            let userData = null;
-            sortedData.forEach((d, index) => {
-                if (d.userCode === userCode) {
-                    userRank = index + 1;
-                    userData = d;
-                }
-            });
-
-            // 4. Afficher l'analyse de performance de l'utilisateur
-            if (userData) {
-                performanceContainer.innerHTML = `
-                    <h3>Votre Performance (${termLabel})</h3>
-                    <div class="analysis-grid">
-                        <div class="stat-item">
-                            <div class="label">Moyenne</div>
-                            <div class="value">${userData[selectedTerm].toFixed(2)}%</div>
-                            <div class="rank">Top ${userRank} sur ${sortedData.length}</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="label">Français</div>
-                            <div class="value">${userData.avg_francais ? userData.avg_francais.toFixed(1) + '%' : 'N/A'}</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="label">Mathématique</div>
-                            <div class="value">${userData.avg_math ? userData.avg_math.toFixed(1) + '%' : 'N/A'}</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="label">Anglais</div>
-                            <div class="value">${userData.avg_anglais ? userData.avg_anglais.toFixed(1) + '%' : 'N/A'}</div>
-                        </div>
-                    </div>
-                `;
+            const currentUserData = levelData.find(d => d.userCode === userCode);
+            if (!currentUserData) {
+                dashboardContainer.innerHTML = `<div class="no-data">Vos données n'ont pas encore été trouvées dans le classement.</div>`;
+                return;
             }
             
-            // 5. Afficher le classement
-            sortedData.forEach((d, index) => {
-                const li = document.createElement('li');
-                li.className = 'leaderboard-item';
-                if (d.userCode === userCode) {
-                    li.classList.add('is-user');
-                }
-                const fr = d.avg_francais ? d.avg_francais.toFixed(0) : '-';
-                const ma = d.avg_math ? d.avg_math.toFixed(0) : '-';
-                const an = d.avg_anglais ? d.avg_anglais.toFixed(0) : '-';
+            const mainWidgetHTML = createWidgetHTML(selectedTermKey, termSelect.options[termSelect.selectedIndex].text, levelData, currentUserData);
+            const francaisWidgetHTML = createWidgetHTML('avg_francais', 'Moyenne Français', levelData, currentUserData);
+            const mathWidgetHTML = createWidgetHTML('avg_math', 'Moyenne Math', levelData, currentUserData);
+            const anglaisWidgetHTML = createWidgetHTML('avg_anglais', 'Moyenne Anglais', levelData, currentUserData);
 
-                li.innerHTML = `
-                    <div class="rank">#${index + 1}</div>
-                    <div>
-                        <div class="subjects-info">Fra: <strong>${fr}</strong> | Math: <strong>${ma}</strong> | Ang: <strong>${an}</strong></div>
-                    </div>
-                    <div class="grade" style="text-align: right;">${d[selectedTerm].toFixed(2)}%</div>
-                `;
-                leaderboardList.appendChild(li);
-            });
+            dashboardContainer.innerHTML = `
+                <div class="dashboard-grid">
+                    <div class="stat-widget main-widget">${mainWidgetHTML}</div>
+                    <div class="stat-widget small-widget">${francaisWidgetHTML}</div>
+                    <div class="stat-widget small-widget">${mathWidgetHTML}</div>
+                    <div class="stat-widget small-widget">${anglaisWidgetHTML}</div>
+                </div>
+            `;
+        }
+
+        function createWidgetHTML(currentKey, title, allUsersData, currentUserData) {
+            // Filter users who have a grade for the current key and sort them
+            const rankedUsers = allUsersData
+                .filter(u => u[currentKey] !== null)
+                .sort((a, b) => b[currentKey] - a[currentKey]);
+
+            const totalUsers = rankedUsers.length;
+            const currentUserRank = rankedUsers.findIndex(u => u.userCode === userCode) + 1;
+            const currentUserGrade = currentUserData[currentKey];
+            
+            if (currentUserGrade === null || currentUserRank === 0) {
+                return `<h3 class="widget-title">${title}</h3><div class="no-data" style="padding:10px;">N/A</div>`;
+            }
+
+            // Determine previous grade for trend comparison
+            let previousGrade = null;
+            if (currentKey === 'avg_etape2') previousGrade = currentUserData['avg_etape1'];
+            if (currentKey === 'avg_etape3') previousGrade = currentUserData['avg_etape2'];
+            
+            let trendClass = 'trend-neutral';
+            if (previousGrade !== null) {
+                if (currentUserGrade > previousGrade) trendClass = 'trend-up';
+                else if (currentUserGrade < previousGrade) trendClass = 'trend-down';
+            }
+            
+            return `
+                <h3 class="widget-title">${title}</h3>
+                <div class="widget-value ${trendClass}">
+                    <span class="trend-indicator"></span>
+                    <span>${currentUserGrade.toFixed(1)}%</span>
+                </div>
+                <div class="widget-rank">Top ${currentUserRank} sur ${totalUsers}</div>
+            `;
         }
     </script>
 </body>
