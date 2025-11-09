@@ -14,23 +14,20 @@
             --widget-background: #ffffff; --text-color: #34495e; --light-grey: #e0e6eb;
             --danger-color: #e74c3c; --success-color: #27ae60; --shadow-widget: 0 10px 20px rgba(0, 0, 0, 0.07);
         }
-        html, body {
-            height: 100%;
-            margin: 0;
-        }
+        html { height: 100%; }
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background-color: var(--background-color); 
-            color: var(--text-color);
-            display: flex;
-            flex-direction: column;
-            justify-content: center; /* Vertical centering */
+            margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--background-color); color: var(--text-color);
+            display: flex; flex-direction: column; min-height: 100%;
         }
         .site-header-container { background-color: var(--widget-background); box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 15px 0; position: relative; margin-bottom: 20px; flex-shrink: 0; }
         .site-header { text-align: center; padding: 0; margin: 0; color: var(--secondary-color); font-size: 2.2em; font-weight: 700; font-family: 'Playfair Display', serif; }
         .back-arrow { position: absolute; top: 50%; left: 25px; transform: translateY(-50%); font-size: 2.2em; color: var(--secondary-color); text-decoration: none; transition: color 0.2s; }
         .back-arrow:hover { color: var(--primary-color); }
-        .main-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; width: 100%; box-sizing: border-box; }
+        .main-container { 
+            max-width: 1200px; margin: auto; /* This centers the container vertically and horizontally */
+            padding: 0 20px; width: 100%; box-sizing: border-box;
+        }
         .controls { background: var(--widget-background); padding: 20px; border-radius: 12px; box-shadow: var(--shadow-widget); margin-bottom: 25px; border: 1px solid var(--light-grey); }
         .controls label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.9em; }
         select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background-color: white; font-size: 1em; }
@@ -42,7 +39,7 @@
         .main-avg-widget { grid-column: span 2; }
         .graph-widget { grid-column: 1 / -1; } /* Full width */
 
-        .widget-header { text-align: center; margin-bottom: 15px; }
+        .widget-header { text-align: center; margin-bottom: 20px; }
         .widget-title { font-size: 1.1em; font-weight: bold; color: var(--secondary-color); margin: 0 0 10px 0; }
         .widget-value { font-size: 3.5em; font-weight: 700; }
         .small-widget .widget-value { font-size: 2.5em; }
@@ -51,24 +48,19 @@
         .rank-trend-up { color: var(--success-color); } .rank-trend-up::before { content: '▲'; }
         .rank-trend-down { color: var(--danger-color); } .rank-trend-down::before { content: '▼'; }
 
-        /* MINI LEADERBOARD CONTAINER */
+        /* MINI LEADERBOARD */
         .mini-leaderboard-container {
-            flex-grow: 1;
-            overflow-y: auto; /* Enable vertical scrolling */
-            position: relative;
-            margin-top: 15px;
-            border-top: 1px solid var(--light-grey);
-            padding-top: 10px;
-            max-height: 210px; /* Fixed height to show approx. 5 items */
+            flex-grow: 1; overflow-y: auto; /* Make it scrollable */
+            position: relative; margin-top: 15px; border-top: 1px solid var(--light-grey); padding-top: 15px;
+            max-height: 190px; /* Fixed height for ~5 items (5 * (30px item + 8px padding)) */
         }
         .leaderboard-list { list-style: none; padding: 0; margin: 0; }
-        .leaderboard-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-radius: 8px; font-size: 0.95em; transition: background-color 0.2s; }
-        .leaderboard-item.is-user { background-color: #eaf2f8; }
-        .item-details { display: flex; align-items: center; }
-        .item-rank { width: 40px; font-weight: 600; text-align: left; }
-        .item-name { font-weight: 500; }
+        .leaderboard-item { display: flex; align-items: center; padding: 8px 10px; border-radius: 8px; font-size: 0.95em; transition: background-color 0.2s; }
+        .leaderboard-item.is-user { background-color: #eaf2f8; font-weight: bold; }
+        .item-rank { width: 45px; font-weight: 600; text-align: left; }
+        .item-name { font-weight: normal; margin-left: 10px; }
         .is-user .item-name { font-weight: bold; }
-        .item-grade { font-weight: 600; }
+        .item-grade { margin-left: auto; font-weight: 600; }
         
         /* GRAPH & OVERALL WIDGET */
         .graph-container { padding-top: 20px; }
@@ -80,27 +72,25 @@
     </style>
 </head>
 <body>
-    <div>
-        <div class="site-header-container">
-            <a href="main.html" class="back-arrow" title="Retour">←</a>
-            <header class="site-header">Tableau de Bord du Classement</header>
-        </div>
-        <main class="main-container">
-            <div class="controls">
-                <label for="term-select">Comparer les moyennes pour :</label>
-                <select id="term-select">
-                    <option value="avg_generale">Moyenne générale</option>
-                    <option value="avg_etape1">Étape 1</option>
-                    <option value="avg_etape2">Étape 2</option>
-                    <option value="avg_etape3">Étape 3</option>
-                </select>
-            </div>
-            <div id="dashboard-container">
-                 <div class="loader" style="color:var(--text-color)">Chargement des données...</div>
-            </div>
-        </main>
-        <footer>*jauge de la moyenne</footer>
+    <div class="site-header-container">
+        <a href="main.html" class="back-arrow" title="Retour">←</a>
+        <header class="site-header">Tableau de Bord du Classement</header>
     </div>
+    <main class="main-container">
+        <div class="controls">
+            <label for="term-select">Comparer les moyennes pour :</label>
+            <select id="term-select">
+                <option value="avg_generale">Moyenne générale</option>
+                <option value="avg_etape1">Étape 1</option>
+                <option value="avg_etape2">Étape 2</option>
+                <option value="avg_etape3">Étape 3</option>
+            </select>
+        </div>
+        <div id="dashboard-container">
+             <div class="loader" style="color:var(--text-color)">Chargement des données...</div>
+        </div>
+    </main>
+    <footer>*jauge de la moyenne</footer>
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxOay6sGNlL_f4MfhHkmwBTi0J3ONrCxv2dg1y5pqKjgKmAN07xttJtlrXjNqLbxdYR/exec";
         
@@ -199,12 +189,10 @@
             let leaderboardItemsHTML = rankedUsers.map((user, index) => {
                 const rank = index + 1;
                 const isCurrentUser = user.userCode === currentUserData.userCode;
-                const name = isCurrentUser ? 'Vous' : `Utilisateur ${rank}`;
+                const userName = isCurrentUser ? 'Vous' : `Utilisateur ${rank}`;
                 return `<li class="leaderboard-item ${isCurrentUser ? 'is-user' : ''}" data-rank="${rank}">
-                            <div class="item-details">
-                                <span class="item-rank">${getTrophy(rank)}</span>
-                                <span class="item-name">${name}</span>
-                            </div>
+                            <span class="item-rank">${getTrophy(rank)}</span>
+                            <span class="item-name">${userName}</span>
                             <span class="item-grade">${parseFloat(user[currentKey]).toFixed(1)}%</span>
                         </li>`;
             }).join('');
@@ -215,8 +203,13 @@
             } else {
                 const oldRank = oldRanks[currentKey];
                 let trendHTML = '';
-                if (oldRank !== undefined && currentUserRank < oldRank) trendHTML = `<span class="rank-trend rank-trend-up"></span>`;
-                else if (oldRank !== undefined && currentUserRank > oldRank) trendHTML = `<span class="rank-trend rank-trend-down"></span>`;
+                if (oldRank !== undefined) {
+                    if (currentUserRank < oldRank) {
+                        trendHTML = `<span class="rank-trend rank-trend-up"></span>`;
+                    } else if (currentUserRank > oldRank) {
+                        trendHTML = `<span class="rank-trend rank-trend-down"></span>`;
+                    }
+                }
                 
                 widgetContent = `
                     <div class="widget-header">
@@ -236,19 +229,18 @@
         }
         
         function updateLeaderboardScroll(container) {
-            const userRank = parseInt(container.dataset.userRank, 10);
-            if (!userRank || isNaN(userRank)) return;
+            const userRank = parseInt(container.dataset.userRank);
+            if (!userRank) return;
 
             const userItem = container.querySelector('.is-user');
             if (!userItem) return;
-
-            const itemHeight = userItem.offsetHeight + (parseInt(getComputedStyle(userItem).marginTop) || 0) + (parseInt(getComputedStyle(userItem).marginBottom) || 0);
             
-            // Center the user's item in the scrollable area
+            const itemHeight = userItem.offsetHeight;
             const containerHeight = container.clientHeight;
-            const scrollOffset = (itemHeight * userRank) - (containerHeight / 2) - (itemHeight / 2);
-            
-            container.scrollTop = scrollOffset;
+
+            // Scroll to center the user's item, but don't scroll past the beginning or end
+            const scrollTop = userItem.offsetTop - (containerHeight / 2) + (itemHeight / 2);
+            container.scrollTop = scrollTop;
         }
 
         function createOverallAverageWidgetHTML(termKey, levelData) {
@@ -257,7 +249,7 @@
             return `
                 <div class="stat-widget overall-avg-widget">
                     <div class="widget-header">
-                        <h3 class="widget-title">Moyen du niveau</h3>
+                        <h3 class="widget-title">Moyenne du Niveau</h3>
                         <div class="widget-value">${average.toFixed(1)}%</div>
                         <div class="widget-rank" style="opacity:0.8;">Basé sur ${validGrades.length} élèves</div>
                     </div>
@@ -271,13 +263,13 @@
                 const validGrades = levelData.map(u => parseFloat(u[etapeKey])).filter(g => !isNaN(g) && g > 0);
                 return validGrades.length > 0 ? validGrades.reduce((a,b) => a + b, 0) / validGrades.length : null;
             };
-            
-            const parseDataPoint = (value) => (value && parseFloat(value) > 0) ? parseFloat(value) : null;
+
+            const parseUserGrade = (grade) => (parseFloat(grade) > 0 ? parseFloat(grade) : null);
 
             const userData = [
-                parseDataPoint(currentUserData.avg_etape1), 
-                parseDataPoint(currentUserData.avg_etape2), 
-                parseDataPoint(currentUserData.avg_etape3)
+                parseUserGrade(currentUserData.avg_etape1), 
+                parseUserGrade(currentUserData.avg_etape2), 
+                parseUserGrade(currentUserData.avg_etape3)
             ];
             const groupData = [
                 calculateGroupAvg('avg_etape1'), 
@@ -299,22 +291,30 @@
                             backgroundColor: 'rgba(39, 174, 96, 0.1)',
                             borderWidth: 3,
                             fill: true,
-                            tension: 0.4
+                            tension: 0.4,
+                            spanGaps: false // This ensures the line breaks on null values
                         },
                         {
-                            label: 'Moyen du niveau',
+                            label: 'Moyenne du Niveau',
                             data: groupData,
                             borderColor: 'rgba(231, 76, 60, 1)',
                             backgroundColor: 'rgba(231, 76, 60, 0.1)',
                             borderWidth: 3,
                             fill: true,
-                            tension: 0.4
+                            tension: 0.4,
+                            spanGaps: false
                         }
                     ]
                 },
                 options: {
                     responsive: true,
-                    scales: { y: { beginAtZero: false, ticks: { callback: value => `${value.toFixed(1)}%` } } },
+                    scales: { 
+                        y: { 
+                            min: 0, 
+                            max: 100,
+                            ticks: { callback: value => `${value}%` } 
+                        } 
+                    },
                     plugins: { legend: { position: 'top' } }
                 }
             });
