@@ -6,12 +6,13 @@
     <title>Classement - Outil JDLM</title>
     <link rel="icon" href="https://raw.githubusercontent.com/Student-broken/student-broken.github.io/refs/heads/main/favicon.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <!-- Including Chart.js for the graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary-color: #2980b9; --secondary-color: #2c3e50; --background-color: #f7f9fb;
             --widget-background: #ffffff; --text-color: #34495e; --light-grey: #e0e6eb;
-            --danger-color: #e74c3c; --success-color: #27ae60; --shadow-widget: 0 8px 15px rgba(0, 0, 0, 0.08);
-            --user-highlight-color: #eaf2f8;
+            --danger-color: #e74c3c; --success-color: #27ae60; --shadow-widget: 0 10px 20px rgba(0, 0, 0, 0.07);
         }
         body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--background-color); color: var(--text-color); }
         .site-header-container { background-color: var(--widget-background); box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 15px 0; position: relative; margin-bottom: 20px; }
@@ -21,44 +22,35 @@
         .main-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
         .controls { background: var(--widget-background); padding: 20px; border-radius: 12px; box-shadow: var(--shadow-widget); margin-bottom: 25px; border: 1px solid var(--light-grey); }
         .controls label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.9em; }
-        select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background-color: white; font-size: 1.1em; }
+        select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background-color: white; font-size: 1em; }
         
         .dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
         .stat-widget { background: var(--widget-background); border-radius: 16px; padding: 25px; box-shadow: var(--shadow-widget); border: 1px solid var(--light-grey); display: flex; flex-direction: column; }
         
         /* WIDGET SIZING */
-        .main-widget { grid-column: 1 / -1; flex-direction: row; align-items: flex-start; gap: 25px; }
-        .graph-widget { grid-column: 1 / -1; }
-        .overall-avg-widget { grid-column: 1 / -1; text-align: center; }
+        .main-avg-widget { grid-column: span 2; }
+        .graph-widget { grid-column: 1 / -1; } /* Full width */
 
-        .widget-content { flex-grow: 1; text-align: center; }
-        .main-widget .widget-content { text-align: left; }
-        .widget-title { font-size: 1.2em; font-weight: bold; color: var(--secondary-color); margin: 0 0 15px 0; }
-        .main-widget .widget-title { font-size: 1.5em; }
-        .widget-value { font-size: 4em; font-weight: 700; margin-bottom: 5px; }
-        .medium-widget .widget-value { font-size: 2.5em; }
-        .widget-rank { font-size: 1.2em; font-weight: 600; color: var(--secondary-color); opacity: 0.9; }
-        .rank-trend { font-weight: bold; margin-left: 8px; }
-        .rank-trend-up { color: var(--success-color); }
-        .rank-trend-down { color: var(--danger-color); }
-        .rank-trend-up::before { content: '▲'; }
-        .rank-trend-down::before { content: '▼'; }
+        .widget-header { text-align: center; margin-bottom: 20px; }
+        .widget-title { font-size: 1.1em; font-weight: bold; color: var(--secondary-color); margin: 0 0 10px 0; }
+        .widget-value { font-size: 3.5em; font-weight: 700; }
+        .small-widget .widget-value { font-size: 2.5em; }
+        .widget-rank { font-size: 1.2em; font-weight: 600; color: var(--secondary-color); display: flex; align-items: center; justify-content: center; }
+        .rank-trend { font-weight: bold; margin-left: 8px; font-size: 1.1em; }
+        .rank-trend-up { color: var(--success-color); } .rank-trend-up::before { content: '▲'; }
+        .rank-trend-down { color: var(--danger-color); } .rank-trend-down::before { content: '▼'; }
 
         /* MINI LEADERBOARD */
-        .mini-leaderboard { flex-shrink: 0; width: 200px; height: 190px; overflow-y: auto; border-left: 2px solid var(--light-grey); padding-left: 20px; scroll-behavior: smooth; }
-        .medium-widget .mini-leaderboard { border: none; padding: 0; margin-top: 20px; border-top: 2px solid var(--light-grey); padding-top: 15px; width: 100%; height: 150px; }
-        .mini-leaderboard ul { list-style: none; padding: 0; margin: 0; }
-        .mini-leaderboard li { display: flex; justify-content: space-between; align-items: baseline; padding: 6px; border-radius: 6px; font-size: 1em; transition: background-color 0.2s; }
-        .mini-leaderboard li.is-user { background-color: var(--user-highlight-color); font-weight: bold; }
-        .leaderboard-rank { font-weight: bold; min-width: 45px; }
-        .leaderboard-grade { font-size: 1.1em; font-weight: 600; color: var(--primary-color); }
-
-        /* GRAPH WIDGET */
+        .mini-leaderboard-container { flex-grow: 1; overflow: hidden; position: relative; margin-top: 15px; border-top: 1px solid var(--light-grey); padding-top: 15px; }
+        .leaderboard-list { list-style: none; padding: 0; margin: 0; transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
+        .leaderboard-item { display: flex; align-items: center; padding: 8px 10px; border-radius: 8px; font-size: 0.95em; transition: background-color 0.2s; opacity: 1; }
+        .leaderboard-item.is-user { background-color: #eaf2f8; font-weight: bold; }
+        .item-rank { width: 45px; font-weight: 600; text-align: right; margin-right: 10px; }
+        .item-grade { margin-left: auto; font-weight: 600; }
+        
+        /* GRAPH & OVERALL WIDGET */
         .graph-container { padding-top: 20px; }
-        .graph-container svg { width: 100%; height: auto; }
-        .graph-legend { display: flex; justify-content: center; gap: 20px; margin-top: 10px; font-size: 0.9em; }
-        .legend-item { display: flex; align-items: center; gap: 6px; }
-        .legend-color { width: 12px; height: 12px; border-radius: 50%; }
+        .overall-avg-widget { text-align: center; }
 
         .loader, .error-message, .no-data { text-align: center; padding: 40px; font-size: 1.2em; color: var(--light-grey); }
         .error-message { color: var(--danger-color); background-color: #fdd; border: 1px solid var(--danger-color); border-radius: 8px; }
@@ -90,6 +82,7 @@
         
         const dashboardContainer = document.getElementById('dashboard-container');
         let currentRanks = {}; 
+        let chartInstance = null;
         
         async function initializeDashboard() {
             const localData = JSON.parse(localStorage.getItem('jdlmData')) || {};
@@ -116,180 +109,183 @@
 
             } catch (error) {
                 console.error("Fetch Error:", error);
-                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur de chargement :</strong> Impossible de récupérer les données du classement.</div>`;
+                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur de chargement :</strong> Impossible de récupérer les données du classement. Vérifiez la console (F12).</div>`;
             }
         }
 
         function renderDashboard(allData, userCode, selectedLevel, oldRanks) {
-            currentRanks = {};
+            currentRanks = {}; 
+            const selectedTermKey = document.getElementById('term-select').value;
             const levelData = allData.filter(d => d.niveau === selectedLevel);
             
             if (levelData.length === 0) {
-                dashboardContainer.innerHTML = `<div class="no-data">Aucune donnée de classement pour ce niveau.</div>`;
+                dashboardContainer.innerHTML = `<div class="no-data">Aucune donnée de classement n'a encore été enregistrée pour ce niveau.</div>`;
                 return;
             }
 
             const currentUserData = levelData.find(d => d.userCode === userCode);
             
             if (!currentUserData) {
-                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur :</strong> Vos données n'ont pas été trouvées pour ce niveau.</div>`;
+                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur :</strong> Vos données n'ont pas été trouvées dans le classement pour ce niveau.</div>`;
                 return;
             }
             
-            const mainWidgetHTML = createWidgetHTML('avg_generale', 'Moyenne Générale', levelData, currentUserData, oldRanks, 'main-widget');
-            const francaisWidgetHTML = createWidgetHTML('avg_francais', 'Français', levelData, currentUserData, oldRanks, 'medium-widget');
-            const mathWidgetHTML = createWidgetHTML('avg_math', 'Mathématique', levelData, currentUserData, oldRanks, 'medium-widget');
-            const anglaisWidgetHTML = createWidgetHTML('avg_anglais', 'Anglais', levelData, currentUserData, oldRanks, 'medium-widget');
-            const overallAvgWidgetHTML = createOverallAverageWidgetHTML('avg_generale', 'Moyenne du Groupe (Générale)', levelData);
-            const graphWidgetHTML = createGraphWidgetHTML(currentUserData, levelData);
-
+            const mainWidgetHTML = createStatWidgetHTML('main-avg-widget', selectedTermKey, document.getElementById('term-select').options[document.getElementById('term-select').selectedIndex].text, levelData, currentUserData, oldRanks);
+            const francaisWidgetHTML = createStatWidgetHTML('small-widget', 'avg_francais', 'Moyenne Français', levelData, currentUserData, oldRanks);
+            const mathWidgetHTML = createStatWidgetHTML('small-widget', 'avg_math', 'Moyenne Math', levelData, currentUserData, oldRanks);
+            const anglaisWidgetHTML = createStatWidgetHTML('small-widget', 'avg_anglais', 'Moyenne Anglais', levelData, currentUserData, oldRanks);
+            const overallAvgHTML = createOverallAverageWidgetHTML(selectedTermKey, levelData);
+            
             dashboardContainer.innerHTML = `
                 <div class="dashboard-grid">
-                    <div class="stat-widget main-widget">${mainWidgetHTML}</div>
-                    <div class="stat-widget medium-widget">${francaisWidgetHTML}</div>
-                    <div class="stat-widget medium-widget">${mathWidgetHTML}</div>
-                    <div class="stat-widget medium-widget">${anglaisWidgetHTML}</div>
-                    <div class="stat-widget overall-avg-widget">${overallAvgWidgetHTML}</div>
-                    <div class="stat-widget graph-widget">${graphWidgetHTML}</div>
+                    ${mainWidgetHTML}
+                    ${overallAvgHTML}
+                    <div class="stat-widget graph-widget">
+                        <h3 class="widget-title" style="text-align:center;">Performance par Étape</h3>
+                        <div class="graph-container"><canvas id="performanceChart"></canvas></div>
+                    </div>
+                    ${francaisWidgetHTML}
+                    ${mathWidgetHTML}
+                    ${anglaisWidgetHTML}
                 </div>
             `;
             
-            // Post-render setup to scroll leaderboards into view
-            ['avg_generale', 'avg_francais', 'avg_math', 'avg_anglais'].forEach(key => {
-                const userItem = document.querySelector(`#leaderboard-${key} .is-user`);
-                if (userItem) {
-                    userItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
+            createPerformanceChart(levelData, currentUserData);
+
+            // After HTML is rendered, activate the scrolling leaderboards
+            document.querySelectorAll('.mini-leaderboard-container').forEach(container => {
+                updateLeaderboardScroll(container);
             });
 
             localStorage.setItem('jdlmRankHistory', JSON.stringify(currentRanks));
         }
 
-        function createWidgetHTML(key, title, allUsersData, currentUserData, oldRanks, widgetClass) {
-            const rankedUsers = allUsersData
-                .filter(u => u[key] && !isNaN(parseFloat(u[key])))
-                .sort((a, b) => parseFloat(b[key]) - parseFloat(a[key]));
-
+        function createStatWidgetHTML(widgetClass, currentKey, title, allUsersData, currentUserData, oldRanks) {
+            const rankedUsers = allUsersData.filter(u => u[currentKey] && !isNaN(parseFloat(u[currentKey]))).sort((a, b) => b[currentKey] - a[currentKey]);
             const totalUsers = rankedUsers.length;
             const currentUserRank = rankedUsers.findIndex(u => u.userCode === currentUserData.userCode) + 1;
-            const currentUserGrade = parseFloat(currentUserData[key]);
+            const currentUserGrade = parseFloat(currentUserData[currentKey]);
             
-            if (currentUserRank > 0) currentRanks[key] = currentUserRank;
+            if (currentUserRank > 0) currentRanks[currentKey] = currentUserRank;
             
-            if (isNaN(currentUserGrade) || currentUserRank === 0) {
-                return `<div class="widget-content"><h3 class="widget-title">${title}</h3><div class="no-data" style="padding:10px;">N/A</div></div>`;
-            }
+            const getTrophy = (rank) => {
+                if (rank === 1) return '🥇'; if (rank === 2) return '🥈'; if (rank === 3) return '🥉';
+                return `#${rank}`;
+            };
 
-            const oldRank = oldRanks[key];
-            let trendHTML = '';
-            if (oldRank === undefined || currentUserRank <= oldRank) {
-                trendHTML = `<span class="rank-trend rank-trend-up"></span>`;
-            } else {
-                trendHTML = `<span class="rank-trend rank-trend-down"></span>`;
-            }
-            
-            const trophies = ['🥇', '🥈', '🥉'];
-            const leaderboardItems = rankedUsers.map((user, index) => {
+            let leaderboardItemsHTML = rankedUsers.map((user, index) => {
                 const rank = index + 1;
                 const isCurrentUser = user.userCode === currentUserData.userCode;
-                const rankDisplay = trophies[index] || `#${rank}`;
-                return `<li class="${isCurrentUser ? 'is-user' : ''}">
-                          <span class="leaderboard-rank">${rankDisplay}</span> 
-                          <span class="leaderboard-grade">${parseFloat(user[key]).toFixed(1)}%</span>
+                return `<li class="leaderboard-item ${isCurrentUser ? 'is-user' : ''}" data-rank="${rank}">
+                            <span class="item-rank">${getTrophy(rank)}</span>
+                            <span class="item-grade">${parseFloat(user[currentKey]).toFixed(1)}%</span>
                         </li>`;
             }).join('');
-
-            return `
-                <div class="widget-content">
-                    <h3 class="widget-title">${title}</h3>
-                    <div class="widget-value">${currentUserGrade.toFixed(1)}%</div>
-                    <div class="widget-rank">
-                        <span>Top ${currentUserRank} sur ${totalUsers}</span>
-                        ${trendHTML}
+            
+            let widgetContent;
+            if (isNaN(currentUserGrade) || currentUserRank === 0) {
+                widgetContent = `<div class="widget-header"><h3 class="widget-title">${title}</h3><div class="no-data" style="padding:10px;">N/A</div></div>`;
+            } else {
+                const oldRank = oldRanks[currentKey];
+                let trendHTML = '';
+                if (oldRank === undefined || currentUserRank <= oldRank) trendHTML = `<span class="rank-trend rank-trend-up"></span>`;
+                else if (currentUserRank > oldRank) trendHTML = `<span class="rank-trend rank-trend-down"></span>`;
+                
+                widgetContent = `
+                    <div class="widget-header">
+                        <h3 class="widget-title">${title}</h3>
+                        <div class="widget-value">${currentUserGrade.toFixed(1)}%</div>
+                        <div class="widget-rank">
+                            <span>Top ${currentUserRank} sur ${totalUsers}</span>
+                            ${trendHTML}
+                        </div>
                     </div>
-                </div>
-                <div class="mini-leaderboard" id="leaderboard-${key}">
-                    <ul>${leaderboardItems}</ul>
-                </div>
-            `;
-        }
-
-        function createOverallAverageWidgetHTML(key, title, allUsersData) {
-            const validUsers = allUsersData.filter(u => u[key] && !isNaN(parseFloat(u[key])));
-            if (validUsers.length === 0) return `<h3 class="widget-title">${title}</h3><div class="no-data">N/A</div>`;
-            
-            const sum = validUsers.reduce((acc, user) => acc + parseFloat(user[key]), 0);
-            const average = sum / validUsers.length;
-            return `<h3 class="widget-title">${title}</h3><div class="widget-value" style="font-size:2.5em;">${average.toFixed(1)}%</div>`;
-        }
-
-        function createGraphWidgetHTML(currentUserData, allUsersData) {
-            const userPoints = [currentUserData.avg_etape1, currentUserData.avg_etape2, currentUserData.avg_etape3];
-            const groupPoints = [1, 2, 3].map(etape => {
-                const key = `avg_etape${etape}`;
-                const validUsers = allUsersData.filter(u => u[key] && !isNaN(parseFloat(u[key])));
-                if (validUsers.length === 0) return null;
-                const sum = validUsers.reduce((acc, user) => acc + parseFloat(user[key]), 0);
-                return sum / validUsers.length;
-            });
-            
-            const validDataPoints = [...userPoints, ...groupPoints].filter(p => p !== null);
-            if (validDataPoints.length === 0) {
-                return `<h3 class="widget-title">Progression des Moyennes Générales</h3><div class="no-data">Données insuffisantes pour afficher le graphique.</div>`;
+                    <div class="mini-leaderboard-container" data-user-rank="${currentUserRank}">
+                        <ul class="leaderboard-list">${leaderboardItemsHTML}</ul>
+                    </div>
+                `;
             }
+            return `<div class="stat-widget ${widgetClass}">${widgetContent}</div>`;
+        }
+        
+        function updateLeaderboardScroll(container) {
+            const userRank = parseInt(container.dataset.userRank);
+            if (!userRank) return;
 
-            const yMin = Math.min(...validDataPoints) - 5;
-            const yMax = Math.max(...validDataPoints) + 5;
+            const list = container.querySelector('.leaderboard-list');
+            const userItem = container.querySelector('.is-user');
+            if (!userItem) return;
+
+            const itemHeight = userItem.offsetHeight;
+            let scrollOffset;
             
-            const svgWidth = 1000;
-            const svgHeight = 400;
-            const margin = { top: 20, right: 40, bottom: 50, left: 60 };
-
-            const toX = (index) => margin.left + (index * (svgWidth - margin.left - margin.right) / 2);
-            const toY = (value) => svgHeight - margin.bottom - ((value - yMin) / (yMax - yMin)) * (svgHeight - margin.top - margin.bottom);
-
-            let userPath = '', groupPath = '', userCircles = '', groupCircles = '';
+            if (userRank <= 3) {
+                scrollOffset = 0; // At the top, show from the beginning
+            } else {
+                scrollOffset = (userRank - 4) * itemHeight; // Position 3 items above the user
+            }
             
-            userPoints.forEach((p, i) => {
-                if (p === null) return;
-                const cmd = userPath === '' ? 'M' : 'L';
-                userPath += `${cmd}${toX(i)},${toY(p)} `;
-                userCircles += `<circle cx="${toX(i)}" cy="${toY(p)}" r="6" fill="var(--success-color)" />`;
+            // Instantly move to position, then let user scroll freely
+            container.scrollTop = scrollOffset;
+        }
+
+        function createOverallAverageWidgetHTML(termKey, levelData) {
+            const validGrades = levelData.map(u => parseFloat(u[termKey])).filter(g => !isNaN(g));
+            const average = validGrades.length > 0 ? validGrades.reduce((a, b) => a + b, 0) / validGrades.length : 0;
+            return `
+                <div class="stat-widget overall-avg-widget">
+                    <div class="widget-header">
+                        <h3 class="widget-title">Moyenne du Groupe</h3>
+                        <div class="widget-value">${average.toFixed(1)}%</div>
+                        <div class="widget-rank" style="opacity:0.8;">Basé sur ${validGrades.length} élèves</div>
+                    </div>
+                </div>`;
+        }
+        
+        function createPerformanceChart(levelData, currentUserData) {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            
+            const calculateGroupAvg = (etapeKey) => {
+                const validGrades = levelData.map(u => parseFloat(u[etapeKey])).filter(g => !isNaN(g));
+                return validGrades.length > 0 ? validGrades.reduce((a,b) => a + b, 0) / validGrades.length : null;
+            };
+
+            const userData = [currentUserData.avg_etape1, currentUserData.avg_etape2, currentUserData.avg_etape3];
+            const groupData = [calculateGroupAvg('avg_etape1'), calculateGroupAvg('avg_etape2'), calculateGroupAvg('avg_etape3')];
+            
+            if(chartInstance) chartInstance.destroy(); // Clear previous chart
+            
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Étape 1', 'Étape 2', 'Étape 3'],
+                    datasets: [
+                        {
+                            label: 'Votre Moyenne',
+                            data: userData,
+                            borderColor: 'rgba(39, 174, 96, 1)',
+                            backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Moyenne du Groupe',
+                            data: groupData,
+                            borderColor: 'rgba(231, 76, 60, 1)',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: false, ticks: { callback: value => `${value}%` } } },
+                    plugins: { legend: { position: 'top' } }
+                }
             });
-            groupPoints.forEach((p, i) => {
-                if (p === null) return;
-                const cmd = groupPath === '' ? 'M' : 'L';
-                groupPath += `${cmd}${toX(i)},${toY(p)} `;
-                groupCircles += `<circle cx="${toX(i)}" cy="${toY(p)}" r="6" fill="var(--danger-color)" />`;
-            });
-
-            const xLabels = ['Étape 1', 'Étape 2', 'Étape 3'].map((label, i) => 
-                `<text x="${toX(i)}" y="${svgHeight - 15}" text-anchor="middle" fill="var(--text-color)">${label}</text>`
-            ).join('');
-
-            const yLabels = [Math.ceil(yMin), Math.round((yMin + yMax) / 2), Math.floor(yMax)].map(val => 
-                 `<text x="${margin.left - 10}" y="${toY(val)}" text-anchor="end" alignment-baseline="middle" fill="var(--text-color)">${val}%</text>
-                  <line x1="${margin.left}" y1="${toY(val)}" x2="${svgWidth - margin.right}" y2="${toY(val)}" stroke="var(--light-grey)" stroke-dasharray="4"/>`
-            ).join('');
-
-            const svg = `
-                <h3 class="widget-title">Progression des Moyennes Générales</h3>
-                <div class="graph-container">
-                    <svg viewBox="0 0 ${svgWidth} ${svgHeight}">
-                        ${yLabels}
-                        <polyline points="${groupPath}" fill="none" stroke="var(--danger-color)" stroke-width="4" stroke-linecap="round"/>
-                        <polyline points="${userPath}" fill="none" stroke="var(--success-color)" stroke-width="4" stroke-linecap="round"/>
-                        ${groupCircles}
-                        ${userCircles}
-                        ${xLabels}
-                    </svg>
-                </div>
-                <div class="graph-legend">
-                    <div class="legend-item"><div class="legend-color" style="background-color: var(--success-color);"></div><span>Vos moyennes</span></div>
-                    <div class="legend-item"><div class="legend-color" style="background-color: var(--danger-color);"></div><span>Moyennes du groupe</span></div>
-                </div>
-            `;
-            return svg;
         }
 
         document.addEventListener('DOMContentLoaded', initializeDashboard);
