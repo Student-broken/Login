@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter des Données - Outil JDLM</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/Student-broken/student-broken.github.io/refs/heads/main/favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2980b9;
+            --secondary-color: #2c3e50;
+            --background-color: #f7f9fb;
+            --widget-background: #ffffff;
+            --text-color: #34495e;
+            --light-grey: #bdc3c7;
+            --footer-grey: #95a5a6;
+            --danger-color: #e74c3c;
+            --shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+        }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, 'Playfair Display';
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .site-header-container {
+            background-color: var(--widget-background);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid #e0e6eb;
+            padding: 15px 0;
+            position: relative;
+        }
+        .site-header {
+            text-align: center;
+            padding: 0;
+            margin: 0;
+            color: var(--secondary-color);
+            font-size: 2.2em;
+            font-weight: 700;
+            font-family: 'Playfair Display', serif;
+            letter-spacing: 0.05em;
+        }
+        .content {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+        }
+        .back-arrow {
+            position: absolute;
+            top: 20px;
+            left: 25px;
+            font-size: 2.2em;
+            color: var(--secondary-color);
+            text-decoration: none;
+            transition: color 0.2s, transform 0.2s;
+            line-height: 1;
+        }
+        .back-arrow:hover {
+            color: var(--primary-color);
+            transform: scale(1.05);
+        }
+        .data-widget {
+            background-color: var(--widget-background);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 650px;
+            margin-top: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 350px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            margin-bottom: 30px;
+            box-sizing: border-box;
+            resize: vertical;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.2);
+            outline: none;
+        }
+        .terms-acceptance {
+            font-size: 0.85em;
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--text-color);
+        }
+        .terms-acceptance a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .terms-acceptance a:hover {
+            text-decoration: underline;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            color: white;
+            background-color: var(--primary-color);
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .btn:not(:disabled):hover {
+            background-color: #3498db;
+            transform: translateY(-1px);
+        }
+        .btn:disabled {
+            background-color: var(--light-grey);
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        .info-btn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            width: 45px;
+            height: 45px;
+            background: none;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+            padding: 0;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .info-btn:hover {
+            background-color: var(--primary-color);
+            color: var(--widget-background);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            max-width: 90%;
+            width: 450px;
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: transform 0.3s, opacity 0.3s;
+        }
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 2em;
+            cursor: pointer;
+            color: var(--light-grey);
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .modal-close:hover {
+            color: var(--danger-color);
+        }
+        .modal-content h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+        .modal-content p {
+            line-height: 1.5;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--primary-color);
+            padding-left: 10px;
+        }
+        .important-message {
+            background-color: #fceae9;
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            font-size: 0.95em;
+        }
+        .important-message .icon {
+            font-size: 1.5em;
+            margin-right: 10px;
+            line-height: 1;
+        }
+        footer {
+            text-align: center;
+            padding: 15px;
+            font-size: 0.8em;
+            color: var(--footer-grey);
+            font-style: italic;
+            border-top: 1px solid #eee;
+            margin-top: auto;
+            
+        form-group {
+            margin-bottom: 25px;
+        }
+        form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+        form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fff;
+            font-size: 1em;
+            box-sizing: border-box;
+            appearance: none; 
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%232c3e50%22%20d%3D%22M287%2069.9l-137.9%20138c-4.7%204.7-12.2%204.7-16.9%200l-137.8-138c-4.7-4.7-4.7-12.3%200-17l8.4-8.4c4.7-4.7%2012.3-4.7%2017%200l119.5%20119.7L261.6%2044.5c4.7-4.7%2012.3-4.7%2017%200l8.4%208.4c4.7%204.7%204.7%2012.3%200%2017z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 12px;
+            cursor: pointer;
+        
+        }
+        
+        
+        
+        
+        
+        
+    </style>
+</head>
+<body>
+
+    <div class="site-header-container">
+        <header class="site-header">Outil JDLM*</header>
+    </div>
+
+    <a href="main.html" class="back-arrow" title="Retour">←</a>
+    
+    <button class="info-btn" id="open-modal-btn" title="Ouvrir le tutoriel">?</button>
+
+    <main class="content">
+        <div class="data-widget">
+            <form id="data-form">
+                <textarea id="raw-text" placeholder="Collez les données du portail ici...
+(Appuyez sur le bouton Aide pour un tutoriel)"></textarea>
+                
+                
+                
+                <div class="form-group">
+                    <label for="niveau-secondaire">Votre niveau secondaire (pour les unités):</label>
+                    <select id="niveau-secondaire" required>
+                        <option value="" disabled selected>Sélectionner votre niveau</option>
+                        <option value="sec4">Secondaire 4</option>
+                        <option value="sec5">Secondaire 5</option>
+                    </select>
+                </div>
+                
+                
+                
+                <div id="message-container"></div> <p class="terms-acceptance">
+                    En cliquant sur "Enregistrer et continuer", vous acceptez les <a href="conditions.html" target="_blank">Conditions d’utilisation</a> et la <a href="confidentialite.html" target="_blank">Politique de confidentialité</a>.
+                </p>
+
+                <button type="submit" id="submit-btn" class="btn" disabled>Enregistrer et continuer</button>
+            </form>
+        </div>
+    </main>
+    
+    <div class="modal-overlay" id="tutorial-modal">
+        <div class="modal-content">
+            <span class="modal-close" id="close-modal-btn">&times;</span>
+            <h3>Comment utiliser l'outil</h3>
+            
+            <div class="important-message">
+                <span class="icon">⚠</span>
+                <span>
+                    <strong>Important!</strong> Pour avoir des informations à jour, vous devez refaire les étapes 1 à 5 souvent.
+                </span>
+            </div>
+            
+            <p>1. Allez dans la section "Travaux" du portail.</p>
+            <p>2. Faites les touches <strong>CTRL + A</strong> pour tout sélectionner.</p>
+            <p>3. Faites <strong>CTRL + C</strong> pour copier la sélection.</p>
+            <p>4. Collez le texte dans la zone ci-dessus avec <strong>CTRL + V</strong>.</p>
+            <p>5. Cliquez sur <strong>Enregistrer et continuer</strong>.</p>
+            <p>6. <strong>Répétez les étapes 1 à 5</strong> pour chaque étape (2e, 3e).</p>
+        </div>
+    </div>
+
+    <footer>*jauge de la moyenne</footer>
+    
+    <script>
+        // ========================================
+        // CONFIGURATION: WEB APP URL
+        // ** MUST BE REPLACED WITH YOUR DEPLOYED URL **
+        // ========================================
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby_2_NDulMDkqlQDwPO4CLis57K8NMFmosMCW5Peah1EDR-H4U4Xx8L6ir4kQxVJGouTw/exec';
+
+        // Element references
+        const submitBtn = document.getElementById('submit-btn');
+        const dataForm = document.getElementById('data-form');
+        const rawTextArea = document.getElementById('raw-text');
+        const messageContainer = document.getElementById('message-container');
+        const niveauSelect = document.getElementById('niveau-secondaire'); // NEW: Level select element
+
+        // Modal Logic (kept the same)
+        const openModalBtn = document.getElementById('open-modal-btn');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const tutorialModal = document.getElementById('tutorial-modal');
+        const openModal = () => tutorialModal.classList.add('active');
+        const closeModal = () => tutorialModal.classList.remove('active');
+        openModalBtn.addEventListener('click', openModal);
+        closeModalBtn.addEventListener('click', closeModal);
+        tutorialModal.addEventListener('click', (e) => { if (e.target === tutorialModal) closeModal(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+        // Submit Button Enable/Disable
+const checkTextarea = () => {
+            // Button is enabled if text is present AND a valid level is selected
+            submitBtn.disabled = rawTextArea.value.trim().length === 0 || niveauSelect.value === '';
+        };
+        checkTextarea();
+        rawTextArea.addEventListener('input', checkTextarea);
+        niveauSelect.addEventListener('change', checkTextarea); // NEW: Check
+
+        // Utility to show feedback messages
+        function showMessage(text, type) {
+            messageContainer.innerHTML = `<div class="important-message" style="background-color: ${type === 'success' ? '#e6ffee' : '#fceae9'}; color: ${type === 'success' ? '#27ae60' : '#e74c3c'}; border-color: ${type === 'success' ? '#27ae60' : '#e74c3c'};"><span class="icon">${type === 'success' ? '✔' : '⚠'}</span><span>${text}</span></div>`;
+        }
+
+        // Minimal Parsing to identify student and term before sending the raw data
+        function getBasicInfo(text) {
+            // Updated regex based on your original parser to find nom and term number
+            const nameMatch = text.match(/Photo\s*\n(.+)/);
+            const semesterMatch = text.match(/Classe\s*\n\s*(\d)/);
+            const nom = nameMatch ? nameMatch[1].trim() : null;
+            const etapeNumber = semesterMatch ? semesterMatch[1].trim() : null;
+            return { nom, etapeKey: etapeNumber ? `etape${etapeNumber}` : null };
+        }
+
+        // ========================================
+        // API SUBMISSION LOGIC (Sends raw text to Google Sheets)
+        // ========================================
+        
+        
+        
+        
+        
+dataForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            messageContainer.innerHTML = ''; // Clear previous messages
+            
+            const rawText = rawTextArea.value;
+            const selectedNiveau = niveauSelect.value; // NEW: Get the selected level
+
+            if (!rawText.trim() || !selectedNiveau) {
+                showMessage("Veuillez coller des données ET sélectionner votre niveau secondaire avant d'enregistrer.", 'error');
+                return;
+            }
+
+
+
+
+
+
+            const info = getBasicInfo(rawText);
+            
+            if (!info.nom || !info.etapeKey) {
+                 showMessage("Erreur d'analyse: Impossible de trouver le nom de l'étudiant ou le numéro d'étape. Veuillez coller le texte complet de la page des travaux.", 'error');
+                 return;
+            }
+
+            // Prepare and Send Data to Google Apps Script
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Analyse et Enregistrement en cours...';
+
+            try {
+                const payload = {
+                    rawText: rawText,
+                    nom: info.nom, // Pass name for immediate reference
+                    etapeKey: info.etapeKey, // Pass etapeKey for column targeting
+                    Niveau: selectedNiveau
+                };
+
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8',
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.result === "success") {
+                    showMessage(`Données enregistrées pour ${info.nom} (${info.etapeKey.toUpperCase()}). Redirection vers le classement.`, 'success');
+                    
+                    let storedData = JSON.parse(localStorage.getItem('jdlmData') || '{}');
+                    storedData.userId = info.nom;
+                    storedData.nom = info.nom;
+                    storedData.settings = storedData.settings || {};
+                    storedData.settings.niveau = selectedNiveau; // <--- ADD THIS
+                    localStorage.setItem('jdlmData', JSON.stringify(storedData));
+                    
+
+ 
+
+                   
+                    // Save the user's name/ID locally for leaderboard highlighting
+                    localStorage.setItem('jdlmData', JSON.stringify({ userId: info.nom, nom: info.nom }));
+                    
+                    setTimeout(() => {
+                        window.location.href = 'leaderboard.html'; // Redirect to the leaderboard
+                    }, 1500); 
+
+                } else {
+                    showMessage(`Erreur de l'API Sheets: ${result.message || 'La requête a échoué.'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                showMessage("Problème de connexion au service Google Sheets. Vérifiez l'URL de votre Apps Script.", 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Enregistrer et continuer';
+            }
+        });
+        
+        
+        
+// NEW: Load saved level from localStorage on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const storedData = JSON.parse(localStorage.getItem('jdlmData') || '{}');
+            const savedNiveau = storedData.settings ? storedData.settings.niveau : null;
+            if (savedNiveau && (savedNiveau === 'sec4' || savedNiveau === 'sec5')) {
+                niveauSelect.value = savedNiveau;
+            }
+            checkTextarea(); // Check button state after loading stored value
+        });
+        
+    </script>
+</body>
+</html>
