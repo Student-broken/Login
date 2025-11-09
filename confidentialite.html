@@ -2,33 +2,63 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Politique de confidentialité</title>
-    <style>body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; } a { color: #3498db; }</style>
+    <title>Politique de confidentialité - Outil JDLM</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 20px; color: #333; }
+        h1, h2 { color: #2c3e50; }
+        p, li { font-size: 16px; }
+        strong { color: #2c3e50; }
+        .update-date { color: #7f8c8d; font-style: italic; }
+        a { color: #2980b9; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .data-section { border-left: 4px solid #2980b9; padding-left: 15px; margin-bottom: 20px; }
+    </style>
 </head>
 <body>
     <h1>Politique de confidentialité</h1>
-    <p>
-        
-1. Nature et Portée des Données
-L'Outil JDLM* est conçu pour fonctionner entièrement localement (dans votre navigateur). L'outil utilise la fonctionnalité de stockage local du navigateur (localStorage) pour sauvegarder les données suivantes :
-    a. Les données brutes et structurées des résultats scolaires que vous collez.
-    b. Votre nom, tel qu'il est extrait des données collées.
-    c. Vos préférences de calcul (niveau secondaire, unités personnalisées, onglet actif).
+    <p class="update-date">Dernière mise à jour : 8 novembre 2025</p>
+    <p>Cette politique de confidentialité explique comment vos données sont gérées par l'Outil JDLM* ("l'Outil"). Votre vie privée est notre priorité, et nous nous engageons à la transparence la plus totale.</p>
 
-2. Stockage des Données (Confidentialité Totale)
-Toutes les données mentionnées au point 1 sont stockées *uniquement* dans la mémoire locale de votre navigateur (appareil) et ne sont :
-    a. NI envoyées à un serveur externe.
-    b. NI partagées avec un tiers.
-    c. NI accessibles par le créateur de l'outil.
+    <h2>1. Stockage des Données : Deux Catégories Distinctes</h2>
+    <p>L'Outil JDLM* gère deux types de données de manière très différente : les données stockées localement sur votre appareil et les données anonymisées envoyées pour la fonctionnalité de classement.</p>
 
-3. Sécurité des Données
-La sécurité des données dépend entièrement de la sécurité de votre propre appareil et des paramètres de votre navigateur. En cas de suppression du cache ou des données du site par votre navigateur, toutes les données stockées dans l'Outil JDLM* seront définitivement effacées.
+    <div class="data-section">
+        <h3>1.1 Données Stockées Localement (sur votre appareil)</h3>
+        <p>Ces données sont stockées <strong>uniquement</strong> dans la mémoire de votre navigateur (localStorage). Elles ne quittent jamais votre appareil, et nous n'y avons pas accès.</p>
+        <ul>
+            <li><strong>Données scolaires complètes :</strong> L'intégralité des informations que vous collez, incluant le détail de chaque matière, compétence, travail et résultat.</li>
+            <li><strong>Votre nom complet :</strong> Tel qu'il est extrait des données collées.</li>
+            <li><strong>Vos préférences :</strong> Votre niveau secondaire (Sec. 4 ou 5), vos réglages d'unités, etc.</li>
+        </ul>
+    </div>
 
-4. Liens Externes
-L'outil peut contenir des liens vers des sites externes (comme les conditions d'utilisation et la politique de confidentialité). Nous ne sommes pas responsables du contenu ou des pratiques de confidentialité de ces sites.
+    <div class="data-section">
+        <h3>1.2 Données Anonymisées Envoyées pour le Classement</h3>
+        <p>Lorsque vous utilisez la fonctionnalité "Classement", un sous-ensemble <strong>strictement limité et anonymisé</strong> de vos données de performance est envoyé et stocké sur une feuille de calcul Google Sheets sécurisée. Le but unique de cette collecte est de générer les classements et les statistiques de groupe.</p>
+        <p>Les données envoyées sont :</p>
+        <ul>
+            <li><strong>Un identifiant anonyme :</strong> Votre nom complet est converti en un identifiant unique et anonyme (par exemple, "Jean Doe" devient "jeandoe"). Cet identifiant ne permet pas de vous identifier personnellement en dehors du contexte de cet outil.</li>
+            <li><strong>Votre niveau scolaire :</strong> "sec4" ou "sec5".</li>
+            <li><strong>Vos moyennes agrégées :</strong> Uniquement vos moyennes calculées (générale, par étape, et pour les matières principales comme les mathématiques, le français et l'anglais).</li>
+            <li><strong>Un horodatage ("timestamp") :</strong> La date et l'heure de la dernière mise à jour de vos données.</li>
+        </ul>
+        <p><strong>Ce qui N'EST PAS envoyé :</strong> Votre nom complet, les noms de vos enseignants, les détails de vos travaux, ou vos notes individuelles.</p>
+    </div>
 
-5. Consentement
-En utilisant l'Outil JDLM*, vous consentez au stockage local de vos données académiques aux fins exclusives du fonctionnement de l'application.</p>
-    <p>Cet outil respecte votre vie privée. Aucune donnée personnelle n'est collectée ou transmise.</p>
+    <h2>2. Finalité de la Collecte</h2>
+    <ul>
+        <li>Les <strong>données locales</strong> servent à faire fonctionner l'Outil pour vous, sur votre appareil.</li>
+        <li>Les <strong>données anonymisées</strong> servent exclusivement à alimenter le tableau de bord du classement, à calculer les moyennes de groupe et à vous permettre de vous situer par rapport aux autres utilisateurs.</li>
+    </ul>
+
+    <h2>3. Sécurité et Conservation</h2>
+    <p>La sécurité de vos données locales dépend de la sécurité de votre appareil. Si vous effacez les données de votre navigateur, ces informations seront définitivement perdues.</p>
+    <p>Les données anonymisées stockées à distance sont sécurisées par l'infrastructure de Google. Vous conservez le contrôle : chaque nouvelle soumission de données de votre part met à jour ou remplace votre entrée précédente, vous assurant que seules vos informations les plus récentes sont conservées.</p>
+
+    <h2>4. Consentement</h2>
+    <p>En utilisant l'Outil JDLM*, vous consentez au stockage local de vos données. En cliquant sur le bouton "Classement", vous consentez spécifiquement à la transmission des données anonymisées décrites dans la section 1.2.</p>
+    
+    <hr>
+    <p style="text-align: center;">Nous nous engageons à ne collecter que les données de performance agrégées et anonymisées strictement nécessaires au fonctionnement du classement. Votre confiance est essentielle.</p>
 </body>
 </html>
