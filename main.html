@@ -78,11 +78,11 @@
     </style>
 </head>
 <body>
-   <div class="site-header-container">
+    <div class="site-header-container">
         <a href="index.html" class="logout-arrow" title="Déconnexion">←</a>
         <header class="site-header">Outil JDLM*</header>
-        <a href="ticket.html" class="btn btn-header-action" style="right: 290px;">Tickets</a>
         <a href="data.html" class="btn btn-header-action">Ajouter des données</a>
+        <a href="ticket.html" class="btn btn-header-action" style="right: 290px;">Tickets</a>
     </div>
     <main class="main-container">
         <section class="data-section">
@@ -106,7 +106,8 @@
                 <select id="niveau-secondaire"><option value="">-- Niveau --</option><option value="sec4">Secondaire 4</option><option value="sec5">Secondaire 5</option></select>
             </div>
             <div class="control-group"><button id="unites-btn" class="btn btn-control">Unités</button></div>
-            <div class="control-group"><a href="classement.html" id="classement-btn" class="btn btn-control">Classement</a></div>
+            <!-- **** THIS IS THE CHANGED LINE **** -->
+            <div class="control-group"><button id="classement-btn" class="btn btn-control">Classement</button></div>
             <div class="subject-averages">
                 <h4>Moyennes par matière</h4>
                 <ul id="subject-averages-list"><li class="no-data">Aucune donnée</li></ul>
@@ -156,10 +157,11 @@
                 renderAll(); 
             }); 
 
-            document.getElementById('classement-btn').addEventListener('click', function(event) {
+            // --- THIS IS THE UPDATED EVENT LISTENER ---
+            document.getElementById('classement-btn').addEventListener('click', function() {
                 const canProceed = sendRankingData(true); // `true` forces the sync
-                if (!canProceed) {
-                    event.preventDefault();
+                if (canProceed) {
+                    window.location.href = 'classement.html';
                 }
             });
 
@@ -180,7 +182,6 @@
         function renderAll() { 
             renderTermTables(); 
             renderSidePanel();
-            // --- NEW --- This will now automatically check if data should be sent.
             sendRankingData(); 
         }
 
@@ -196,41 +197,16 @@
 
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxOay6sGNlL_f4MfhHkmwBTi0J3ONrCxv2dg1y5pqKjgKmAN07xttJtlrXjNqLbxdYR/exec";
 
-        function getUserCode() {
-            const nom = (jdlmData || {}).nom;
-            if (!nom) return null;
-            return nom.replace(/\s+/g, '').toLowerCase();
-        }
+        function getUserCode() { const nom = (jdlmData || {}).nom; if (!nom) return null; return nom.replace(/\s+/g, '').toLowerCase(); }
+        function getAggregatedSubjectAverage(allSubjectAverages, subjectCodes) { let totalSum = 0; let count = 0; ['etape1', 'etape2', 'etape3'].forEach(etape => { if (allSubjectAverages[etape]) { Object.entries(allSubjectAverages[etape]).forEach(([code, subjectData]) => { if (subjectCodes.includes(code) && subjectData.average !== null) { totalSum += subjectData.average; count++; } }); } }); return count > 0 ? totalSum / count : null; }
 
-        function getAggregatedSubjectAverage(allSubjectAverages, subjectCodes) {
-            let totalSum = 0;
-            let count = 0;
-            ['etape1', 'etape2', 'etape3'].forEach(etape => {
-                if (allSubjectAverages[etape]) {
-                    Object.entries(allSubjectAverages[etape]).forEach(([code, subjectData]) => {
-                        if (subjectCodes.includes(code) && subjectData.average !== null) {
-                            totalSum += subjectData.average;
-                            count++;
-                        }
-                    });
-                }
-            });
-            return count > 0 ? totalSum / count : null;
-        }
-
-        /**
-         * The primary sync function. It checks conditions, creates a data "fingerprint",
-         * and only sends data if it has changed or if forced.
-         * @param {boolean} [force=false] - If true, bypasses the fingerprint check.
-         * @returns {boolean} - Returns true if navigation can proceed, false if blocked.
-         */
         function sendRankingData(force = false) {
             const niveau = document.getElementById('niveau-secondaire').value;
             const userCode = getUserCode();
 
             if (!userCode || !niveau) {
                 if (force) alert("Veuillez sélectionner votre niveau (Secondaire 4 ou 5) avant de consulter le classement.");
-                return !force; // Block navigation only if forced (button click)
+                return !force;
             }
 
             localStorage.setItem('jdlmNiveau', niveau);
