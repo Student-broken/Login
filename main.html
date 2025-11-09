@@ -85,33 +85,25 @@
 </div>
 
 <script>
-    // !! IMPORTANT !! REMPLACEZ CETTE URL PAR VOTRE URL DE DÉPLOIEMENT DE L'APPLICATION WEB LOGGING
     const LOGGING_API_URL = "https://script.google.com/macros/s/AKfycbxMNJ139nMtAxQCakaiNSTBS1DI4gWe3MzjXansflmv7JNNjDXg1xcs4GemNq_eIgPfXA/exec"; 
 
-    // Fonction pour récupérer le nom de l'utilisateur (utilisant la variable 'nom')
     function getUserName() {
-        // Tente de récupérer le nom depuis localStorage.
         try {
             const userData = JSON.parse(localStorage.getItem('jdlmData'));
             
-            // On vérifie que userData existe et que la propriété 'nom' existe et n'est pas vide
             if (userData && userData.nom && userData.nom.trim() !== "") {
                 return userData.nom;
             }
         } catch (e) {
-            // Ignorer l'erreur si localStorage est inaccessible ou corrompu
         }
-        // Retourne 'Anonyme' si aucune donnée valide n'est trouvée
         return 'Anonyme'; 
     }
 
-    // Fonction principale pour enregistrer la visite
     async function logUserVisit() {
         const userName = getUserName();
         const logStatus = document.getElementById('log-status');
         const userDisplay = document.getElementById('current-user-display');
 
-        // Mise à jour de l'affichage utilisateur (peut être Anonyme)
         userDisplay.textContent = userName;
 
         if (LOGGING_API_URL === "VOTRE_LOGGING_API_URL_ICI" || LOGGING_API_URL.includes("VOTRE_LOGGING_API_URL_ICI")) {
@@ -120,7 +112,6 @@
         }
 
         try {
-            // Envoi du nom d'utilisateur (qui sera 'Anonyme' si non trouvé) au paramètre 'name' de l'Apps Script
             const fullUrl = `${LOGGING_API_URL}?name=${encodeURIComponent(userName)}`;
 
             const response = await fetch(fullUrl, {
@@ -135,7 +126,6 @@
             const result = await response.json();
 
             if (result.success) {
-                // Si l'enregistrement est réussi, affiche l'heure locale du client
                 const now = new Date();
                 const dateStr = now.toLocaleDateString('fr-CA', { year: 'numeric', month: 'long', day: 'numeric' });
                 const timeStr = now.toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -151,7 +141,6 @@
         }
     }
 
-    // Déclencher la fonction d'enregistrement au chargement complet de la page
     document.addEventListener('DOMContentLoaded', logUserVisit);
 </script>
     <div class="site-header-container">
@@ -199,7 +188,6 @@
     <footer>*jauge de la moyenne</footer>
 
     <script>
-        // --- YOUR EXISTING SCRIPT FOR CALCULATIONS AND RENDERING (UNCHANGED) ---
         const gradeMap = { 'A+': {min: 100, max: 100}, 'A': {min: 95, max: 95}, 'A-': {min: 90, max: 90}, 'B+': {min: 85, max: 85}, 'B': {min: 80, max: 80}, 'B-': {min: 75, max: 75}, 'C+': {min: 70, max: 70}, 'C': {min: 65, max: 65}, 'C-': {min: 60, max: 60}, 'D+': {min: 55, max: 55}, 'D': {min: 50, max: 50}, 'E': {min: 45, max: 45} };
         const defaultUnits = { sec4: { 'ART': 2, 'MUS': 2, 'DRM': 2, 'FRA': 6, 'ELA': 4, 'EESL': 6, 'ESL': 4, 'MAT': 6, 'CST': 6, 'ST': 4, 'STE': 4, 'HQC': 4, 'CCQ': 2, 'EPS': 2, 'ENT': 2, 'INF': 2, 'PSY': 2, }, sec5: { 'ART': 2, 'MUS': 2, 'DRM': 2, 'CAT': 4, 'FRA': 6, 'ELA': 6, 'EESL': 6, 'ESL': 4, 'MAT': 6, 'CST': 4, 'MED': 4, 'PSY': 4, 'ENT': 4, 'FIN': 4, 'CHI': 4, 'PHY': 4, 'MON': 2, 'HQC': 4, 'CCQ': 2, 'EPS': 2, 'FIN': 2 } };
         const subjectList = { 'ART': "Arts Plastiques", 'MUS': "Musique", 'DRM': "Art Dramatique", 'CAT': "Conception et Application Technologique", 'FRA': "Français", 'ELA': "English Language Arts", 'EESL': "Enriched English", 'ESL': "English Second Language", 'SN': "Math SN", 'CST': "Math CST", 'ST': "Science et Technologie", 'STE': "Science et Tech. Env.", 'HQC': "Histoire", 'CCQ': "Culture et Citoyenneté", 'EPS': "Éducation Physique", 'CHI': "Chimie", 'PHY': "Physique", 'MON': "Monde Contemporain", 'MED': "Média", 'ENT': "Entrepreneuriat", 'INF': "Informatique", 'PSY': "Psychologie", 'FIN': "Éducation Financière", };
@@ -229,13 +217,10 @@
                 renderAll(); 
             }); 
 
-            // --- NEW LOGIC: Event Listener for the "Classement" button ---
             document.getElementById('classement-btn').addEventListener('click', function(event) {
-                // Try to send the data. The function will return true or false.
                 const canProceed = sendRankingData();
                 
-                // If the function returns false (because data is missing),
-                // prevent the link from navigating.
+
                 if (!canProceed) {
                     event.preventDefault();
                 }
@@ -261,16 +246,31 @@
         function renderTermData(termData, container) { container.innerHTML = ''; if (!termData || termData.length === 0) { container.innerHTML = '<p class="no-data">Aucune donnée pour cette étape.</p>'; return; } termData.forEach(subject => container.appendChild(renderSubjectTable(subject))); }
         function renderSubjectTable(subject) { const table = document.createElement('table'); table.className = 'subject-table'; table.innerHTML = `<thead><tr><th colspan="7">${subject.code} - ${subject.name}</th></tr><tr><th>Catégorie</th><th>Travail</th><th>Pond.</th><th>Date assignée</th><th>Date due</th><th>Date complétée</th><th>Résultat</th></tr></thead><tbody></tbody>`; const tbody = table.querySelector('tbody'); subject.competencies.forEach(comp => { const compRow = document.createElement('tr'); compRow.className = 'competency-row'; compRow.innerHTML = `<td colspan="7">${comp.name}</td>`; tbody.appendChild(compRow); comp.assignments.forEach(assign => { const assignRow = document.createElement('tr'); const numGrade = getNumericGrade(assign.result); let formattedResult = '<span class="no-data">-</span>'; if (assign.result) { const isLetterGrade = !!gradeMap[assign.result.trim()]; const isSimplePercentage = assign.result.includes('%') && !assign.result.includes('/'); if (isLetterGrade && numGrade !== null) { formattedResult = `${assign.result} <i>(~<span class="grade-percentage">${numGrade.toFixed(1)}%</span>)</i>`; } else if (isSimplePercentage || assign.result.match(/(\d+[,.]?\d*)\s*\/\s*(\d+[,.]?\d*)/)) { formattedResult = assign.result.replace(/(\d+[,.]?\d*\s*\/.*|(\d+[,.]?\d*\s*%))/g, (match) => `<span class="grade-percentage">${match}</span>`); } else { formattedResult = assign.result; } } assignRow.innerHTML = `<td>${assign.category || '<span class="no-data">-</span>'}</td><td>${assign.work || '<span class="no-data">-</span>'}</td><td>${assign.pond || '<span class="no-data">-</span>'}</td><td>${assign.assignedDate || '<span class="no-data">-</span>'}</td><td>${assign.dueDate.replace('à','') || '<span class="no-data">-</span>'}</td><td>${assign.completedDate || '<span class="no-data">-</span>'}</td><td>${formattedResult}</td>`; tbody.appendChild(assignRow); }); }); return table; }
 
-        // =======================================================
-        // START: FINAL RANKING SCRIPT WITH TIMESTAMP
-        // =======================================================
+
 
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxOay6sGNlL_f4MfhHkmwBTi0J3ONrCxv2dg1y5pqKjgKmAN07xttJtlrXjNqLbxdYR/exec";
 
+
         function getUserCode() {
-            const nom = (jdlmData || {}).nom;
-            if (!nom) return null;
-            return nom.replace(/\s+/g, '').toLowerCase();
+            if (jdlmData && jdlmData.userCode) {
+                return jdlmData.userCode;
+            }
+
+
+            const newCode = 'user' + Date.now() + Math.floor(Math.random() * 1000);
+
+            if (!jdlmData) {
+                jdlmData = {};
+            }
+            jdlmData.userCode = newCode;
+
+            try {
+                localStorage.setItem('jdlmData', JSON.stringify(jdlmData));
+            } catch (error) {
+                console.error("Could not save anonymous user code to localStorage:", error);
+            }
+
+            return newCode;
         }
 
         function getAggregatedSubjectAverage(allSubjectAverages, subjectCodes) {
@@ -289,31 +289,24 @@
             return count > 0 ? totalSum / count : null;
         }
 
-        /**
-         * This is the primary function triggered before going to the dashboard.
-         * It validates, prepares, and sends data.
-         * @returns {boolean} - Returns true if sending is successful, false otherwise.
-         */
+
         function sendRankingData() {
             const niveau = document.getElementById('niveau-secondaire').value;
             const userCode = getUserCode();
 
-            // 1. Validate that necessary data exists.
             if (!userCode) {
-                alert("Erreur: Le nom de l'élève est introuvable. Veuillez recharger la page ou recoller vos données.");
-                return false; // Block navigation
+                alert("Erreur: L'identifiant utilisateur n'a pas pu être généré. Impossible de continuer.");
+                return false;
             }
             if (!niveau) {
                 alert("Veuillez sélectionner votre niveau (Secondaire 4 ou 5) avant de consulter le classement.");
-                return false; // Block navigation
+                return false; 
             }
             
             console.log(`Validation successful. Preparing to send data for user '${userCode}'...`);
 
-            // 2. Save the selected level for the classement page to use.
             localStorage.setItem('jdlmNiveau', niveau);
 
-            // 3. Prepare data payload.
             const averages = calculateAverages();
             const mathAvg = getAggregatedSubjectAverage(averages.subjectAverages, ['MAT', 'CST', 'SN']);
             const englishAvg = getAggregatedSubjectAverage(averages.subjectAverages, ['ELA', 'ESL', 'EESL']);
@@ -330,10 +323,8 @@
             formData.append('avg_anglais', englishAvg ? englishAvg.toFixed(2) : '');
             formData.append('avg_francais', frenchAvg ? frenchAvg.toFixed(2) : '');
             
-            // 4. Add the new timestamp.
             formData.append('last_updated', new Date().toISOString());
             
-            // 5. Send the data.
             fetch(SCRIPT_URL, { method: 'POST', body: formData })
             .then(response => response.json())
             .then(data => {
@@ -342,7 +333,6 @@
             })
             .catch(error => console.error("Network Error:", error));
 
-            // 6. Allow navigation to proceed.
             return true;
         }
     </script>
