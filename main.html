@@ -6,7 +6,28 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&amp;display=swap" rel="stylesheet">
     <style>
     
-    
+    .legal-text {
+    /* Style de base pour le paragraphe */
+    font-size: 0.75rem; /* Taille de police plus petite pour le texte légal (12px) */
+    color: #6c757d; /* Couleur gris foncé/moyen pour un look discret */
+    margin-top: 15px; /* Espacement au-dessus du texte */
+    line-height: 1.4; /* Espacement des lignes pour la lisibilité */
+    text-align: center; /* Centrer le texte pour l'aligner avec le reste du contenu de l'overlay */
+    padding: 0 10px; /* Petit rembourrage horizontal pour éviter de toucher les bords */
+}
+
+.legal-text a {
+    /* Style des liens (politiques et conditions) */
+    color: #007bff; /* Bleu standard pour les liens (professionnel) */
+    text-decoration: none; /* Enlever le soulignement par défaut */
+    font-weight: 500; /* Rendre le texte du lien légèrement plus audacieux */
+}
+
+.legal-text a:hover {
+    /* Effet au survol pour indiquer que c'est cliquable */
+    text-decoration: underline; /* Souligner au survol */
+    color: #0056b3; /* Un bleu légèrement plus foncé au survol */
+}
     
     
     /* --- NOUVEAU CSS POUR LE VEROUILLAGE --- */
@@ -233,16 +254,23 @@
 
 
 
-     <div class="password-overlay" id="password-lock">
-        <div class="overlay-content">
-            <h3>🔒 Accès Restreint</h3>
-            <p>Nous sommes désolés pour le désagrément. L'accès est actuellement restreint pour des raisons de sécurité et de développement. Veuillez contacter un administrateur pour 
-            un accès immédiat.</p>
-            <input type="password" id="password-input" placeholder="Mot de passe" required>
-            <button id="password-submit-btn">Déverrouiller</button>
-            <div class="error-message" id="password-error"></div>
-        </div>
+<div class="password-overlay" id="password-lock">
+    <div class="overlay-content">
+        <h3>🔒 Accès Restreint</h3>
+        <p>Nous sommes désolés pour le désagrément. L'accès est actuellement restreint pour des raisons de sécurité et de développement. Veuillez contacter un administrateur pour 
+        un accès immédiat.</p>
+        <input type="password" id="password-input" placeholder="Mot de passe" required>
+        <button id="password-submit-btn">Déverrouiller</button>
+        <p class="legal-text">
+            La lecture de nos 
+            <a href="confitiendalite.html" target="_blank">politiques de confidentialité</a> 
+            ainsi que nos 
+            <a href="conditions.html" target="_blank">Conditions d'utilisations</a> 
+            est obligatoire pour vos fins d'utilisations. En utilisant ce site, vous acceptez ces conditions. Sinon, fermez la page.
+        </p>
+        <div class="error-message" id="password-error"></div>
     </div>
+</div>
 
 
 
