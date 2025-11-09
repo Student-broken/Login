@@ -28,7 +28,8 @@
         .widget-value { font-size: 2.8em; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .small-widget .widget-value { font-size: 2em; }
         .widget-rank { font-size: 0.9em; color: var(--light-grey); margin-top: 5px; }
-        .loader, .no-data { text-align: center; padding: 40px; font-size: 1.2em; color: var(--light-grey); }
+        .loader, .error-message { text-align: center; padding: 40px; font-size: 1.2em; color: var(--danger-color); background-color: #fdd; border: 1px solid var(--danger-color); border-radius: 8px; }
+        .no-data { text-align: center; padding: 40px; font-size: 1.2em; color: var(--light-grey); }
         .trend-up { color: var(--success-color); }
         .trend-down { color: var(--danger-color); }
         .trend-neutral { color: var(--text-color); }
@@ -55,7 +56,7 @@
             </select>
         </div>
         <div id="dashboard-container">
-             <div class="loader">Chargement des données...</div>
+             <div class="loader" style="color:var(--text-color)">Chargement des données...</div>
         </div>
     </main>
     <footer>*jauge de la moyenne</footer>
@@ -63,60 +64,61 @@
         // !! IMPORTANT !! PASTE YOUR WEB APP URL HERE
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxOay6sGNlL_f4MfhHkmwBTi0J3ONrCxv2dg1y5pqKjgKmAN07xttJtlrXjNqLbxdYR/exec";
         
-        let allData = [];
-        const localData = JSON.parse(localStorage.getItem('jdlmData')) || {};
-        const userCode = (localData.nom || '').replace(/\s+/g, '').toLowerCase();
-        const selectedLevel = localStorage.getItem('jdlmNiveau');
-
-        const termSelect = document.getElementById('term-select');
         const dashboardContainer = document.getElementById('dashboard-container');
 
-        document.addEventListener('DOMContentLoaded', async () => {
+        async function initializeDashboard() {
+            const localData = JSON.parse(localStorage.getItem('jdlmData')) || {};
+            const userCode = (localData.nom || '').replace(/\s+/g, '').toLowerCase();
+            const selectedLevel = localStorage.getItem('jdlmNiveau');
+
+            console.log(`[DEBUG] Trying to load dashboard for userCode: '${userCode}' and niveau: '${selectedLevel}'`);
+
             if (!selectedLevel || !userCode) {
-                dashboardContainer.innerHTML = `<div class="no-data">Niveau ou nom d'utilisateur non trouvé. Veuillez retourner à la page principale et sélectionner votre niveau.</div>`;
+                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur :</strong> Niveau ou nom d'utilisateur non trouvé. Veuillez retourner à la page principale, sélectionner votre niveau, puis cliquer sur "Classement".</div>`;
                 return;
             }
-            document.querySelector('.site-header').textContent += ` - ${selectedLevel === 'sec4' ? 'Sec. 4' : 'Sec. 5'}`;
-            termSelect.addEventListener('change', renderDashboard);
-            await fetchData();
-            renderDashboard();
-        });
 
-        async function fetchData() {
+            document.querySelector('.site-header').textContent += ` - ${selectedLevel === 'sec4' ? 'Sec. 4' : 'Sec. 5'}`;
+            
             try {
                 const response = await fetch(SCRIPT_URL);
-                if (!response.ok) throw new Error('Network response error.');
-                const data = await response.json();
-                if (data.error) throw new Error(data.error);
+                if (!response.ok) throw new Error(`Network error: ${response.statusText}`);
+                const allData = await response.json();
+                if (allData.error) throw new Error(`Script error: ${allData.error}`);
 
-                allData = data.map(row => {
-                    for (const key in row) {
-                        if (key.startsWith('avg_')) row[key] = parseFloat(row[key]) || null;
-                    }
-                    return row;
-                });
+                console.log("[DEBUG] Fetched data:", allData);
+
+                document.getElementById('term-select').addEventListener('change', () => renderDashboard(allData, userCode, selectedLevel));
+                renderDashboard(allData, userCode, selectedLevel);
+
             } catch (error) {
                 console.error("Fetch Error:", error);
-                dashboardContainer.innerHTML = `<div class="no-data">Impossible de charger les données du classement.</div>`;
+                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur de chargement :</strong> Impossible de récupérer les données du classement. Vérifiez la console (F12) pour plus de détails.</div>`;
             }
         }
 
-        function renderDashboard() {
-            const selectedTermKey = termSelect.value;
+        function renderDashboard(allData, userCode, selectedLevel) {
+            const selectedTermKey = document.getElementById('term-select').value;
             const levelData = allData.filter(d => d.niveau === selectedLevel);
             
+            console.log(`[DEBUG] Found ${levelData.length} records for niveau '${selectedLevel}'`);
+
             if (levelData.length === 0) {
-                dashboardContainer.innerHTML = `<div class="no-data">Aucune donnée trouvée pour le ${selectedLevel === 'sec4' ? 'Secondaire 4' : 'Secondaire 5'}.</div>`;
+                dashboardContainer.innerHTML = `<div class="no-data">Aucune donnée de classement n'a encore été enregistrée pour le ${selectedLevel === 'sec4' ? 'Secondaire 4' : 'Secondaire 5'}.</div>`;
                 return;
             }
 
             const currentUserData = levelData.find(d => d.userCode === userCode);
+            
             if (!currentUserData) {
-                dashboardContainer.innerHTML = `<div class="no-data">Vos données n'ont pas encore été trouvées dans le classement de ce niveau.</div>`;
+                console.warn(`[DEBUG] User '${userCode}' not found in the level data.`);
+                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur :</strong> Vos données n'ont pas été trouvées dans le classement pour ce niveau. Assurez-vous que le nom dans vos données correspond et que vous avez sélectionné le bon niveau sur la page principale.</div>`;
                 return;
             }
             
-            const mainWidgetHTML = createWidgetHTML(selectedTermKey, termSelect.options[termSelect.selectedIndex].text, levelData, currentUserData);
+            console.log("[DEBUG] Found current user's data:", currentUserData);
+
+            const mainWidgetHTML = createWidgetHTML(selectedTermKey, document.getElementById('term-select').options[document.getElementById('term-select').selectedIndex].text, levelData, currentUserData);
             const francaisWidgetHTML = createWidgetHTML('avg_francais', 'Moyenne Français', levelData, currentUserData);
             const mathWidgetHTML = createWidgetHTML('avg_math', 'Moyenne Math', levelData, currentUserData);
             const anglaisWidgetHTML = createWidgetHTML('avg_anglais', 'Moyenne Anglais', levelData, currentUserData);
@@ -132,18 +134,18 @@
         }
 
         function createWidgetHTML(currentKey, title, allUsersData, currentUserData) {
-            const rankedUsers = allUsersData.filter(u => u[currentKey] !== null).sort((a, b) => b[currentKey] - a[currentKey]);
+            const rankedUsers = allUsersData.filter(u => u[currentKey] && !isNaN(parseFloat(u[currentKey]))).sort((a, b) => b[currentKey] - a[currentKey]);
             const totalUsers = rankedUsers.length;
-            const currentUserRank = rankedUsers.findIndex(u => u.userCode === userCode) + 1;
-            const currentUserGrade = currentUserData[currentKey];
+            const currentUserRank = rankedUsers.findIndex(u => u.userCode === currentUserData.userCode) + 1;
+            const currentUserGrade = parseFloat(currentUserData[currentKey]);
             
-            if (currentUserGrade === null || currentUserRank === 0) {
+            if (isNaN(currentUserGrade) || currentUserRank === 0) {
                 return `<h3 class="widget-title">${title}</h3><div class="no-data" style="padding:10px;">N/A</div>`;
             }
 
             let previousGrade = null;
-            if (currentKey === 'avg_etape2') previousGrade = currentUserData['avg_etape1'];
-            else if (currentKey === 'avg_etape3') previousGrade = currentUserData['avg_etape2'];
+            if (currentKey === 'avg_etape2' && currentUserData['avg_etape1']) previousGrade = parseFloat(currentUserData['avg_etape1']);
+            else if (currentKey === 'avg_etape3' && currentUserData['avg_etape2']) previousGrade = parseFloat(currentUserData['avg_etape2']);
             
             let trendClass = 'trend-neutral';
             if (previousGrade !== null) {
@@ -160,6 +162,8 @@
                 <div class="widget-rank">Top ${currentUserRank} sur ${totalUsers}</div>
             `;
         }
+
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
     </script>
 </body>
 </html>
