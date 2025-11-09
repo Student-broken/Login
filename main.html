@@ -278,5 +278,80 @@
             return true;
         }
     </script>
+    <div class="log-display" style="margin-top: 30px; padding: 15px; border: 1px solid #ccc; background-color: #f9f9f9; display: none;">
+    <p>Utilisateur enregistré : <strong id="current-user-display">Anonyme</strong></p>
+    <p id="log-status">Tentative d'enregistrement de la visite...</p>
+</div>
+
+<script>
+    // !! IMPORTANT !! REMPLACEZ CETTE URL PAR VOTRE URL DE DÉPLOIEMENT DE L'APPLICATION WEB LOGGING
+    const LOGGING_API_URL = "https://script.google.com/macros/s/AKfycbxMNJ139nMtAxQCakaiNSTBS1DI4gWe3MzjXansflmv7JNNjDXg1xcs4GemNq_eIgPfXA/exec"; 
+
+    // Fonction pour récupérer le nom de l'utilisateur (utilisant la variable 'nom')
+    function getUserName() {
+        // Tente de récupérer le nom depuis localStorage.
+        try {
+            const userData = JSON.parse(localStorage.getItem('jdlmData'));
+            
+            // On vérifie que userData existe et que la propriété 'nom' existe et n'est pas vide
+            if (userData && userData.nom && userData.nom.trim() !== "") {
+                return userData.nom;
+            }
+        } catch (e) {
+            // Ignorer l'erreur si localStorage est inaccessible ou corrompu
+        }
+        // Retourne 'Anonyme' si aucune donnée valide n'est trouvée
+        return 'Anonyme'; 
+    }
+
+    // Fonction principale pour enregistrer la visite
+    async function logUserVisit() {
+        const userName = getUserName();
+        const logStatus = document.getElementById('log-status');
+        const userDisplay = document.getElementById('current-user-display');
+
+        // Mise à jour de l'affichage utilisateur (peut être Anonyme)
+        userDisplay.textContent = userName;
+
+        if (LOGGING_API_URL === "VOTRE_LOGGING_API_URL_ICI" || LOGGING_API_URL.includes("VOTRE_LOGGING_API_URL_ICI")) {
+            logStatus.textContent = "Erreur: Veuillez définir l'URL de l'API Logging.";
+            return;
+        }
+
+        try {
+            // Envoi du nom d'utilisateur (qui sera 'Anonyme' si non trouvé) au paramètre 'name' de l'Apps Script
+            const fullUrl = `${LOGGING_API_URL}?name=${encodeURIComponent(userName)}`;
+
+            const response = await fetch(fullUrl, {
+                method: 'GET',
+                mode: 'cors' 
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Erreur réseau: Statut ${response.status}`);
+            }
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Si l'enregistrement est réussi, affiche l'heure locale du client
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('fr-CA', { year: 'numeric', month: 'long', day: 'numeric' });
+                const timeStr = now.toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                
+                logStatus.innerHTML = `Visite enregistrée le <strong>${dateStr}</strong> à <strong>${timeStr}</strong>.`;
+            } else {
+                logStatus.textContent = "Échec de l'enregistrement de la visite (Réponse API non réussie).";
+            }
+
+        } catch (error) {
+            console.error("Erreur lors de l'enregistrement de la visite :", error);
+            logStatus.innerHTML = `Erreur de connexion au serveur d'enregistrement. Vérifiez la console pour les erreurs CORS ou réseau : <strong>${error.message}</strong>`;
+        }
+    }
+
+    // Déclencher la fonction d'enregistrement au chargement complet de la page
+    document.addEventListener('DOMContentLoaded', logUserVisit);
+</script>
 </body>
 </html>
