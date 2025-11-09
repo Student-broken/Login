@@ -106,7 +106,6 @@
                 <select id="niveau-secondaire"><option value="">-- Niveau --</option><option value="sec4">Secondaire 4</option><option value="sec5">Secondaire 5</option></select>
             </div>
             <div class="control-group"><button id="unites-btn" class="btn btn-control">Unités</button></div>
-            <!-- **** THIS IS THE CHANGED LINE **** -->
             <div class="control-group"><button id="classement-btn" class="btn btn-control">Classement</button></div>
             <div class="subject-averages">
                 <h4>Moyennes par matière</h4>
@@ -140,6 +139,13 @@
         document.addEventListener('DOMContentLoaded', () => { 
             checkLogoutTimer(); 
             jdlmData = JSON.parse(localStorage.getItem('jdlmData')) || {}; 
+
+            // --- NEW: Generate and store user_random if it doesn't exist ---
+            if (!jdlmData.user_random) {
+                jdlmData.user_random = 'user-' + Date.now().toString(36) + Math.random().toString(36).substring(2);
+                localStorage.setItem('jdlmData', JSON.stringify(jdlmData));
+            }
+
             if (!jdlmData.nom) { 
                 document.getElementById('tab-contents').innerHTML = "<p>Aucune donnée disponible. Veuillez ajouter les données.</p>"; 
                 return; 
@@ -161,7 +167,6 @@
                 renderAll(); 
             }); 
 
-            // --- THIS IS THE UPDATED EVENT LISTENER ---
             document.getElementById('classement-btn').addEventListener('click', function() {
                 const canProceed = sendRankingData(true); // `true` forces the sync
                 if (canProceed) {
@@ -196,7 +201,7 @@
         function renderSubjectTable(subject) { const table = document.createElement('table'); table.className = 'subject-table'; table.innerHTML = `<thead><tr><th colspan="7">${subject.code} - ${subject.name}</th></tr><tr><th>Catégorie</th><th>Travail</th><th>Pond.</th><th>Date assignée</th><th>Date due</th><th>Date complétée</th><th>Résultat</th></tr></thead><tbody></tbody>`; const tbody = table.querySelector('tbody'); subject.competencies.forEach(comp => { const compRow = document.createElement('tr'); compRow.className = 'competency-row'; compRow.innerHTML = `<td colspan="7">${comp.name}</td>`; tbody.appendChild(compRow); comp.assignments.forEach(assign => { const assignRow = document.createElement('tr'); const numGrade = getNumericGrade(assign.result); let formattedResult = '<span class="no-data">-</span>'; if (assign.result) { const isLetterGrade = !!gradeMap[assign.result.trim()]; const isSimplePercentage = assign.result.includes('%') && !assign.result.includes('/'); if (isLetterGrade && numGrade !== null) { formattedResult = `${assign.result} <i>(~<span class="grade-percentage">${numGrade.toFixed(1)}%</span>)</i>`; } else if (isSimplePercentage || assign.result.match(/(\d+[,.]?\d*)\s*\/\s*(\d+[,.]?\d*)/)) { formattedResult = assign.result.replace(/(\d+[,.]?\d*\s*\/.*|(\d+[,.]?\d*\s*%))/g, (match) => `<span class="grade-percentage">${match}</span>`); } else { formattedResult = assign.result; } } assignRow.innerHTML = `<td>${assign.category || '<span class="no-data">-</span>'}</td><td>${assign.work || '<span class="no-data">-</span>'}</td><td>${assign.pond || '<span class="no-data">-</span>'}</td><td>${assign.assignedDate || '<span class="no-data">-</span>'}</td><td>${assign.dueDate.replace('à','') || '<span class="no-data">-</span>'}</td><td>${assign.completedDate || '<span class="no-data">-</span>'}</td><td>${formattedResult}</td>`; tbody.appendChild(assignRow); }); }); return table; }
 
         // =======================================================
-        // START: FINAL "INTELLIGENT SYNC" RANKING SCRIPT
+        // START: MODIFIED RANKING SCRIPT
         // =======================================================
 
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxOay6sGNlL_f4MfhHkmwBTi0J3ONrCxv2dg1y5pqKjgKmAN07xttJtlrXjNqLbxdYR/exec";
@@ -207,8 +212,10 @@
         function sendRankingData(force = false) {
             const niveau = document.getElementById('niveau-secondaire').value;
             const userCode = getUserCode();
+            const userRandom = (jdlmData || {}).user_random; // Get the random code
 
-            if (!userCode || !niveau) {
+            // Now, userRandom is also required.
+            if (!userCode || !niveau || !userRandom) {
                 if (force) alert("Veuillez sélectionner votre niveau (Secondaire 4 ou 5) avant de consulter le classement.");
                 return !force;
             }
@@ -219,8 +226,10 @@
             const englishAvg = getAggregatedSubjectAverage(averages.subjectAverages, ['ELA', 'ESL', 'EESL']);
             const frenchAvg = getAggregatedSubjectAverage(averages.subjectAverages, ['FRA']);
 
+            // --- NEW: Add user_random to the payload ---
             const dataPayload = {
                 userCode: userCode,
+                user_random: userRandom, // Add the random code here
                 niveau: niveau,
                 avg_generale: averages.globalAverage ? averages.globalAverage.toFixed(2) : '',
                 avg_etape1: averages.termAverages.etape1 ? averages.termAverages.etape1.toFixed(2) : '',
