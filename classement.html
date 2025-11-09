@@ -9,72 +9,103 @@
     <!-- Including Chart.js for the graph -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* --- NEW: LOADER ANIMATION --- */
-        .loader {
-          height: 9px;
-          width: 60px;
-          --c:no-repeat linear-gradient(#000 0 0);
-          background: var(--c), var(--c), var(--c), var(--c);
-          background-size: 26% 3px;
-          animation: l2 1s infinite;
-          margin: 0 auto; /* Center the loader */
-        }
-        @keyframes l2 {
-          0%,
-          70%,
-          100% {background-position: calc(0*100%/3) 100%,calc(1*100%/3) 100%,calc(2*100%/3) 100%,calc(3*100%/3) 100%}
-          14%  {background-position: calc(0*100%/3) 0   ,calc(1*100%/3) 100%,calc(2*100%/3) 100%,calc(3*100%/3) 100%}
-          28%  {background-position: calc(0*100%/3) 100%,calc(1*100%/3) 0   ,calc(2*100%/3) 100%,calc(3*100%/3) 100%}
-          42%  {background-position: calc(0*100%/3) 100%,calc(1*100%/3) 100%,calc(2*100%/3) 0   ,calc(3*100%/3) 100%}
-          56%  {background-position: calc(0*100%/3) 100%,calc(1*100%/3) 100%,calc(2*100%/3) 100%,calc(3*100%/3) 0   }
-        }
-        .loader-container {
-            text-align: center;
-            padding-top: 40px;
-        }
-        .loader-text {
-            margin-top: 15px;
-            font-size: 1.1em;
-            color: var(--text-color);
+
+
+
+ .legal-text {
+    /* Style de base pour le paragraphe */
+    font-size: 0.75rem; /* Taille de police plus petite pour le texte légal (12px) */
+    color: #6c757d; /* Couleur gris foncé/moyen pour un look discret */
+    margin-top: 15px; /* Espacement au-dessus du texte */
+    line-height: 1.4; /* Espacement des lignes pour la lisibilité */
+    text-align: center; /* Centrer le texte pour l'aligner avec le reste du contenu de l'overlay */
+    padding: 0 10px; /* Petit rembourrage horizontal pour éviter de toucher les bords */
+}
+
+.legal-text a {
+    /* Style des liens (politiques et conditions) */
+    color: #007bff; /* Bleu standard pour les liens (professionnel) */
+    text-decoration: none; /* Enlever le soulignement par défaut */
+    font-weight: 500; /* Rendre le texte du lien légèrement plus audacieux */
+}
+
+.legal-text a:hover {
+    /* Effet au survol pour indiquer que c'est cliquable */
+    text-decoration: underline; /* Souligner au survol */
+    color: #0056b3; /* Un bleu légèrement plus foncé au survol */
+}
+    
+    
+    /* --- NOUVEAU CSS POUR LE VEROUILLAGE --- */
+        .password-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(44, 62, 80, 1); /* secondary-color with opacity */
+            z-index: 10000; /* Extrêmement haut pour couvrir tous les éléments */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s ease;
+            flex-direction: column;
         }
 
-        .legal-text {
-            font-size: 0.75rem; color: #6c757d; margin-top: 15px;
-            line-height: 1.4; text-align: center; padding: 0 10px;
-        }
-        .legal-text a {
-            color: #007bff; text-decoration: none; font-weight: 500;
-        }
-        .legal-text a:hover {
-            text-decoration: underline; color: #0056b3;
-        }
-        .password-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(44, 62, 80, 1);
-            z-index: 10000; display: flex; justify-content: center;
-            align-items: center; transition: opacity 1s ease; flex-direction: column;
-        }
         .overlay-content {
-            background-color: var(--widget-background); padding: 40px; border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); text-align: center;
-            max-width: 400px; width: 90%;
+            background-color: var(--widget-background);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
         }
+
         .overlay-content h3 {
-            color: var(--primary-color); margin-top: 0; margin-bottom: 20px; font-size: 1.5em;
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.5em;
         }
+
         .overlay-content input[type="password"] {
-            width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #ddd;
-            border-radius: 8px; font-size: 1.1em; box-sizing: border-box;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1.1em;
+            box-sizing: border-box;
         }
+
         .overlay-content button {
-            width: 100%; padding: 12px; background-color: var(--primary-color);
-            color: white; border: none; border-radius: 8px; font-size: 1.1em;
-            cursor: pointer; transition: background-color 0.2s;
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
-        .overlay-content button:hover { background-color: #1e6fa3; }
-        .error-message { color: #e74c3c; margin-top: 15px; font-weight: bold; min-height: 20px; }
-        .hidden { display: none !important; }
-        
+
+        .overlay-content button:hover {
+            background-color: #1e6fa3;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 20px;
+        }
+        .hidden {
+            display: none !important;
+        }
+    
+    
         :root {
             --primary-color: #2980b9; --secondary-color: #2c3e50; --background-color: #f7f9fb;
             --widget-background: #ffffff; --text-color: #34495e; --light-grey: #e0e6eb;
@@ -98,14 +129,15 @@
         .controls label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.9em; }
         select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background-color: white; font-size: 1em; }
         
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
         .stat-widget { background: var(--widget-background); border-radius: 16px; padding: 25px; box-shadow: var(--shadow-widget); border: 1px solid var(--light-grey); display: flex; flex-direction: column; }
         
+        /* WIDGET SIZING */
+        .main-avg-widget { grid-column: span 2; }
         .graph-widget { grid-column: 1 / -1; } /* Full width */
 
         .widget-header { text-align: center; margin-bottom: 20px; }
-        .widget-title { font-size: 1.1em; font-weight: bold; color: var(--secondary-color); margin: 0 0 5px 0; }
-        .widget-subtitle { font-size: 0.9em; color: #6c757d; margin-bottom: 10px; font-weight: 600; } /* NEW STYLE */
+        .widget-title { font-size: 1.1em; font-weight: bold; color: var(--secondary-color); margin: 0 0 10px 0; }
         .widget-value { font-size: 3.5em; font-weight: 700; }
         .small-widget .widget-value { font-size: 2.5em; }
         .widget-rank { font-size: 1.2em; font-weight: 600; color: var(--secondary-color); display: flex; align-items: center; justify-content: center; }
@@ -113,10 +145,11 @@
         .rank-trend-up { color: var(--success-color); } .rank-trend-up::before { content: '▲'; }
         .rank-trend-down { color: var(--danger-color); } .rank-trend-down::before { content: '▼'; }
 
+        /* MINI LEADERBOARD */
         .mini-leaderboard-container {
-            flex-grow: 1; overflow-y: auto;
+            flex-grow: 1; overflow-y: auto; /* Make it scrollable */
             position: relative; margin-top: 15px; border-top: 1px solid var(--light-grey); padding-top: 15px;
-            max-height: 190px;
+            max-height: 190px; /* Fixed height for ~5 items (5 * (30px item + 8px padding)) */
         }
         .leaderboard-list { list-style: none; padding: 0; margin: 0; }
         .leaderboard-item { display: flex; align-items: center; padding: 8px 10px; border-radius: 8px; font-size: 0.95em; transition: background-color 0.2s; }
@@ -126,15 +159,52 @@
         .is-user .item-name { font-weight: bold; }
         .item-grade { margin-left: auto; font-weight: 600; }
         
+        /* GRAPH & OVERALL WIDGET */
         .graph-container { padding-top: 20px; }
+        .overall-avg-widget { text-align: center; }
 
         .error-message, .no-data { text-align: center; padding: 40px; font-size: 1.2em; color: var(--light-grey); }
         .error-message { color: var(--danger-color); background-color: #fdd; border: 1px solid var(--danger-color); border-radius: 8px; }
         footer { text-align: center; padding: 25px; font-size: 0.8em; color: #95a5a6; font-style: italic; flex-shrink: 0;}
+
+        /* --- NEW LOADER CSS --- */
+        .loader {
+          height: 9px;
+          width: 60px;
+          --c:no-repeat linear-gradient(#000 0 0);
+          background: var(--c), var(--c), var(--c), var(--c);
+          background-size: 26% 3px;
+          animation: l2 1s infinite;
+          margin: 0 auto; /* Center the loader */
+        }
+        @keyframes l2 {
+          0%, 70%, 100% {background-position: calc(0*100%/3) 100%,calc(1*100%/3) 100%,calc(2*100%/3) 100%,calc(3*100%/3) 100%}
+          14%  {background-position: calc(0*100%/3) 0   ,calc(1*100%/3) 100%,calc(2*100%/3) 100%,calc(3*100%/3) 100%}
+          28%  {background-position: calc(0*100%/3) 100%,calc(1*100%/3) 0   ,calc(2*100%/3) 100%,calc(3*100%/3) 100%}
+          42%  {background-position: calc(0*100%/3) 100%,calc(1*100%/3) 100%,calc(2*100%/3) 0   ,calc(3*100%/3) 100%}
+          56%  {background-position: calc(0*100%/3) 100%,calc(1*100%/3) 100%,calc(2*100%/3) 100%,calc(3*100%/3) 0   }
+        }
+        
+        /* --- NEW STACKED WIDGET CSS --- */
+        .stacked-avg-widget {
+            justify-content: center;
+        }
+        .avg-half {
+            text-align: center;
+        }
+        .widget-subtitle {
+            font-size: 1em;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+        .avg-half .widget-value {
+            font-size: 2.8em; /* Make font smaller to fit */
+        }
+
     </style>
 </head>
 <body>
-    
+
     <div class="site-header-container">
         <a href="main.html" class="back-arrow" title="Retour">←</a>
         <header class="site-header">Outil JDLM*</header>
@@ -150,14 +220,10 @@
             </select>
         </div>
         <div id="dashboard-container">
-            <div class="loader-container">
-                <div class="loader"></div>
-                <div class="loader-text">Chargement des données...</div>
-            </div>
+             <div class="loader"></div>
         </div>
     </main>
     <footer>*jauge de la moyenne</footer>
-
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxOay6sGNlL_f4MfhHkmwBTi0J3ONrCxv2dg1y5pqKjgKmAN07xttJtlrXjNqLbxdYR/exec";
         
@@ -174,9 +240,6 @@
                 dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur :</strong> Niveau ou nom d'utilisateur non trouvé. Retournez à la page principale, sélectionnez votre niveau, puis cliquez sur "Classement".</div>`;
                 return;
             }
-
-            // REMOVED: No longer adding Sec-4 or Sec-5 to the main header title.
-            // document.querySelector('.site-header').textContent += ` - ${selectedLevel === 'sec4' ? 'Sec. 4' : 'Sec. 5'}`;
             
             try {
                 const response = await fetch(SCRIPT_URL);
@@ -200,7 +263,6 @@
             const termSelect = document.getElementById('term-select');
             const selectedTermKey = termSelect.value;
             const selectedTermText = termSelect.options[termSelect.selectedIndex].text;
-
             const levelData = allData.filter(d => d.niveau === selectedLevel);
             
             if (levelData.length === 0) {
@@ -215,21 +277,16 @@
                 return;
             }
             
-            // Generate HTML for all widgets
-            const mainWidgetHTML = createStatWidgetHTML('', selectedTermKey, selectedTermText, levelData, currentUserData, oldRanks);
+            const mainWidgetHTML = createStatWidgetHTML('main-avg-widget', selectedTermKey, selectedTermText, levelData, currentUserData, oldRanks);
             const francaisWidgetHTML = createStatWidgetHTML('small-widget', 'avg_francais', 'Moyenne Français', levelData, currentUserData, oldRanks);
             const mathWidgetHTML = createStatWidgetHTML('small-widget', 'avg_math', 'Moyenne Math', levelData, currentUserData, oldRanks);
             const anglaisWidgetHTML = createStatWidgetHTML('small-widget', 'avg_anglais', 'Moyenne Anglais', levelData, currentUserData, oldRanks);
+            const overallAvgHTML = createOverallAveragesWidgetHTML(selectedTermKey, selectedTermText, levelData);
             
-            // NEW: Create the two "Moyenne du Niveau" widgets
-            const overallGénéraleHTML = createOverallAverageWidgetHTML('avg_generale', levelData, 'Générale');
-            const overallSelectedTermHTML = createOverallAverageWidgetHTML(selectedTermKey, levelData, selectedTermText.replace('Moyenne ', ''));
-
             dashboardContainer.innerHTML = `
                 <div class="dashboard-grid">
                     ${mainWidgetHTML}
-                    ${overallGénéraleHTML}
-                    ${overallSelectedTermHTML}
+                    ${overallAvgHTML}
                     <div class="stat-widget graph-widget">
                         <h3 class="widget-title" style="text-align:center;">Performance par Étape</h3>
                         <div class="graph-container"><canvas id="performanceChart"></canvas></div>
@@ -279,7 +336,7 @@
             } else {
                 const oldRank = oldRanks[currentKey];
                 let trendHTML = '';
-                if (oldRank !== undefined && oldRank !== currentUserRank) { // Check if rank changed
+                if (oldRank !== undefined) {
                     if (currentUserRank < oldRank) {
                         trendHTML = `<span class="rank-trend rank-trend-up"></span>`;
                     } else if (currentUserRank > oldRank) {
@@ -307,27 +364,60 @@
         function updateLeaderboardScroll(container) {
             const userRank = parseInt(container.dataset.userRank);
             if (!userRank) return;
+
             const userItem = container.querySelector('.is-user');
             if (!userItem) return;
+            
             const itemHeight = userItem.offsetHeight;
             const containerHeight = container.clientHeight;
+
             const scrollTop = userItem.offsetTop - (containerHeight / 2) + (itemHeight / 2);
             container.scrollTop = scrollTop;
         }
 
-        // MODIFIED: Function now accepts a subtitle
-        function createOverallAverageWidgetHTML(termKey, levelData, subtitle) {
-            const validGrades = levelData.map(u => parseFloat(u[termKey])).filter(g => !isNaN(g));
-            const average = validGrades.length > 0 ? validGrades.reduce((a, b) => a + b, 0) / validGrades.length : 0;
+        function createOverallAveragesWidgetHTML(termKey, termText, levelData) {
+            // Calculate general average
+            const generalValidGrades = levelData.map(u => parseFloat(u['avg_generale'])).filter(g => !isNaN(g));
+            const generalAverage = generalValidGrades.length > 0 ? generalValidGrades.reduce((a, b) => a + b, 0) / generalValidGrades.length : 0;
+
+            // Calculate selected term average
+            const termValidGrades = levelData.map(u => parseFloat(u[termKey])).filter(g => !isNaN(g));
+            const termAverage = termValidGrades.length > 0 ? termValidGrades.reduce((a, b) => a + b, 0) / termValidGrades.length : 0;
+
+            let trendHTML = '';
+            // Compare term average to general average for trend indicator
+            if (termKey !== 'avg_generale' && termAverage > 0 && generalAverage > 0) {
+                if (termAverage > generalAverage) {
+                    trendHTML = `<span class="rank-trend rank-trend-up"></span>`;
+                } else if (termAverage < generalAverage) {
+                    trendHTML = `<span class="rank-trend rank-trend-down"></span>`;
+                }
+            }
             
-            return `
-                <div class="stat-widget">
-                    <div class="widget-header">
+            let secondHalfHTML = '';
+            // Only show the second part if a specific "étape" is selected
+            if (termKey !== 'avg_generale') {
+                secondHalfHTML = `
+                    <div class="avg-half">
                         <h3 class="widget-title">Moyenne du Niveau</h3>
-                        <div class="widget-subtitle">${subtitle}</div>
-                        <div class="widget-value">${average.toFixed(1)}%</div>
-                        <div class="widget-rank" style="opacity:0.8;">Basé sur ${validGrades.length} élèves</div>
+                        <div class="widget-subtitle">${termText}</div>
+                        <div class="widget-value">${termAverage.toFixed(1)}%</div>
+                        <div class="widget-rank" style="opacity:0.8;">
+                            <span>Basé sur ${termValidGrades.length} élèves</span>
+                            ${trendHTML}
+                        </div>
+                    </div>`;
+            }
+
+            return `
+                <div class="stat-widget overall-avg-widget stacked-avg-widget">
+                    <div class="avg-half" ${termKey !== 'avg_generale' ? 'style="border-bottom: 1px solid var(--light-grey); padding-bottom: 15px; margin-bottom: 15px;"' : ''}>
+                        <h3 class="widget-title">Moyenne du Niveau</h3>
+                        <div class="widget-subtitle">Générale</div>
+                        <div class="widget-value">${generalAverage.toFixed(1)}%</div>
+                        <div class="widget-rank" style="opacity:0.8;">Basé sur ${generalValidGrades.length} élèves</div>
                     </div>
+                    ${secondHalfHTML}
                 </div>`;
         }
         
@@ -385,7 +475,7 @@
                     responsive: true,
                     scales: { 
                         y: { 
-                            beginAtZero: true,
+                            min: 0, 
                             max: 100,
                             ticks: { callback: value => `${value}%` } 
                         } 
