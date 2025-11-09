@@ -61,19 +61,21 @@
     <footer>*jauge de la moyenne</footer>
     <script>
         // !! IMPORTANT !! PASTE YOUR WEB APP URL HERE
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxOay6sGNlL_f4MfhHkmwBTi0J3ONrCxv2dg1y5pqKjgKmAN07xttJtlrXjNqLbxdYR/exec";
+        const SCRIPT_URL = "PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
         
         let allData = [];
-        // Get user code from their name stored in jdlmData
-        const jdlmData = JSON.parse(localStorage.getItem('jdlmData')) || {};
-        const userCode = (jdlmData.nom || '').replace(/\s+/g, '').toLowerCase();
-        // Get the level selected on the main page
-        const selectedLevel = localStorage.getItem('jdlmNiveau') || 'sec4'; // Default to sec4 if not found
+        const localData = JSON.parse(localStorage.getItem('jdlmData')) || {};
+        const userCode = (localData.nom || '').replace(/\s+/g, '').toLowerCase();
+        const selectedLevel = localStorage.getItem('jdlmNiveau');
 
         const termSelect = document.getElementById('term-select');
         const dashboardContainer = document.getElementById('dashboard-container');
 
         document.addEventListener('DOMContentLoaded', async () => {
+            if (!selectedLevel || !userCode) {
+                dashboardContainer.innerHTML = `<div class="no-data">Niveau ou nom d'utilisateur non trouvé. Veuillez retourner à la page principale et sélectionner votre niveau.</div>`;
+                return;
+            }
             document.querySelector('.site-header').textContent += ` - ${selectedLevel === 'sec4' ? 'Sec. 4' : 'Sec. 5'}`;
             termSelect.addEventListener('change', renderDashboard);
             await fetchData();
@@ -101,8 +103,8 @@
 
         function renderDashboard() {
             const selectedTermKey = termSelect.value;
-
             const levelData = allData.filter(d => d.niveau === selectedLevel);
+            
             if (levelData.length === 0) {
                 dashboardContainer.innerHTML = `<div class="no-data">Aucune donnée trouvée pour le ${selectedLevel === 'sec4' ? 'Secondaire 4' : 'Secondaire 5'}.</div>`;
                 return;
@@ -110,7 +112,7 @@
 
             const currentUserData = levelData.find(d => d.userCode === userCode);
             if (!currentUserData) {
-                dashboardContainer.innerHTML = `<div class="no-data">Vos données n'ont pas encore été trouvées dans le classement.</div>`;
+                dashboardContainer.innerHTML = `<div class="no-data">Vos données n'ont pas encore été trouvées dans le classement de ce niveau.</div>`;
                 return;
             }
             
@@ -130,11 +132,7 @@
         }
 
         function createWidgetHTML(currentKey, title, allUsersData, currentUserData) {
-            // Filter users who have a grade for the current key and sort them
-            const rankedUsers = allUsersData
-                .filter(u => u[currentKey] !== null)
-                .sort((a, b) => b[currentKey] - a[currentKey]);
-
+            const rankedUsers = allUsersData.filter(u => u[currentKey] !== null).sort((a, b) => b[currentKey] - a[currentKey]);
             const totalUsers = rankedUsers.length;
             const currentUserRank = rankedUsers.findIndex(u => u.userCode === userCode) + 1;
             const currentUserGrade = currentUserData[currentKey];
@@ -143,10 +141,9 @@
                 return `<h3 class="widget-title">${title}</h3><div class="no-data" style="padding:10px;">N/A</div>`;
             }
 
-            // Determine previous grade for trend comparison
             let previousGrade = null;
             if (currentKey === 'avg_etape2') previousGrade = currentUserData['avg_etape1'];
-            if (currentKey === 'avg_etape3') previousGrade = currentUserData['avg_etape2'];
+            else if (currentKey === 'avg_etape3') previousGrade = currentUserData['avg_etape2'];
             
             let trendClass = 'trend-neutral';
             if (previousGrade !== null) {
