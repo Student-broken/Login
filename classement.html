@@ -18,25 +18,24 @@
         .back-arrow { position: absolute; top: 50%; left: 25px; transform: translateY(-50%); font-size: 2.2em; color: var(--secondary-color); text-decoration: none; transition: color 0.2s; }
         .back-arrow:hover { color: var(--primary-color); }
         .main-container { max-width: 900px; margin: 20px auto; padding: 0 20px; }
-        .controls { background: var(--widget-background); padding: 20px; border-radius: 12px; box-shadow: var(--shadow-widget); margin-bottom: 25px; }
+        .controls { background: var(--widget-background); padding: 20px; border-radius: 12px; box-shadow: var(--shadow-widget); margin-bottom: 25px; border: 1px solid #e0e6eb; }
         .controls label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.9em; }
         select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background-color: white; -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%2...%3E"); background-repeat: no-repeat; background-position: right 10px top 50%; background-size: 10px auto; }
         .dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
-        .stat-widget { background: var(--widget-background); border-radius: 12px; padding: 20px; box-shadow: var(--shadow-widget); }
+        .stat-widget { background: var(--widget-background); border-radius: 12px; padding: 20px; box-shadow: var(--shadow-widget); border: 1px solid #e0e6eb; transition: transform 0.2s, box-shadow 0.2s; }
+        .stat-widget:hover { transform: translateY(-3px); box-shadow: 0 12px 20px rgba(0,0,0,0.1); }
         .main-widget { grid-column: 1 / -1; text-align: center; }
         .widget-title { font-size: 1em; font-weight: bold; color: var(--secondary-color); margin: 0 0 10px 0; }
-        .widget-value { font-size: 2.8em; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .widget-value { font-size: 2.8em; font-weight: 700; margin-bottom: 5px; }
         .small-widget .widget-value { font-size: 2em; }
-        .widget-rank { font-size: 0.9em; color: var(--light-grey); margin-top: 5px; }
-        .loader, .error-message { text-align: center; padding: 40px; font-size: 1.2em; color: var(--danger-color); background-color: #fdd; border: 1px solid var(--danger-color); border-radius: 8px; }
-        .no-data { text-align: center; padding: 40px; font-size: 1.2em; color: var(--light-grey); }
-        .trend-up { color: var(--success-color); }
-        .trend-down { color: var(--danger-color); }
-        .trend-neutral { color: var(--text-color); }
-        .trend-indicator::before { font-weight: bold; margin-right: 5px; }
-        .trend-up .trend-indicator::before { content: '▲'; }
-        .trend-down .trend-indicator::before { content: '▼'; }
-        .trend-neutral .trend-indicator::before { content: '–'; }
+        .widget-rank { font-size: 1.1em; font-weight: 600; color: var(--secondary-color); opacity: 0.9; }
+        .loader, .error-message, .no-data { text-align: center; padding: 40px; font-size: 1.2em; color: var(--light-grey); }
+        .error-message { color: var(--danger-color); background-color: #fdd; border: 1px solid var(--danger-color); border-radius: 8px; }
+        .rank-trend { font-weight: bold; margin-left: 8px; }
+        .rank-trend-up { color: var(--success-color); }
+        .rank-trend-down { color: var(--danger-color); }
+        .rank-trend-up::before { content: '▲'; }
+        .rank-trend-down::before { content: '▼'; }
         footer { text-align: center; padding: 25px; font-size: 0.8em; color: #95a5a6; font-style: italic; }
     </style>
 </head>
@@ -65,16 +64,16 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxOay6sGNlL_f4MfhHkmwBTi0J3ONrCxv2dg1y5pqKjgKmAN07xttJtlrXjNqLbxdYR/exec";
         
         const dashboardContainer = document.getElementById('dashboard-container');
-
+        // This object will store the new ranks to be saved at the end
+        let currentRanks = {}; 
+        
         async function initializeDashboard() {
             const localData = JSON.parse(localStorage.getItem('jdlmData')) || {};
             const userCode = (localData.nom || '').replace(/\s+/g, '').toLowerCase();
             const selectedLevel = localStorage.getItem('jdlmNiveau');
 
-            console.log(`[DEBUG] Trying to load dashboard for userCode: '${userCode}' and niveau: '${selectedLevel}'`);
-
             if (!selectedLevel || !userCode) {
-                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur :</strong> Niveau ou nom d'utilisateur non trouvé. Veuillez retourner à la page principale, sélectionner votre niveau, puis cliquer sur "Classement".</div>`;
+                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur :</strong> Niveau ou nom d'utilisateur non trouvé. Retournez à la page principale, sélectionnez votre niveau, puis cliquez sur "Classement".</div>`;
                 return;
             }
 
@@ -86,42 +85,38 @@
                 const allData = await response.json();
                 if (allData.error) throw new Error(`Script error: ${allData.error}`);
 
-                console.log("[DEBUG] Fetched data:", allData);
-
-                document.getElementById('term-select').addEventListener('change', () => renderDashboard(allData, userCode, selectedLevel));
-                renderDashboard(allData, userCode, selectedLevel);
+                const oldRanks = JSON.parse(localStorage.getItem('jdlmRankHistory')) || {};
+                
+                document.getElementById('term-select').addEventListener('change', () => renderDashboard(allData, userCode, selectedLevel, oldRanks));
+                renderDashboard(allData, userCode, selectedLevel, oldRanks);
 
             } catch (error) {
                 console.error("Fetch Error:", error);
-                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur de chargement :</strong> Impossible de récupérer les données du classement. Vérifiez la console (F12) pour plus de détails.</div>`;
+                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur de chargement :</strong> Impossible de récupérer les données du classement. Vérifiez la console (F12).</div>`;
             }
         }
 
-        function renderDashboard(allData, userCode, selectedLevel) {
+        function renderDashboard(allData, userCode, selectedLevel, oldRanks) {
+            currentRanks = {}; // Reset ranks for the current session
             const selectedTermKey = document.getElementById('term-select').value;
             const levelData = allData.filter(d => d.niveau === selectedLevel);
             
-            console.log(`[DEBUG] Found ${levelData.length} records for niveau '${selectedLevel}'`);
-
             if (levelData.length === 0) {
-                dashboardContainer.innerHTML = `<div class="no-data">Aucune donnée de classement n'a encore été enregistrée pour le ${selectedLevel === 'sec4' ? 'Secondaire 4' : 'Secondaire 5'}.</div>`;
+                dashboardContainer.innerHTML = `<div class="no-data">Aucune donnée de classement n'a encore été enregistrée pour ce niveau.</div>`;
                 return;
             }
 
             const currentUserData = levelData.find(d => d.userCode === userCode);
             
             if (!currentUserData) {
-                console.warn(`[DEBUG] User '${userCode}' not found in the level data.`);
-                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur :</strong> Vos données n'ont pas été trouvées dans le classement pour ce niveau. Assurez-vous que le nom dans vos données correspond et que vous avez sélectionné le bon niveau sur la page principale.</div>`;
+                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur :</strong> Vos données n'ont pas été trouvées dans le classement pour ce niveau.</div>`;
                 return;
             }
             
-            console.log("[DEBUG] Found current user's data:", currentUserData);
-
-            const mainWidgetHTML = createWidgetHTML(selectedTermKey, document.getElementById('term-select').options[document.getElementById('term-select').selectedIndex].text, levelData, currentUserData);
-            const francaisWidgetHTML = createWidgetHTML('avg_francais', 'Moyenne Français', levelData, currentUserData);
-            const mathWidgetHTML = createWidgetHTML('avg_math', 'Moyenne Math', levelData, currentUserData);
-            const anglaisWidgetHTML = createWidgetHTML('avg_anglais', 'Moyenne Anglais', levelData, currentUserData);
+            const mainWidgetHTML = createWidgetHTML(selectedTermKey, document.getElementById('term-select').options[document.getElementById('term-select').selectedIndex].text, levelData, currentUserData, oldRanks);
+            const francaisWidgetHTML = createWidgetHTML('avg_francais', 'Moyenne Français', levelData, currentUserData, oldRanks);
+            const mathWidgetHTML = createWidgetHTML('avg_math', 'Moyenne Math', levelData, currentUserData, oldRanks);
+            const anglaisWidgetHTML = createWidgetHTML('avg_anglais', 'Moyenne Anglais', levelData, currentUserData, oldRanks);
 
             dashboardContainer.innerHTML = `
                 <div class="dashboard-grid">
@@ -131,35 +126,54 @@
                     <div class="stat-widget small-widget">${anglaisWidgetHTML}</div>
                 </div>
             `;
+
+            // After rendering everything, save the new ranks for the next visit
+            localStorage.setItem('jdlmRankHistory', JSON.stringify(currentRanks));
+            console.log("New ranks saved:", currentRanks);
         }
 
-        function createWidgetHTML(currentKey, title, allUsersData, currentUserData) {
+        function createWidgetHTML(currentKey, title, allUsersData, currentUserData, oldRanks) {
             const rankedUsers = allUsersData.filter(u => u[currentKey] && !isNaN(parseFloat(u[currentKey]))).sort((a, b) => b[currentKey] - a[currentKey]);
             const totalUsers = rankedUsers.length;
             const currentUserRank = rankedUsers.findIndex(u => u.userCode === currentUserData.userCode) + 1;
             const currentUserGrade = parseFloat(currentUserData[currentKey]);
             
+            // Store the current rank to be saved later
+            if (currentUserRank > 0) {
+                currentRanks[currentKey] = currentUserRank;
+            }
+            
             if (isNaN(currentUserGrade) || currentUserRank === 0) {
                 return `<h3 class="widget-title">${title}</h3><div class="no-data" style="padding:10px;">N/A</div>`;
             }
 
-            let previousGrade = null;
-            if (currentKey === 'avg_etape2' && currentUserData['avg_etape1']) previousGrade = parseFloat(currentUserData['avg_etape1']);
-            else if (currentKey === 'avg_etape3' && currentUserData['avg_etape2']) previousGrade = parseFloat(currentUserData['avg_etape2']);
-            
-            let trendClass = 'trend-neutral';
-            if (previousGrade !== null) {
-                if (currentUserGrade > previousGrade) trendClass = 'trend-up';
-                else if (currentUserGrade < previousGrade) trendClass = 'trend-down';
+            const oldRank = oldRanks[currentKey];
+            let trendHTML = '';
+
+            // If there's no old rank, it's the first time. Show green.
+            if (oldRank === undefined) {
+                trendHTML = `<span class="rank-trend rank-trend-up"></span>`;
+            } 
+            // If the new rank is better (lower number), show green.
+            else if (currentUserRank < oldRank) {
+                trendHTML = `<span class="rank-trend rank-trend-up"></span>`;
+            }
+            // If the new rank is worse (higher number), show red.
+            else if (currentUserRank > oldRank) {
+                trendHTML = `<span class="rank-trend rank-trend-down"></span>`;
+            }
+            // If the rank is the same, still show green as a positive indicator.
+            else {
+                trendHTML = `<span class="rank-trend rank-trend-up"></span>`;
             }
             
             return `
                 <h3 class="widget-title">${title}</h3>
-                <div class="widget-value ${trendClass}">
-                    <span class="trend-indicator"></span>
-                    <span>${currentUserGrade.toFixed(1)}%</span>
+                <div class="widget-value">${currentUserGrade.toFixed(1)}%</div>
+                <div class="widget-rank">
+                    <span>Top ${currentUserRank} sur ${totalUsers}</span>
+                    ${trendHTML}
                 </div>
-                <div class="widget-rank">Top ${currentUserRank} sur ${totalUsers}</div>
             `;
         }
 
