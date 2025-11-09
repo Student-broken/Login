@@ -204,7 +204,7 @@
         // START: MODIFIED RANKING SCRIPT
         // =======================================================
 
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxOay6sGNlL_f4MfhHkmwBTi0J3ONrCxv2dg1y5pqKjgKmAN07xttJtlrXjNqLbxdYR/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5JYFE5JDLycaa4cCCsA57K-2Pka-CoHatWTr1685mQDiJtv_3IcrYDFhS2vkhsOet/exec";
 
         function getUserCode() { const nom = (jdlmData || {}).nom; if (!nom) return null; return nom.replace(/\s+/g, '').toLowerCase(); }
         function getAggregatedSubjectAverage(allSubjectAverages, subjectCodes) { let totalSum = 0; let count = 0; ['etape1', 'etape2', 'etape3'].forEach(etape => { if (allSubjectAverages[etape]) { Object.entries(allSubjectAverages[etape]).forEach(([code, subjectData]) => { if (subjectCodes.includes(code) && subjectData.average !== null) { totalSum += subjectData.average; count++; } }); } }); return count > 0 ? totalSum / count : null; }
