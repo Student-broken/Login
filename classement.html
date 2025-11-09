@@ -6,576 +6,289 @@
     <title>Classement - Outil JDLM</title>
     <link rel="icon" href="https://raw.githubusercontent.com/Student-broken/student-broken.github.io/refs/heads/main/favicon.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <!-- Including Chart.js for the graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary-color: #2980b9;
-            --secondary-color: #2c3e50;
-            --background-color: #f7f9fb;
-            --widget-background: #ffffff;
-            --text-color: #34495e;
-            --light-grey: #bdc3c7;
-            --footer-grey: #95a5a6;
-            --gold: #FFD700;
-            --silver: #C0C0C0;
-            --bronze: #CD7F32;
-            --shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+            --primary-color: #2980b9; --secondary-color: #2c3e50; --background-color: #f7f9fb;
+            --widget-background: #ffffff; --text-color: #34495e; --light-grey: #e0e6eb;
+            --danger-color: #e74c3c; --success-color: #27ae60; --shadow-widget: 0 10px 20px rgba(0, 0, 0, 0.07);
         }
-        body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        /* --- NOUVEAU CSS POUR LE VEROUILLAGE --- */
-        .password-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(44, 62, 80, 1); /* secondary-color with opacity */
-            z-index: 10000; /* Extrêmement haut pour couvrir tous les éléments */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 1s ease;
-            flex-direction: column;
-        }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--background-color); color: var(--text-color); }
+        .site-header-container { background-color: var(--widget-background); box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 15px 0; position: relative; margin-bottom: 20px; }
+        .site-header { text-align: center; padding: 0; margin: 0; color: var(--secondary-color); font-size: 2.2em; font-weight: 700; font-family: 'Playfair Display', serif; }
+        .back-arrow { position: absolute; top: 50%; left: 25px; transform: translateY(-50%); font-size: 2.2em; color: var(--secondary-color); text-decoration: none; transition: color 0.2s; }
+        .back-arrow:hover { color: var(--primary-color); }
+        .main-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+        .controls { background: var(--widget-background); padding: 20px; border-radius: 12px; box-shadow: var(--shadow-widget); margin-bottom: 25px; border: 1px solid var(--light-grey); }
+        .controls label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.9em; }
+        select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background-color: white; font-size: 1em; }
+        
+        .dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
+        .stat-widget { background: var(--widget-background); border-radius: 16px; padding: 25px; box-shadow: var(--shadow-widget); border: 1px solid var(--light-grey); display: flex; flex-direction: column; }
+        
+        /* WIDGET SIZING */
+        .main-avg-widget { grid-column: span 2; }
+        .graph-widget { grid-column: 1 / -1; } /* Full width */
 
-        .overlay-content {
-            background-color: var(--widget-background);
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-        }
+        .widget-header { text-align: center; margin-bottom: 20px; }
+        .widget-title { font-size: 1.1em; font-weight: bold; color: var(--secondary-color); margin: 0 0 10px 0; }
+        .widget-value { font-size: 3.5em; font-weight: 700; }
+        .small-widget .widget-value { font-size: 2.5em; }
+        .widget-rank { font-size: 1.2em; font-weight: 600; color: var(--secondary-color); display: flex; align-items: center; justify-content: center; }
+        .rank-trend { font-weight: bold; margin-left: 8px; font-size: 1.1em; }
+        .rank-trend-up { color: var(--success-color); } .rank-trend-up::before { content: '▲'; }
+        .rank-trend-down { color: var(--danger-color); } .rank-trend-down::before { content: '▼'; }
 
-        .overlay-content h3 {
-            color: var(--primary-color);
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }
+        /* MINI LEADERBOARD */
+        .mini-leaderboard-container { flex-grow: 1; overflow: hidden; position: relative; margin-top: 15px; border-top: 1px solid var(--light-grey); padding-top: 15px; }
+        .leaderboard-list { list-style: none; padding: 0; margin: 0; transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
+        .leaderboard-item { display: flex; align-items: center; padding: 8px 10px; border-radius: 8px; font-size: 0.95em; transition: background-color 0.2s; opacity: 1; }
+        .leaderboard-item.is-user { background-color: #eaf2f8; font-weight: bold; }
+        .item-rank { width: 45px; font-weight: 600; text-align: right; margin-right: 10px; }
+        .item-grade { margin-left: auto; font-weight: 600; }
+        
+        /* GRAPH & OVERALL WIDGET */
+        .graph-container { padding-top: 20px; }
+        .overall-avg-widget { text-align: center; }
 
-        .overlay-content input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1.1em;
-            box-sizing: border-box;
-        }
-
-        .overlay-content button {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .overlay-content button:hover {
-            background-color: #1e6fa3;
-        }
-
-        .error-message {
-            color: #e74c3c;
-            margin-top: 15px;
-            font-weight: bold;
-            min-height: 20px;
-        }
-        .hidden {
-            display: none !important;
-        }
-        /* --- FIN NOUVEAU CSS --- */
-
-        .site-header-container {
-            background-color: var(--widget-background);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            border-bottom: 1px solid #e0e6eb;
-            padding: 15px 0;
-            position: relative;
-        }
-        .site-header {
-            text-align: center;
-            padding: 0;
-            margin: 0;
-            color: var(--secondary-color);
-            font-size: 2.2em;
-            font-weight: 700;
-            font-family: 'Playfair Display', serif;
-            letter-spacing: 0.05em;
-        }
-        .back-arrow {
-            position: absolute;
-            top: 50%;
-            left: 25px;
-            transform: translateY(-50%);
-            font-size: 2.2em;
-            color: var(--secondary-color);
-            text-decoration: none;
-            transition: color 0.2s, transform 0.2s;
-            line-height: 1;
-        }
-        .back-arrow:hover {
-            color: var(--primary-color);
-            transform: translateY(-50%) scale(1.05);
-        }
-        .content {
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 40px 20px;
-        }
-        .leaderboard-widget {
-            background-color: var(--widget-background);
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: var(--shadow);
-            width: 100%;
-            max-width: 800px;
-        }
-        .leaderboard-widget h2 {
-            margin-top: 0;
-            color: var(--secondary-color);
-            text-align: center;
-            font-size: 1.8em;
-            margin-bottom: 10px;
-        }
-        .subtitle {
-            text-align: center;
-            color: var(--light-grey);
-            margin-bottom: 30px;
-            font-size: 0.95em;
-        }
-        .filter-controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .filter-controls select {
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            background-color: white;
-            transition: box-shadow 0.2s, border-color 0.2s;
-            font-size: 0.95em;
-        }
-        .filter-controls select:focus {
-            box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.2);
-            border-color: var(--primary-color);
-            outline: none;
-        }
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: var(--light-grey);
-            font-style: italic;
-        }
-        .leaderboard-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 10px;
-        }
-        .leaderboard-row {
-            background-color: #f8f9fa;
-            transition: transform 0.2s, box-shadow 0.2s;
-            cursor: default;
-        }
-        .leaderboard-row:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        .leaderboard-row.current-user {
-            background-color: #e3f2fd;
-            border: 2px solid var(--primary-color);
-        }
-        .leaderboard-row td {
-            padding: 15px;
-            vertical-align: middle;
-        }
-        .leaderboard-row td:first-child {
-            border-radius: 8px 0 0 8px;
-        }
-        .leaderboard-row td:last-child {
-            border-radius: 0 8px 8px 0;
-        }
-        .rank {
-            font-size: 1.5em;
-            font-weight: bold;
-            text-align: center;
-            width: 80px;
-        }
-        .rank.gold { color: var(--gold); }
-        .rank.silver { color: var(--silver); }
-        .rank.bronze { color: var(--bronze); }
-        .username {
-            font-weight: 600;
-            font-size: 1.1em;
-        }
-        .average {
-            text-align: right;
-            font-size: 1.3em;
-            font-weight: bold;
-            color: var(--primary-color);
-            width: 120px;
-        }
-        .stats-widget {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: space-around;
-            gap: 20px;
-        }
-        .stat-item {
-            text-align: center;
-        }
-        .stat-label {
-            font-size: 0.85em;
-            color: var(--light-grey);
-            margin-bottom: 5px;
-        }
-        .stat-value {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-        .no-data {
-            text-align: center;
-            padding: 40px;
-            color: var(--light-grey);
-            font-style: italic;
-        }
-        footer {
-            text-align: center;
-            padding: 15px;
-            font-size: 0.8em;
-            color: var(--footer-grey);
-            font-style: italic;
-            border-top: 1px solid #eee;
-            margin-top: auto;
-        }
+        .loader, .error-message, .no-data { text-align: center; padding: 40px; font-size: 1.2em; color: var(--light-grey); }
+        .error-message { color: var(--danger-color); background-color: #fdd; border: 1px solid var(--danger-color); border-radius: 8px; }
+        footer { text-align: center; padding: 25px; font-size: 0.8em; color: #95a5a6; font-style: italic; }
     </style>
 </head>
 <body>
-
-    <div class="password-overlay" id="password-lock">
-        <div class="overlay-content">
-            <h3>🔒 Accès Restreint</h3>
-            <p>Veuillez entrer le mot de passe pour accéder au classement.</p>
-            <input type="password" id="password-input" placeholder="Mot de passe" required>
-            <button id="password-submit-btn">Déverrouiller</button>
-            <div class="error-message" id="password-error"></div>
-        </div>
-    </div>
     <div class="site-header-container">
         <a href="main.html" class="back-arrow" title="Retour">←</a>
-        <header class="site-header">Classement</header>
+        <header class="site-header">Tableau de Bord du Classement</header>
     </div>
-
-    <main class="content">
-        <div class="leaderboard-widget">
-            <h2>🏆 Classement des Moyennes</h2>
-            <p class="subtitle">Comparaison anonyme des performances</p>
-            
-            <div class="stats-widget" id="stats-widget">
-                <div class="stat-item">
-                    <div class="stat-label">Participants</div>
-                    <div class="stat-value" id="total-participants">--</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Moyenne Globale</div>
-                    <div class="stat-value" id="global-average">--</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Votre Rang</div>
-                    <div class="stat-value" id="user-rank">--</div>
-                </div>
-            </div>
-
-            <div class="filter-controls">
-                <select id="filter-niveau">
-                    <option value="all">Tous les niveaux</option>
-                    <option value="Sec4">Secondaire 4</option>
-                    <option value="Sec5">Secondaire 5</option>
-                </select>
-                <select id="filter-etape">
-                    <option value="Moyenne Globale">Moyenne Générale</option>
-                    <option value="Etape1">Étape 1</option>
-                    <option value="Etape2">Étape 2</option>
-                    <option value="Etape3">Étape 3</option>
-                </select>
-            </div>
-
-            <div id="leaderboard-content">
-                <div class="loading">Chargement du classement...</div>
-            </div>
+    <main class="main-container">
+        <div class="controls">
+            <label for="term-select">Comparer les moyennes pour :</label>
+            <select id="term-select">
+                <option value="avg_generale">Moyenne générale</option>
+                <option value="avg_etape1">Étape 1</option>
+                <option value="avg_etape2">Étape 2</option>
+                <option value="avg_etape3">Étape 3</option>
+            </select>
+        </div>
+        <div id="dashboard-container">
+             <div class="loader" style="color:var(--text-color)">Chargement des données...</div>
         </div>
     </main>
-
     <footer>*jauge de la moyenne</footer>
-
     <script>
-        // !! IMPORTANT !! REMPLACEZ CETTE VALEUR PAR L'URL DE DÉPLOIEMENT DE VOTRE GOOGLE APPS SCRIPT
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw75y1TIt3sP12OtUShkJK6aPu2r7xm41DLdVcv5Dn7h9uMlWJAS1vI-X9VUgBBC3RXrw/exec"; 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxOay6sGNlL_f4MfhHkmwBTi0J3ONrCxv2dg1y5pqKjgKmAN07xttJtlrXjNqLbxdYR/exec";
         
-        // ** NOUVELLES VARIABLES POUR LE VEROUILLAGE **
-        const PASSWORD_API_URL = "https://script.google.com/macros/s/AKfycbwNnr7yofbZsalVH9-V4TJRgSnaIT93Q6uNR7Gt-J7owpPdwmFMODisawKWqFL_Jbs3Pw/exec";
-        const UNLOCK_KEY = 'leaderboardUnlocked';
-        // ** FIN NOUVELLES VARIABLES **
+        const dashboardContainer = document.getElementById('dashboard-container');
+        let currentRanks = {}; 
+        let chartInstance = null;
+        
+        async function initializeDashboard() {
+            const localData = JSON.parse(localStorage.getItem('jdlmData')) || {};
+            const userCode = (localData.nom || '').replace(/\s+/g, '').toLowerCase();
+            const selectedLevel = localStorage.getItem('jdlmNiveau');
 
-        // Mappage des niveaux pour le filtre (doit correspondre aux valeurs utilisées dans la feuille)
-        const LEVEL_MAP = {
-            'sec4': 'sec4', 
-            'sec5': 'sec5',
-        };
-
-        let currentUserData = null;
-        let allLeaderboardData = [];
-        let cleanUserData = {}; // Student's cleaned ID for comparison
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            // [NOUVEAU] Initialiser le verrouillage AVANT de charger les données
-            setupPasswordLock();
-            
-            // Récupérer les données de l'utilisateur local
-            currentUserData = JSON.parse(localStorage.getItem('jdlmData')) || null;
-            
-            if (currentUserData && currentUserData.nom) {
-                // Créer un ID nettoyé pour comparer avec la colonne 'Nom/ID'
-                cleanUserData.userId = currentUserData.nom.toString().replace(/\s+/g, '').toLowerCase();
-                
-                // Assumer que le niveau est stocké séparément ou déduit si nécessaire
-                // Pour l'exemple, si vous stockez le niveau dans localStorage
-                const storedNiveau = localStorage.getItem('jdlmNiveau') || 'sec4'; 
-                cleanUserData.niveau = LEVEL_MAP[storedNiveau] || 'Sec4';
-
-                // Initialiser le filtre sur le niveau de l'utilisateur
-                const levelSelect = document.getElementById('filter-niveau');
-                if (levelSelect.querySelector(`option[value="${cleanUserData.niveau}"]`)) {
-                     levelSelect.value = cleanUserData.niveau;
-                }
-            } else {
-                document.getElementById('user-rank').textContent = 'N/A';
-            }
-            
-            document.getElementById('filter-niveau').addEventListener('change', renderLeaderboard);
-            document.getElementById('filter-etape').addEventListener('change', renderLeaderboard);
-            
-            // Le chargement des données attendra que le verrouillage soit traité dans setupPasswordLock
-            await loadLeaderboardData();
-        });
-
-        // ** FONCTION POUR LE VEROUILLAGE **
-        function setupPasswordLock() {
-            const passwordLock = document.getElementById('password-lock');
-            const passwordInput = document.getElementById('password-input');
-            const submitBtn = document.getElementById('password-submit-btn');
-            const errorDiv = document.getElementById('password-error');
-            
-            // 1. Vérifier si l'utilisateur a déjà déverrouillé pendant cette session
-            if (sessionStorage.getItem(UNLOCK_KEY) === 'true') {
-                passwordLock.classList.add('hidden');
-                return; // Ne pas installer les événements si déjà déverrouillé
-            }
-            
-            // 2. Fonction de vérification
-            const checkPassword = async () => {
-                const password = passwordInput.value;
-                if (!password) {
-                    errorDiv.textContent = 'Veuillez entrer un mot de passe.';
-                    return;
-                }
-                
-                submitBtn.textContent = 'Vérification...';
-                errorDiv.textContent = '';
-                submitBtn.disabled = true;
-                
-                try {
-                    // LIGNE CORRIGÉE : Utilise le paramètre 'password' pour correspondre à votre Apps Script
-                    const fullUrl = `${PASSWORD_API_URL}?password=${encodeURIComponent(password)}`;
-                    
-                    const response = await fetch(fullUrl);
-                    
-                    const result = await response.json(); 
-                    
-                    if (result.success === true) {
-                        // Mot de passe correct: supprimer l'overlay
-                        passwordLock.classList.add('hidden'); 
-                        sessionStorage.setItem(UNLOCK_KEY, 'true'); // Stocker l'état
-                        passwordInput.value = ''; // Nettoyer l'input
-                        
-                        // Recharger les données du classement maintenant que l'accès est autorisé
-                        await loadLeaderboardData(); 
-
-                    } else {
-                        // Mot de passe incorrect
-                        errorDiv.textContent = 'Mot de passe incorrect. Veuillez réessayer.';
-                        passwordInput.value = '';
-                    }
-                } catch (error) {
-                    console.error('Erreur API de mot de passe:', error);
-                    errorDiv.textContent = 'Erreur de connexion au serveur de vérification.';
-                } finally {
-                    submitBtn.textContent = 'Déverrouiller';
-                    submitBtn.disabled = false;
-                }
-            };
-            
-            // 3. Ajouter les écouteurs d'événements
-            submitBtn.addEventListener('click', checkPassword);
-            passwordInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault(); // Empêche l'envoi d'un formulaire si existant
-                    checkPassword();
-                }
-            });
-        }
-        // ** FIN NOUVELLE FONCTION **
-
-        async function loadLeaderboardData() {
-            // [MODIFICATION] Ne charge les données que si l'overlay est masqué
-            if (sessionStorage.getItem(UNLOCK_KEY) !== 'true') {
-                 document.getElementById('leaderboard-content').innerHTML = '<div class="no-data">Classement verrouillé. Veuillez entrer le mot de passe.</div>';
-                 return;
-            }
-
-            try {
-                // Utiliser l'URL du script pour charger toutes les données du classement
-                const response = await fetch(SCRIPT_URL);
-                if (!response.ok) throw new Error('Erreur réseau lors du chargement des données.');
-                
-                const data = await response.json();
-                
-                if (data.error) throw new Error(data.error);
-                
-                allLeaderboardData = data; 
-                
-                renderLeaderboard();
-            } catch (error) {
-                console.error('Erreur lors du chargement du classement:', error);
-                document.getElementById('leaderboard-content').innerHTML = '<div class="no-data">Erreur de connexion au serveur. Assurez-vous que le SCRIPT_URL est correct et que le déploiement Apps Script est public.</div>';
-            }
-        }
-
-        function renderLeaderboard() {
-            // Les valeurs des filtres correspondent directement aux noms des colonnes de la feuille
-            const niveauFilter = document.getElementById('filter-niveau').value;
-            const etapeFilter = document.getElementById('filter-etape').value; // Ex: 'Moyenne Globale', 'Etape1'
-
-            let filteredData = allLeaderboardData.filter(entry => {
-                // Filtrer par niveau
-                if (niveauFilter !== 'all' && entry['Niveau'] !== niveauFilter) return false;
-                
-                // S'assurer que la colonne de l'étape sélectionnée existe et a une valeur numérique
-                const average = entry[etapeFilter];
-                return (typeof average === 'number' && average !== null);
-            });
-
-            // Ajouter la moyenne d'affichage pour le tri
-            filteredData = filteredData.map(entry => {
-                return { 
-                    ...entry, 
-                    displayAverage: entry[etapeFilter], // Utilise la colonne sélectionnée comme moyenne d'affichage
-                    // Créer l'ID nettoyé pour la comparaison utilisateur/rang
-                    cleanId: (entry['Nom/ID'] || '').toString().replace(/\s+/g, '').toLowerCase()
-                };
-            });
-
-            filteredData.sort((a, b) => b.displayAverage - a.displayAverage);
-
-            renderStats(filteredData);
-            renderTable(filteredData);
-        }
-
-        function renderStats(data) {
-            const totalParticipants = data.length;
-            
-            const totalSum = data.reduce((sum, entry) => sum + entry.displayAverage, 0);
-            const globalAverage = totalParticipants > 0 ? (totalSum / totalParticipants) : NaN;
-
-            let userRank = 'N/A';
-            if (cleanUserData.userId) {
-                // Trouver le rang en utilisant l'ID nettoyé
-                const userIndex = data.findIndex(entry => entry.cleanId === cleanUserData.userId);
-                if (userIndex !== -1) {
-                    userRank = userIndex + 1;
-                }
-            }
-
-            document.getElementById('total-participants').textContent = totalParticipants;
-            document.getElementById('global-average').textContent = isNaN(globalAverage) ? '--' : globalAverage.toFixed(2) + '%';
-            document.getElementById('user-rank').textContent = userRank !== 'N/A' ? `#${userRank}` : 'N/A';
-        }
-
-        function renderTable(data) {
-            const container = document.getElementById('leaderboard-content');
-
-            if (data.length === 0) {
-                container.innerHTML = '<div class="no-data">Aucune donnée pour ces filtres.</div>';
+            if (!selectedLevel || !userCode) {
+                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur :</strong> Niveau ou nom d'utilisateur non trouvé. Retournez à la page principale, sélectionnez votre niveau, puis cliquez sur "Classement".</div>`;
                 return;
             }
 
-            const table = document.createElement('table');
-            table.className = 'leaderboard-table';
-            const tbody = document.createElement('tbody');
-            table.appendChild(tbody);
+            document.querySelector('.site-header').textContent += ` - ${selectedLevel === 'sec4' ? 'Sec. 4' : 'Sec. 5'}`;
+            
+            try {
+                const response = await fetch(SCRIPT_URL);
+                if (!response.ok) throw new Error(`Network error: ${response.statusText}`);
+                const allData = await response.json();
+                if (allData.error) throw new Error(`Script error: ${allData.error}`);
 
-            data.forEach((entry, index) => {
-                const row = document.createElement('tr');
-                row.className = 'leaderboard-row';
+                const oldRanks = JSON.parse(localStorage.getItem('jdlmRankHistory')) || {};
                 
-                // Vérifier si la ligne appartient à l'utilisateur
-                const isCurrentUser = cleanUserData.userId && entry.cleanId === cleanUserData.userId;
-                if (isCurrentUser) {
-                    row.classList.add('current-user');
-                }
+                document.getElementById('term-select').addEventListener('change', () => renderDashboard(allData, userCode, selectedLevel, oldRanks));
+                renderDashboard(allData, userCode, selectedLevel, oldRanks);
 
-                const rank = index + 1;
-                let rankClass = '';
-                let rankDisplay = rank;
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur de chargement :</strong> Impossible de récupérer les données du classement. Vérifiez la console (F12).</div>`;
+            }
+        }
 
-                if (rank === 1) {
-                    rankClass = 'gold';
-                    rankDisplay = '🥇';
-                } else if (rank === 2) {
-                    rankClass = 'silver';
-                    rankDisplay = '🥈';
-                } else if (rank === 3) {
-                    rankClass = 'bronze';
-                    rankDisplay = '🥉';
-                }
+        function renderDashboard(allData, userCode, selectedLevel, oldRanks) {
+            currentRanks = {}; 
+            const selectedTermKey = document.getElementById('term-select').value;
+            const levelData = allData.filter(d => d.niveau === selectedLevel);
+            
+            if (levelData.length === 0) {
+                dashboardContainer.innerHTML = `<div class="no-data">Aucune donnée de classement n'a encore été enregistrée pour ce niveau.</div>`;
+                return;
+            }
 
-                // Afficher le nom réel pour l'utilisateur actuel, anonymiser les autres
-                const displayName = isCurrentUser ? entry['Nom/ID'] : `Utilisateur ${rank}`;
+            const currentUserData = levelData.find(d => d.userCode === userCode);
+            
+            if (!currentUserData) {
+                dashboardContainer.innerHTML = `<div class="error-message"><strong>Erreur :</strong> Vos données n'ont pas été trouvées dans le classement pour ce niveau.</div>`;
+                return;
+            }
+            
+            const mainWidgetHTML = createStatWidgetHTML('main-avg-widget', selectedTermKey, document.getElementById('term-select').options[document.getElementById('term-select').selectedIndex].text, levelData, currentUserData, oldRanks);
+            const francaisWidgetHTML = createStatWidgetHTML('small-widget', 'avg_francais', 'Moyenne Français', levelData, currentUserData, oldRanks);
+            const mathWidgetHTML = createStatWidgetHTML('small-widget', 'avg_math', 'Moyenne Math', levelData, currentUserData, oldRanks);
+            const anglaisWidgetHTML = createStatWidgetHTML('small-widget', 'avg_anglais', 'Moyenne Anglais', levelData, currentUserData, oldRanks);
+            const overallAvgHTML = createOverallAverageWidgetHTML(selectedTermKey, levelData);
+            
+            dashboardContainer.innerHTML = `
+                <div class="dashboard-grid">
+                    ${mainWidgetHTML}
+                    ${overallAvgHTML}
+                    <div class="stat-widget graph-widget">
+                        <h3 class="widget-title" style="text-align:center;">Performance par Étape</h3>
+                        <div class="graph-container"><canvas id="performanceChart"></canvas></div>
+                    </div>
+                    ${francaisWidgetHTML}
+                    ${mathWidgetHTML}
+                    ${anglaisWidgetHTML}
+                </div>
+            `;
+            
+            createPerformanceChart(levelData, currentUserData);
 
-                row.innerHTML = `
-                    <td class="rank ${rankClass}">${rankDisplay}</td>
-                    <td class="username">${displayName}</td>
-                    <td class="average">${entry.displayAverage.toFixed(2)}%</td>
-                `;
-
-                tbody.appendChild(row);
+            // After HTML is rendered, activate the scrolling leaderboards
+            document.querySelectorAll('.mini-leaderboard-container').forEach(container => {
+                updateLeaderboardScroll(container);
             });
 
-            container.innerHTML = '';
-            container.appendChild(table);
+            localStorage.setItem('jdlmRankHistory', JSON.stringify(currentRanks));
         }
+
+        function createStatWidgetHTML(widgetClass, currentKey, title, allUsersData, currentUserData, oldRanks) {
+            const rankedUsers = allUsersData.filter(u => u[currentKey] && !isNaN(parseFloat(u[currentKey]))).sort((a, b) => b[currentKey] - a[currentKey]);
+            const totalUsers = rankedUsers.length;
+            const currentUserRank = rankedUsers.findIndex(u => u.userCode === currentUserData.userCode) + 1;
+            const currentUserGrade = parseFloat(currentUserData[currentKey]);
+            
+            if (currentUserRank > 0) currentRanks[currentKey] = currentUserRank;
+            
+            const getTrophy = (rank) => {
+                if (rank === 1) return '🥇'; if (rank === 2) return '🥈'; if (rank === 3) return '🥉';
+                return `#${rank}`;
+            };
+
+            let leaderboardItemsHTML = rankedUsers.map((user, index) => {
+                const rank = index + 1;
+                const isCurrentUser = user.userCode === currentUserData.userCode;
+                return `<li class="leaderboard-item ${isCurrentUser ? 'is-user' : ''}" data-rank="${rank}">
+                            <span class="item-rank">${getTrophy(rank)}</span>
+                            <span class="item-grade">${parseFloat(user[currentKey]).toFixed(1)}%</span>
+                        </li>`;
+            }).join('');
+            
+            let widgetContent;
+            if (isNaN(currentUserGrade) || currentUserRank === 0) {
+                widgetContent = `<div class="widget-header"><h3 class="widget-title">${title}</h3><div class="no-data" style="padding:10px;">N/A</div></div>`;
+            } else {
+                const oldRank = oldRanks[currentKey];
+                let trendHTML = '';
+                if (oldRank === undefined || currentUserRank <= oldRank) trendHTML = `<span class="rank-trend rank-trend-up"></span>`;
+                else if (currentUserRank > oldRank) trendHTML = `<span class="rank-trend rank-trend-down"></span>`;
+                
+                widgetContent = `
+                    <div class="widget-header">
+                        <h3 class="widget-title">${title}</h3>
+                        <div class="widget-value">${currentUserGrade.toFixed(1)}%</div>
+                        <div class="widget-rank">
+                            <span>Top ${currentUserRank} sur ${totalUsers}</span>
+                            ${trendHTML}
+                        </div>
+                    </div>
+                    <div class="mini-leaderboard-container" data-user-rank="${currentUserRank}">
+                        <ul class="leaderboard-list">${leaderboardItemsHTML}</ul>
+                    </div>
+                `;
+            }
+            return `<div class="stat-widget ${widgetClass}">${widgetContent}</div>`;
+        }
+        
+        function updateLeaderboardScroll(container) {
+            const userRank = parseInt(container.dataset.userRank);
+            if (!userRank) return;
+
+            const list = container.querySelector('.leaderboard-list');
+            const userItem = container.querySelector('.is-user');
+            if (!userItem) return;
+
+            const itemHeight = userItem.offsetHeight;
+            let scrollOffset;
+            
+            if (userRank <= 3) {
+                scrollOffset = 0; // At the top, show from the beginning
+            } else {
+                scrollOffset = (userRank - 4) * itemHeight; // Position 3 items above the user
+            }
+            
+            // Instantly move to position, then let user scroll freely
+            container.scrollTop = scrollOffset;
+        }
+
+        function createOverallAverageWidgetHTML(termKey, levelData) {
+            const validGrades = levelData.map(u => parseFloat(u[termKey])).filter(g => !isNaN(g));
+            const average = validGrades.length > 0 ? validGrades.reduce((a, b) => a + b, 0) / validGrades.length : 0;
+            return `
+                <div class="stat-widget overall-avg-widget">
+                    <div class="widget-header">
+                        <h3 class="widget-title">Moyenne du Groupe</h3>
+                        <div class="widget-value">${average.toFixed(1)}%</div>
+                        <div class="widget-rank" style="opacity:0.8;">Basé sur ${validGrades.length} élèves</div>
+                    </div>
+                </div>`;
+        }
+        
+        function createPerformanceChart(levelData, currentUserData) {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            
+            const calculateGroupAvg = (etapeKey) => {
+                const validGrades = levelData.map(u => parseFloat(u[etapeKey])).filter(g => !isNaN(g));
+                return validGrades.length > 0 ? validGrades.reduce((a,b) => a + b, 0) / validGrades.length : null;
+            };
+
+            const userData = [currentUserData.avg_etape1, currentUserData.avg_etape2, currentUserData.avg_etape3];
+            const groupData = [calculateGroupAvg('avg_etape1'), calculateGroupAvg('avg_etape2'), calculateGroupAvg('avg_etape3')];
+            
+            if(chartInstance) chartInstance.destroy(); // Clear previous chart
+            
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Étape 1', 'Étape 2', 'Étape 3'],
+                    datasets: [
+                        {
+                            label: 'Votre Moyenne',
+                            data: userData,
+                            borderColor: 'rgba(39, 174, 96, 1)',
+                            backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Moyenne du Groupe',
+                            data: groupData,
+                            borderColor: 'rgba(231, 76, 60, 1)',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: false, ticks: { callback: value => `${value}%` } } },
+                    plugins: { legend: { position: 'top' } }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
     </script>
 </body>
 </html>
