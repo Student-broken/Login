@@ -12,10 +12,31 @@
 
 
 
+ .legal-text {
+    /* Style de base pour le paragraphe */
+    font-size: 0.75rem; /* Taille de police plus petite pour le texte légal (12px) */
+    color: #6c757d; /* Couleur gris foncé/moyen pour un look discret */
+    margin-top: 15px; /* Espacement au-dessus du texte */
+    line-height: 1.4; /* Espacement des lignes pour la lisibilité */
+    text-align: center; /* Centrer le texte pour l'aligner avec le reste du contenu de l'overlay */
+    padding: 0 10px; /* Petit rembourrage horizontal pour éviter de toucher les bords */
+}
 
+.legal-text a {
+    /* Style des liens (politiques et conditions) */
+    color: #007bff; /* Bleu standard pour les liens (professionnel) */
+    text-decoration: none; /* Enlever le soulignement par défaut */
+    font-weight: 500; /* Rendre le texte du lien légèrement plus audacieux */
+}
 
-
-  /* --- NOUVEAU CSS POUR LE VEROUILLAGE  MIOCHHAEL THE PASSWORD SYSTEM IS DISABLED FOR NOW BUT AVAILABLE ANY TIME--- */
+.legal-text a:hover {
+    /* Effet au survol pour indiquer que c'est cliquable */
+    text-decoration: underline; /* Souligner au survol */
+    color: #0056b3; /* Un bleu légèrement plus foncé au survol */
+}
+    
+    
+    /* --- NOUVEAU CSS POUR LE VEROUILLAGE --- */
         .password-overlay {
             position: fixed;
             top: 0;
@@ -31,7 +52,7 @@
             flex-direction: column;
         }
 
-        .pass-content {
+        .overlay-content {
             background-color: var(--widget-background);
             padding: 40px;
             border-radius: 16px;
@@ -41,14 +62,14 @@
             width: 90%;
         }
 
-        .pass-content h3 {    /*overlay content*/
+        .overlay-content h3 {
             color: var(--primary-color);
             margin-top: 0;
             margin-bottom: 20px;
             font-size: 1.5em;
         }
 
-        .pass-content input[type="password"] {
+        .overlay-content input[type="password"] {
             width: 100%;
             padding: 12px;
             margin-bottom: 15px;
@@ -58,7 +79,7 @@
             box-sizing: border-box;
         }
 
-        .pass-content button {
+        .overlay-content button {
             width: 100%;
             padding: 12px;
             background-color: var(--primary-color);
@@ -70,11 +91,11 @@
             transition: background-color 0.2s;
         }
 
-        .pass-content button:hover {
+        .overlay-content button:hover {
             background-color: #1e6fa3;
         }
 
-        .pass-error { /*error-message*/
+        .error-message {
             color: #e74c3c;
             margin-top: 15px;
             font-weight: bold;
@@ -83,9 +104,11 @@
         .hidden {
             display: none !important;
         }
+    
+    
 
 
-
+ 
         
         :root {
             --primary-color: #2980b9; --secondary-color: #2c3e50; --background-color: #f7f9fb;
@@ -154,23 +177,26 @@
 
 
 
-
-
-<!--  <div class="password-overlay" id="password-lock">
-        <div class="pass-content">
-            <h3>🔒 Accès Restreint</h3>
-            <p>Veuillez entrer le mot de passe pour accéder au classement.</p>
-            <input type="password" id="password-input" placeholder="Mot de passe" required>
-            <button id="password-submit-btn">Déverrouiller</button>
-            <div class="pass-error" id="password-error"></div>
-        </div>
+<div class="password-overlay" id="password-lock">
+    <div class="overlay-content">
+        <h3>🔒 Accès Restreint</h3>
+        <p>Nous sommes désolés pour le désagrément. L'accès est actuellement restreint pour des raisons de sécurité et de développement. Veuillez contacter un administrateur pour 
+        un accès immédiat.</p>
+        <input type="password" id="password-input" placeholder="Mot de passe" required>
+        <button id="password-submit-btn">Déverrouiller</button>
+        <p class="legal-text">
+            La lecture de nos 
+            <a href="confidentialite.html" target="_blank">politiques de confidentialité</a> 
+            ainsi que nos 
+            <a href="conditions.html" target="_blank">Conditions d'utilisations</a> 
+            est obligatoire pour vos fins d'utilisations. En utilisant ce site, vous acceptez ces conditions. Sinon, fermez la page.
+        </p>
+        <div class="error-message" id="password-error"></div>
     </div>
-    <div class="site-header-container">
-        <a href="main.html" class="back-arrow" title="Retour">←</a>
-        <header class="site-header">Classement</header>
-    </div>
+</div>
 
--->
+
+
 
 
 <script>
@@ -178,121 +204,120 @@
 
         
         // ** NOUVELLES VARIABLES POUR LE VEROUILLAGE **
-      //  const PASSWORD_API_URL = "https://script.google.com/macros/s/AKfycbwNnr7yofbZsalVH9-V4TJRgSnaIT93Q6uNR7Gt-J7owpPdwmFMODisawKWqFL_Jbs3Pw/exec";
-      //  const UNLOCK_KEY = 'leaderboardUnlocked';
+        const PASSWORD_API_URL = "https://script.google.com/macros/s/AKfycby6__YC195Acw8oKPIv4lp5uyENmmAqLSeCpoywQTm3iTh-5poZjHOuhvqtr7tP7aix9w/exec";
+        const UNLOCK_KEY = 'leaderboardUnlocked';
         // ** FIN NOUVELLES VARIABLES **
 
         // Mappage des niveaux pour le filtre (doit correspondre aux valeurs utilisées dans la feuille)
-      //  const LEVEL_MAP = {
-       //     'sec4': 'sec4', 
-     //       'sec5': 'sec5',
-     //   };
+        const LEVEL_MAP = {
+            'sec4': 'sec4', 
+            'sec5': 'sec5',
+        };
 
-     //   let currentUserData = null;
-   //     let allLeaderboardData = [];
-    //    let cleanUserData = {}; // Student's cleaned ID for comparison
+        let currentUserData = null;
+        let allLeaderboardData = [];
+        let cleanUserData = {}; // Student's cleaned ID for comparison
 
-    //    document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             // [NOUVEAU] Initialiser le verrouillage AVANT de charger les données
-    //        setupPasswordLock();
+            setupPasswordLock();
             
             // Récupérer les données de l'utilisateur local
-  //          currentUserData = JSON.parse(localStorage.getItem('jdlmData')) || null;
+            currentUserData = JSON.parse(localStorage.getItem('jdlmData')) || null;
             
-        //    if (currentUserData && currentUserData.nom) {
-  //              // Créer un ID nettoyé pour comparer avec la colonne 'Nom/ID'
-          //      cleanUserData.userId = currentUserData.nom.toString().replace(/\s+/g, '').toLowerCase();
+            if (currentUserData && currentUserData.nom) {
+                // Créer un ID nettoyé pour comparer avec la colonne 'Nom/ID'
+                cleanUserData.userId = currentUserData.nom.toString().replace(/\s+/g, '').toLowerCase();
                 
                 // Assumer que le niveau est stocké séparément ou déduit si nécessaire
                 // Pour l'exemple, si vous stockez le niveau dans localStorage
-    //            const storedNiveau = localStorage.getItem('jdlmNiveau') || 'sec4'; 
-      //          cleanUserData.niveau = LEVEL_MAP[storedNiveau] || 'Sec4';
+                const storedNiveau = localStorage.getItem('jdlmNiveau') || 'sec4'; 
+                cleanUserData.niveau = LEVEL_MAP[storedNiveau] || 'Sec4';
 
                 // Initialiser le filtre sur le niveau de l'utilisateur
-     //           const levelSelect = document.getElementById('filter-niveau');
-         //       if (levelSelect.querySelector(`option[value="${cleanUserData.niveau}"]`)) {
-         //            levelSelect.value = cleanUserData.niveau;
-   //             }
-     //       } else {
-     //           document.getElementById('user-rank').textContent = 'N/A';
+                const levelSelect = document.getElementById('filter-niveau');
+                if (levelSelect.querySelector(`option[value="${cleanUserData.niveau}"]`)) {
+                     levelSelect.value = cleanUserData.niveau;
+                }
+            } else {
+                document.getElementById('user-rank').textContent = 'N/A';
             }
             
- //           document.getElementById('filter-niveau').addEventListener('change', renderLeaderboard);
-   //         document.getElementById('filter-etape').addEventListener('change', renderLeaderboard);
+            document.getElementById('filter-niveau').addEventListener('change', renderLeaderboard);
+            document.getElementById('filter-etape').addEventListener('change', renderLeaderboard);
             
             // Le chargement des données attendra que le verrouillage soit traité dans setupPasswordLock
- //           await loadLeaderboardData();
- //       });
+            await loadLeaderboardData();
+        });
 
         // ** FONCTION POUR LE VEROUILLAGE **
- //       function setupPasswordLock() {
- //           const passwordLock = document.getElementById('password-lock');
-//            const passwordInput = document.getElementById('password-input');
-//            const submitBtn = document.getElementById('password-submit-btn');
- //           const errorDiv = document.getElementById('password-error');
+        function setupPasswordLock() {
+            const passwordLock = document.getElementById('password-lock');
+            const passwordInput = document.getElementById('password-input');
+            const submitBtn = document.getElementById('password-submit-btn');
+            const errorDiv = document.getElementById('password-error');
             
             // 1. Vérifier si l'utilisateur a déjà déverrouillé pendant cette session
-  //          if (sessionStorage.getItem(UNLOCK_KEY) === 'true') {
-   //             passwordLock.classList.add('hidden');
- //               return; // Ne pas installer les événements si déjà déverrouillé
+            if (sessionStorage.getItem(UNLOCK_KEY) === 'true') {
+                passwordLock.classList.add('hidden');
+                return; // Ne pas installer les événements si déjà déverrouillé
             }
             
             // 2. Fonction de vérification
-   //         const checkPassword = async () => {
-     //           const password = passwordInput.value;
-     //           if (!password) {
-      //              errorDiv.textContent = 'Veuillez entrer un mot de passe.';
-    //                return;
-     //           }
+            const checkPassword = async () => {
+                const password = passwordInput.value;
+                if (!password) {
+                    errorDiv.textContent = 'Veuillez entrer un mot de passe.';
+                    return;
+                }
                 
-      //          submitBtn.textContent = 'Vérification...';
-      //          errorDiv.textContent = '';
-        //        submitBtn.disabled = true;
+                submitBtn.textContent = 'Vérification...';
+                errorDiv.textContent = '';
+                submitBtn.disabled = true;
                 
-     //           try {
+                try {
                     // LIGNE CORRIGÉE : Utilise le paramètre 'password' pour correspondre à votre Apps Script
-     //               const fullUrl = `${PASSWORD_API_URL}?password=${encodeURIComponent(password)}`;
+                    const fullUrl = `${PASSWORD_API_URL}?password=${encodeURIComponent(password)}`;
                     
-   //                 const response = await fetch(fullUrl);
+                    const response = await fetch(fullUrl);
                     
-       //             const result = await response.json(); 
+                    const result = await response.json(); 
                     
-         //           if (result.success === true) {
+                    if (result.success === true) {
                         // Mot de passe correct: supprimer l'overlay
-         //               passwordLock.classList.add('hidden'); 
-          //              sessionStorage.setItem(UNLOCK_KEY, 'true'); // Stocker l'état
-         //               passwordInput.value = ''; // Nettoyer l'input
+                        passwordLock.classList.add('hidden'); 
+                        sessionStorage.setItem(UNLOCK_KEY, 'true'); // Stocker l'état
+                        passwordInput.value = ''; // Nettoyer l'input
                         
                         // Recharger les données du classement maintenant que l'accès est autorisé
-           //             await loadLeaderboardData(); 
-//
-       //             } else {
+                        await loadLeaderboardData(); 
+
+                    } else {
                         // Mot de passe incorrect
-       //                 errorDiv.textContent = 'Mot de passe incorrect. Veuillez réessayer.';
-      //                  passwordInput.value = '';
-            //        }
-    //            } catch (error) {
-      //              console.error('Erreur API de mot de passe:', error);
-     //               errorDiv.textContent = 'Erreur de connexion au serveur de vérification.';
-  //              } finally {
-  //                  submitBtn.textContent = 'Déverrouiller';
-    //                submitBtn.disabled = false;
-    //            }
-    //        };
+                        errorDiv.textContent = 'Mot de passe incorrect. Veuillez réessayer.';
+                        passwordInput.value = '';
+                    }
+                } catch (error) {
+                    console.error('Erreur API de mot de passe:', error);
+                    errorDiv.textContent = 'Erreur de connexion au serveur de vérification.';
+                } finally {
+                    submitBtn.textContent = 'Déverrouiller';
+                    submitBtn.disabled = false;
+                }
+            };
             
             // 3. Ajouter les écouteurs d'événements
-//            submitBtn.addEventListener('click', checkPassword);
-//            passwordInput.addEventListener('keydown', (e) => {
-//                if (e.key === 'Enter') {
- //                   e.preventDefault(); // Empêche l'envoi d'un formulaire si existant
-  //                  checkPassword();
-  //              }
-  //          });
-  //      }
+            submitBtn.addEventListener('click', checkPassword);
+            passwordInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Empêche l'envoi d'un formulaire si existant
+                    checkPassword();
+                }
+            });
+        }
+        
       
-      
-  //    </script>
-
+      </script>
 
 
 
