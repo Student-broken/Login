@@ -9,25 +9,85 @@
     <!-- Including Chart.js for the graph -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+       /* --- NOUVEAU CSS POUR LE VEROUILLAGE --- */
+        .password-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(44, 62, 80, 1); /* secondary-color with opacity */
+            z-index: 10000; /* Extrêmement haut pour couvrir tous les éléments */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s ease;
+            flex-direction: column;
+        }
+
+        .pass-content {
+            background-color: var(--widget-background);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .pass-content h3 {    /*overlay content*/
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .pass-content input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1.1em;
+            box-sizing: border-box;
+        }
+
+        .pass-content button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .pass-content button:hover {
+            background-color: #1e6fa3;
+        }
+
+        .pass-error { /*error-message*/
+            color: #e74c3c;
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 20px;
+        }
+        .hidden {
+            display: none !important;
+        }
         :root {
             --primary-color: #2980b9; --secondary-color: #2c3e50; --background-color: #f7f9fb;
             --widget-background: #ffffff; --text-color: #34495e; --light-grey: #e0e6eb;
             --danger-color: #e74c3c; --success-color: #27ae60; --shadow-widget: 0 10px 20px rgba(0, 0, 0, 0.07);
         }
-        html { height: 100%; }
-        body { 
-            margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background-color: var(--background-color); color: var(--text-color);
-            display: flex; flex-direction: column; min-height: 100%;
-        }
-        .site-header-container { background-color: var(--widget-background); box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 15px 0; position: relative; margin-bottom: 20px; flex-shrink: 0; }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--background-color); color: var(--text-color); }
+        .site-header-container { background-color: var(--widget-background); box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 15px 0; position: relative; margin-bottom: 20px; }
         .site-header { text-align: center; padding: 0; margin: 0; color: var(--secondary-color); font-size: 2.2em; font-weight: 700; font-family: 'Playfair Display', serif; }
         .back-arrow { position: absolute; top: 50%; left: 25px; transform: translateY(-50%); font-size: 2.2em; color: var(--secondary-color); text-decoration: none; transition: color 0.2s; }
         .back-arrow:hover { color: var(--primary-color); }
-        .main-container { 
-            max-width: 1200px; margin: auto; /* This centers the container vertically and horizontally */
-            padding: 0 20px; width: 100%; box-sizing: border-box;
-        }
+        .main-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
         .controls { background: var(--widget-background); padding: 20px; border-radius: 12px; box-shadow: var(--shadow-widget); margin-bottom: 25px; border: 1px solid var(--light-grey); }
         .controls label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.9em; }
         select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background-color: white; font-size: 1em; }
@@ -49,17 +109,11 @@
         .rank-trend-down { color: var(--danger-color); } .rank-trend-down::before { content: '▼'; }
 
         /* MINI LEADERBOARD */
-        .mini-leaderboard-container {
-            flex-grow: 1; overflow-y: auto; /* Make it scrollable */
-            position: relative; margin-top: 15px; border-top: 1px solid var(--light-grey); padding-top: 15px;
-            max-height: 190px; /* Fixed height for ~5 items (5 * (30px item + 8px padding)) */
-        }
-        .leaderboard-list { list-style: none; padding: 0; margin: 0; }
-        .leaderboard-item { display: flex; align-items: center; padding: 8px 10px; border-radius: 8px; font-size: 0.95em; transition: background-color 0.2s; }
+        .mini-leaderboard-container { flex-grow: 1; overflow: hidden; position: relative; margin-top: 15px; border-top: 1px solid var(--light-grey); padding-top: 15px; }
+        .leaderboard-list { list-style: none; padding: 0; margin: 0; transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
+        .leaderboard-item { display: flex; align-items: center; padding: 8px 10px; border-radius: 8px; font-size: 0.95em; transition: background-color 0.2s; opacity: 1; }
         .leaderboard-item.is-user { background-color: #eaf2f8; font-weight: bold; }
-        .item-rank { width: 45px; font-weight: 600; text-align: left; }
-        .item-name { font-weight: normal; margin-left: 10px; }
-        .is-user .item-name { font-weight: bold; }
+        .item-rank { width: 45px; font-weight: 600; text-align: right; margin-right: 10px; }
         .item-grade { margin-left: auto; font-weight: 600; }
         
         /* GRAPH & OVERALL WIDGET */
@@ -68,10 +122,150 @@
 
         .loader, .error-message, .no-data { text-align: center; padding: 40px; font-size: 1.2em; color: var(--light-grey); }
         .error-message { color: var(--danger-color); background-color: #fdd; border: 1px solid var(--danger-color); border-radius: 8px; }
-        footer { text-align: center; padding: 25px; font-size: 0.8em; color: #95a5a6; font-style: italic; flex-shrink: 0;}
+        footer { text-align: center; padding: 25px; font-size: 0.8em; color: #95a5a6; font-style: italic; }
     </style>
 </head>
 <body>
+     <div class="password-overlay" id="password-lock">
+        <div class="pass-content">
+            <h3>🔒 Accès Restreint</h3>
+            <p>Veuillez entrer le mot de passe pour accéder au classement.</p>
+            <input type="password" id="password-input" placeholder="Mot de passe" required>
+            <button id="password-submit-btn">Déverrouiller</button>
+            <div class="pass-error" id="password-error"></div>
+        </div>
+    </div>
+    <div class="site-header-container">
+        <a href="main.html" class="back-arrow" title="Retour">←</a>
+        <header class="site-header">Classement</header>
+    </div>
+
+
+
+
+<script>
+        // !! IMPORTANT !! REMPLACEZ CETTE VALEUR PAR L'URL DE DÉPLOIEMENT DE VOTRE GOOGLE APPS SCRIPT
+
+        
+        // ** NOUVELLES VARIABLES POUR LE VEROUILLAGE **
+        const PASSWORD_API_URL = "https://script.google.com/macros/s/AKfycbwNnr7yofbZsalVH9-V4TJRgSnaIT93Q6uNR7Gt-J7owpPdwmFMODisawKWqFL_Jbs3Pw/exec";
+        const UNLOCK_KEY = 'leaderboardUnlocked';
+        // ** FIN NOUVELLES VARIABLES **
+
+        // Mappage des niveaux pour le filtre (doit correspondre aux valeurs utilisées dans la feuille)
+        const LEVEL_MAP = {
+            'sec4': 'sec4', 
+            'sec5': 'sec5',
+        };
+
+        let currentUserData = null;
+        let allLeaderboardData = [];
+        let cleanUserData = {}; // Student's cleaned ID for comparison
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // [NOUVEAU] Initialiser le verrouillage AVANT de charger les données
+            setupPasswordLock();
+            
+            // Récupérer les données de l'utilisateur local
+            currentUserData = JSON.parse(localStorage.getItem('jdlmData')) || null;
+            
+            if (currentUserData && currentUserData.nom) {
+                // Créer un ID nettoyé pour comparer avec la colonne 'Nom/ID'
+                cleanUserData.userId = currentUserData.nom.toString().replace(/\s+/g, '').toLowerCase();
+                
+                // Assumer que le niveau est stocké séparément ou déduit si nécessaire
+                // Pour l'exemple, si vous stockez le niveau dans localStorage
+                const storedNiveau = localStorage.getItem('jdlmNiveau') || 'sec4'; 
+                cleanUserData.niveau = LEVEL_MAP[storedNiveau] || 'Sec4';
+
+                // Initialiser le filtre sur le niveau de l'utilisateur
+                const levelSelect = document.getElementById('filter-niveau');
+                if (levelSelect.querySelector(`option[value="${cleanUserData.niveau}"]`)) {
+                     levelSelect.value = cleanUserData.niveau;
+                }
+            } else {
+                document.getElementById('user-rank').textContent = 'N/A';
+            }
+            
+            document.getElementById('filter-niveau').addEventListener('change', renderLeaderboard);
+            document.getElementById('filter-etape').addEventListener('change', renderLeaderboard);
+            
+            // Le chargement des données attendra que le verrouillage soit traité dans setupPasswordLock
+            await loadLeaderboardData();
+        });
+
+        // ** FONCTION POUR LE VEROUILLAGE **
+        function setupPasswordLock() {
+            const passwordLock = document.getElementById('password-lock');
+            const passwordInput = document.getElementById('password-input');
+            const submitBtn = document.getElementById('password-submit-btn');
+            const errorDiv = document.getElementById('password-error');
+            
+            // 1. Vérifier si l'utilisateur a déjà déverrouillé pendant cette session
+            if (sessionStorage.getItem(UNLOCK_KEY) === 'true') {
+                passwordLock.classList.add('hidden');
+                return; // Ne pas installer les événements si déjà déverrouillé
+            }
+            
+            // 2. Fonction de vérification
+            const checkPassword = async () => {
+                const password = passwordInput.value;
+                if (!password) {
+                    errorDiv.textContent = 'Veuillez entrer un mot de passe.';
+                    return;
+                }
+                
+                submitBtn.textContent = 'Vérification...';
+                errorDiv.textContent = '';
+                submitBtn.disabled = true;
+                
+                try {
+                    // LIGNE CORRIGÉE : Utilise le paramètre 'password' pour correspondre à votre Apps Script
+                    const fullUrl = `${PASSWORD_API_URL}?password=${encodeURIComponent(password)}`;
+                    
+                    const response = await fetch(fullUrl);
+                    
+                    const result = await response.json(); 
+                    
+                    if (result.success === true) {
+                        // Mot de passe correct: supprimer l'overlay
+                        passwordLock.classList.add('hidden'); 
+                        sessionStorage.setItem(UNLOCK_KEY, 'true'); // Stocker l'état
+                        passwordInput.value = ''; // Nettoyer l'input
+                        
+                        // Recharger les données du classement maintenant que l'accès est autorisé
+                        await loadLeaderboardData(); 
+
+                    } else {
+                        // Mot de passe incorrect
+                        errorDiv.textContent = 'Mot de passe incorrect. Veuillez réessayer.';
+                        passwordInput.value = '';
+                    }
+                } catch (error) {
+                    console.error('Erreur API de mot de passe:', error);
+                    errorDiv.textContent = 'Erreur de connexion au serveur de vérification.';
+                } finally {
+                    submitBtn.textContent = 'Déverrouiller';
+                    submitBtn.disabled = false;
+                }
+            };
+            
+            // 3. Ajouter les écouteurs d'événements
+            submitBtn.addEventListener('click', checkPassword);
+            passwordInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Empêche l'envoi d'un formulaire si existant
+                    checkPassword();
+                }
+            });
+        }
+        
+      
+      </script>
+
+
+
+    
     <div class="site-header-container">
         <a href="main.html" class="back-arrow" title="Retour">←</a>
         <header class="site-header">Tableau de Bord du Classement</header>
@@ -166,6 +360,7 @@
             
             createPerformanceChart(levelData, currentUserData);
 
+            // After HTML is rendered, activate the scrolling leaderboards
             document.querySelectorAll('.mini-leaderboard-container').forEach(container => {
                 updateLeaderboardScroll(container);
             });
@@ -189,10 +384,8 @@
             let leaderboardItemsHTML = rankedUsers.map((user, index) => {
                 const rank = index + 1;
                 const isCurrentUser = user.userCode === currentUserData.userCode;
-                const userName = isCurrentUser ? 'Vous' : `Utilisateur ${rank}`;
                 return `<li class="leaderboard-item ${isCurrentUser ? 'is-user' : ''}" data-rank="${rank}">
                             <span class="item-rank">${getTrophy(rank)}</span>
-                            <span class="item-name">${userName}</span>
                             <span class="item-grade">${parseFloat(user[currentKey]).toFixed(1)}%</span>
                         </li>`;
             }).join('');
@@ -203,13 +396,8 @@
             } else {
                 const oldRank = oldRanks[currentKey];
                 let trendHTML = '';
-                if (oldRank !== undefined) {
-                    if (currentUserRank < oldRank) {
-                        trendHTML = `<span class="rank-trend rank-trend-up"></span>`;
-                    } else if (currentUserRank > oldRank) {
-                        trendHTML = `<span class="rank-trend rank-trend-down"></span>`;
-                    }
-                }
+                if (oldRank === undefined || currentUserRank <= oldRank) trendHTML = `<span class="rank-trend rank-trend-up"></span>`;
+                else if (currentUserRank > oldRank) trendHTML = `<span class="rank-trend rank-trend-down"></span>`;
                 
                 widgetContent = `
                     <div class="widget-header">
@@ -232,15 +420,21 @@
             const userRank = parseInt(container.dataset.userRank);
             if (!userRank) return;
 
+            const list = container.querySelector('.leaderboard-list');
             const userItem = container.querySelector('.is-user');
             if (!userItem) return;
-            
-            const itemHeight = userItem.offsetHeight;
-            const containerHeight = container.clientHeight;
 
-            // Scroll to center the user's item, but don't scroll past the beginning or end
-            const scrollTop = userItem.offsetTop - (containerHeight / 2) + (itemHeight / 2);
-            container.scrollTop = scrollTop;
+            const itemHeight = userItem.offsetHeight;
+            let scrollOffset;
+            
+            if (userRank <= 3) {
+                scrollOffset = 0; // At the top, show from the beginning
+            } else {
+                scrollOffset = (userRank - 4) * itemHeight; // Position 3 items above the user
+            }
+            
+            // Instantly move to position, then let user scroll freely
+            container.scrollTop = scrollOffset;
         }
 
         function createOverallAverageWidgetHTML(termKey, levelData) {
@@ -249,7 +443,7 @@
             return `
                 <div class="stat-widget overall-avg-widget">
                     <div class="widget-header">
-                        <h3 class="widget-title">Moyenne du Niveau</h3>
+                        <h3 class="widget-title">Moyenne du Groupe</h3>
                         <div class="widget-value">${average.toFixed(1)}%</div>
                         <div class="widget-rank" style="opacity:0.8;">Basé sur ${validGrades.length} élèves</div>
                     </div>
@@ -260,24 +454,14 @@
             const ctx = document.getElementById('performanceChart').getContext('2d');
             
             const calculateGroupAvg = (etapeKey) => {
-                const validGrades = levelData.map(u => parseFloat(u[etapeKey])).filter(g => !isNaN(g) && g > 0);
+                const validGrades = levelData.map(u => parseFloat(u[etapeKey])).filter(g => !isNaN(g));
                 return validGrades.length > 0 ? validGrades.reduce((a,b) => a + b, 0) / validGrades.length : null;
             };
 
-            const parseUserGrade = (grade) => (parseFloat(grade) > 0 ? parseFloat(grade) : null);
-
-            const userData = [
-                parseUserGrade(currentUserData.avg_etape1), 
-                parseUserGrade(currentUserData.avg_etape2), 
-                parseUserGrade(currentUserData.avg_etape3)
-            ];
-            const groupData = [
-                calculateGroupAvg('avg_etape1'), 
-                calculateGroupAvg('avg_etape2'), 
-                calculateGroupAvg('avg_etape3')
-            ];
+            const userData = [currentUserData.avg_etape1, currentUserData.avg_etape2, currentUserData.avg_etape3];
+            const groupData = [calculateGroupAvg('avg_etape1'), calculateGroupAvg('avg_etape2'), calculateGroupAvg('avg_etape3')];
             
-            if(chartInstance) chartInstance.destroy();
+            if(chartInstance) chartInstance.destroy(); // Clear previous chart
             
             chartInstance = new Chart(ctx, {
                 type: 'line',
@@ -291,30 +475,22 @@
                             backgroundColor: 'rgba(39, 174, 96, 0.1)',
                             borderWidth: 3,
                             fill: true,
-                            tension: 0.4,
-                            spanGaps: false // This ensures the line breaks on null values
+                            tension: 0.4
                         },
                         {
-                            label: 'Moyenne du Niveau',
+                            label: 'Moyenne du Groupe',
                             data: groupData,
                             borderColor: 'rgba(231, 76, 60, 1)',
                             backgroundColor: 'rgba(231, 76, 60, 0.1)',
                             borderWidth: 3,
                             fill: true,
-                            tension: 0.4,
-                            spanGaps: false
+                            tension: 0.4
                         }
                     ]
                 },
                 options: {
                     responsive: true,
-                    scales: { 
-                        y: { 
-                            min: 0, 
-                            max: 100,
-                            ticks: { callback: value => `${value}%` } 
-                        } 
-                    },
+                    scales: { y: { beginAtZero: false, ticks: { callback: value => `${value}%` } } },
                     plugins: { legend: { position: 'top' } }
                 }
             });
