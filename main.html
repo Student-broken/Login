@@ -78,82 +78,6 @@
     </style>
 </head>
 <body>
-
-    <div class="log-display" style="margin-top: 30px; padding: 15px; border: 1px solid #ccc; background-color: #f9f9f9; display: none;">
-    <p>Utilisateur enregistré : <strong id="current-user-display">Anonyme</strong></p>
-    <p id="log-status">Tentative d'enregistrement de la visite...</p>
-</div>
-
-<script>
-    // !! IMPORTANT !! REMPLACEZ CETTE URL PAR VOTRE URL DE DÉPLOIEMENT DE L'APPLICATION WEB LOGGING
-    const LOGGING_API_URL = "https://script.google.com/macros/s/AKfycbxMNJ139nMtAxQCakaiNSTBS1DI4gWe3MzjXansflmv7JNNjDXg1xcs4GemNq_eIgPfXA/exec"; 
-
-    // Fonction pour récupérer le nom de l'utilisateur (utilisant la variable 'nom')
-    function getUserName() {
-        // Tente de récupérer le nom depuis localStorage.
-        try {
-            const userData = JSON.parse(localStorage.getItem('jdlmData'));
-            
-            // On vérifie que userData existe et que la propriété 'nom' existe et n'est pas vide
-            if (userData && userData.nom && userData.nom.trim() !== "") {
-                return userData.nom;
-            }
-        } catch (e) {
-            // Ignorer l'erreur si localStorage est inaccessible ou corrompu
-        }
-        // Retourne 'Anonyme' si aucune donnée valide n'est trouvée
-        return 'Anonyme'; 
-    }
-
-    // Fonction principale pour enregistrer la visite
-    async function logUserVisit() {
-        const userName = getUserName();
-        const logStatus = document.getElementById('log-status');
-        const userDisplay = document.getElementById('current-user-display');
-
-        // Mise à jour de l'affichage utilisateur (peut être Anonyme)
-        userDisplay.textContent = userName;
-
-        if (LOGGING_API_URL === "VOTRE_LOGGING_API_URL_ICI" || LOGGING_API_URL.includes("VOTRE_LOGGING_API_URL_ICI")) {
-            logStatus.textContent = "Erreur: Veuillez définir l'URL de l'API Logging.";
-            return;
-        }
-
-        try {
-            // Envoi du nom d'utilisateur (qui sera 'Anonyme' si non trouvé) au paramètre 'name' de l'Apps Script
-            const fullUrl = `${LOGGING_API_URL}?name=${encodeURIComponent(userName)}`;
-
-            const response = await fetch(fullUrl, {
-                method: 'GET',
-                mode: 'cors' 
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Erreur réseau: Statut ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            if (result.success) {
-                // Si l'enregistrement est réussi, affiche l'heure locale du client
-                const now = new Date();
-                const dateStr = now.toLocaleDateString('fr-CA', { year: 'numeric', month: 'long', day: 'numeric' });
-                const timeStr = now.toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                
-                logStatus.innerHTML = `Visite enregistrée le <strong>${dateStr}</strong> à <strong>${timeStr}</strong>.`;
-            } else {
-                logStatus.textContent = "Échec de l'enregistrement de la visite (Réponse API non réussie).";
-            }
-
-        } catch (error) {
-            console.error("Erreur lors de l'enregistrement de la visite :", error);
-            logStatus.innerHTML = `Erreur de connexion au serveur d'enregistrement. Vérifiez la console pour les erreurs CORS ou réseau : <strong>${error.message}</strong>`;
-        }
-    }
-
-    // Déclencher la fonction d'enregistrement au chargement complet de la page
-    document.addEventListener('DOMContentLoaded', logUserVisit);
-</script>
     <div class="site-header-container">
         <a href="index.html" class="logout-arrow" title="Déconnexion">←</a>
         <header class="site-header">Outil JDLM*</header>
@@ -182,7 +106,6 @@
             </div>
             <div class="control-group"><button id="unites-btn" class="btn btn-control">Unités</button></div>
             <div class="control-group"><button id="classement-btn" class="btn btn-control" onclick="window.location.href='classement.html'">Classement</button></div>
-
             <div class="subject-averages">
                 <h4>Moyennes par matière</h4>
                 <ul id="subject-averages-list"><li class="no-data">Aucune donnée</li></ul>
@@ -229,13 +152,8 @@
                 renderAll(); 
             }); 
 
-            // --- NEW LOGIC: Event Listener for the "Classement" button ---
             document.getElementById('classement-btn').addEventListener('click', function(event) {
-                // Try to send the data. The function will return true or false.
-                const canProceed = sendRankingData();
-                
-                // If the function returns false (because data is missing),
-                // prevent the link from navigating.
+                const canProceed = sendRankingData(true); // `true` forces the sync
                 if (!canProceed) {
                     event.preventDefault();
                 }
@@ -254,7 +172,14 @@
         function calculateSubjectAverage(subject) { let totalWeightedGrade = 0; let totalCompetencyWeight = 0; subject.competencies.forEach(comp => { const compWeightMatch = comp.name.match(/\((\d+)%\)/); if (!compWeightMatch) return; const compWeight = parseFloat(compWeightMatch[1]); let totalAssignmentGrade = 0; let totalAssignmentWeight = 0; comp.assignments.forEach(assign => { const grade = getNumericGrade(assign.result); const weight = parseFloat(assign.pond); if (grade !== null && !isNaN(weight)) { totalAssignmentGrade += grade * weight; totalAssignmentWeight += weight; } }); if (totalAssignmentWeight > 0) { const competencyAverage = totalAssignmentGrade / totalAssignmentWeight; totalWeightedGrade += competencyAverage * compWeight; totalCompetencyWeight += compWeight; } }); return totalCompetencyWeight > 0 ? totalWeightedGrade / totalCompetencyWeight : null; }
         function getUnits() { const settings = jdlmData.settings || {}; const niveau = settings.niveau; const mode = settings.unitesMode || 'defaut'; if (mode === 'sans') return new Proxy({}, { get: () => 1 }); if (mode === 'perso') return settings.customUnites || {}; if (mode === 'defaut' && niveau && defaultUnits[niveau]) { return defaultUnits[niveau]; } return {}; }
         function calculateAverages() { const units = getUnits(); const settings = jdlmData.settings || {}; const niveau = settings.niveau; const mode = settings.unitesMode || 'defaut'; let allTermAverages = {}; let allSubjectAverages = {}; const defaultSubjectUnit = 2; ['etape1', 'etape2', 'etape3'].forEach(etape => { if (!jdlmData[etape]) return; let termWeightedSum = 0; let termUnitSum = 0; allSubjectAverages[etape] = {}; jdlmData[etape].forEach(subject => { const average = calculateSubjectAverage(subject); const codePrefix = subject.code.substring(0,3); allSubjectAverages[etape][codePrefix] = { name: subjectList[codePrefix] || subject.name, average: average }; let unit; if (mode === 'defaut' && !niveau) { unit = null; } else if (mode === 'sans' || mode === 'perso') { unit = units[codePrefix] ?? 1; } else if (mode === 'defaut') { unit = units[codePrefix] ?? defaultSubjectUnit; } if (average !== null && unit !== null && niveau) { termWeightedSum += average * unit; termUnitSum += unit; } }); allTermAverages[etape] = termUnitSum > 0 ? termWeightedSum / termUnitSum : null; }); let globalWeightedSum = 0; let globalTermCount = 0; Object.values(allTermAverages).forEach(avg => { if (avg !== null) { globalWeightedSum += avg; globalTermCount++; } }); return { subjectAverages: allSubjectAverages, termAverages: allTermAverages, globalAverage: globalTermCount > 0 ? globalWeightedSum / globalTermCount : null }; }
-        function renderAll() { renderTermTables(); renderSidePanel(); }
+        
+        function renderAll() { 
+            renderTermTables(); 
+            renderSidePanel();
+            // --- NEW --- This will now automatically check if data should be sent.
+            sendRankingData(); 
+        }
+
         function renderTermTables() { renderTermData(jdlmData.etape1, document.getElementById('etape1')); renderTermData(jdlmData.etape2, document.getElementById('etape2')); renderTermData(jdlmData.etape3, document.getElementById('etape3')); }
         function renderSidePanel() { const averages = calculateAverages(); const niveau = (jdlmData.settings || {}).niveau; const globalAvgEl = document.getElementById('moyenne-generale'); const termAvgEl = document.getElementById('moyenne-etape'); globalAvgEl.classList.toggle('invalid', !niveau); termAvgEl.classList.toggle('invalid', !niveau); const formatAvg = (avg) => avg !== null ? `<span class="grade-percentage">${avg.toFixed(2)}%</span>` : '--'; globalAvgEl.innerHTML = !niveau ? 'N/A' : formatAvg(averages.globalAverage); termAvgEl.innerHTML = !niveau ? 'N/A' : formatAvg(averages.termAverages[activeTab]); const subjectListEl = document.getElementById('subject-averages-list'); subjectListEl.innerHTML = ''; const activeTermSubjects = averages.subjectAverages[activeTab]; if (activeTermSubjects && Object.keys(activeTermSubjects).length > 0) { Object.entries(activeTermSubjects).forEach(([code, subj]) => { const li = document.createElement('li'); li.innerHTML = `<span>${subj.name}</span><strong>${formatAvg(subj.average)}</strong>`; subjectListEl.appendChild(li); }); } else { subjectListEl.innerHTML = '<li class="no-data">Aucune matière pour cette étape</li>'; } }
         function populateUnitesModal() { const listContainer = document.getElementById('unites-list'); const mode = document.getElementById('unites-mode').value; const settings = jdlmData.settings || {}; listContainer.innerHTML = ''; const allSubjects = new Map(); ['etape1', 'etape2', 'etape3'].forEach(etape => { if (jdlmData[etape]) { jdlmData[etape].forEach(subject => { const codePrefix = subject.code.substring(0,3); if (!allSubjects.has(codePrefix)) { allSubjects.set(codePrefix, subjectList[codePrefix] || subject.name); } }); } }); if (allSubjects.size === 0) { listContainer.innerHTML = '<div class="no-data">Aucune matière trouvée.</div>'; return; } const units = getUnits(); const defaultSubjectUnit = 2; allSubjects.forEach((name, code) => { const item = document.createElement('div'); item.className = 'unite-item'; let valueDisplay = ''; if (mode === 'perso') { const currentValue = (settings.customUnites || {})[code] || 1; valueDisplay = `<input type="number" data-code="${code}" value="${currentValue}" min="0" step="1">`; } else { let unitValue; if (mode === 'sans') { unitValue = 1; } else if (mode === 'defaut') { unitValue = units[code] ?? defaultSubjectUnit; } valueDisplay = `<span>${unitValue}</span>`; } item.innerHTML = `<label>${name} (${code})</label>${valueDisplay}`; listContainer.appendChild(item); }); }
@@ -262,7 +187,7 @@
         function renderSubjectTable(subject) { const table = document.createElement('table'); table.className = 'subject-table'; table.innerHTML = `<thead><tr><th colspan="7">${subject.code} - ${subject.name}</th></tr><tr><th>Catégorie</th><th>Travail</th><th>Pond.</th><th>Date assignée</th><th>Date due</th><th>Date complétée</th><th>Résultat</th></tr></thead><tbody></tbody>`; const tbody = table.querySelector('tbody'); subject.competencies.forEach(comp => { const compRow = document.createElement('tr'); compRow.className = 'competency-row'; compRow.innerHTML = `<td colspan="7">${comp.name}</td>`; tbody.appendChild(compRow); comp.assignments.forEach(assign => { const assignRow = document.createElement('tr'); const numGrade = getNumericGrade(assign.result); let formattedResult = '<span class="no-data">-</span>'; if (assign.result) { const isLetterGrade = !!gradeMap[assign.result.trim()]; const isSimplePercentage = assign.result.includes('%') && !assign.result.includes('/'); if (isLetterGrade && numGrade !== null) { formattedResult = `${assign.result} <i>(~<span class="grade-percentage">${numGrade.toFixed(1)}%</span>)</i>`; } else if (isSimplePercentage || assign.result.match(/(\d+[,.]?\d*)\s*\/\s*(\d+[,.]?\d*)/)) { formattedResult = assign.result.replace(/(\d+[,.]?\d*\s*\/.*|(\d+[,.]?\d*\s*%))/g, (match) => `<span class="grade-percentage">${match}</span>`); } else { formattedResult = assign.result; } } assignRow.innerHTML = `<td>${assign.category || '<span class="no-data">-</span>'}</td><td>${assign.work || '<span class="no-data">-</span>'}</td><td>${assign.pond || '<span class="no-data">-</span>'}</td><td>${assign.assignedDate || '<span class="no-data">-</span>'}</td><td>${assign.dueDate.replace('à','') || '<span class="no-data">-</span>'}</td><td>${assign.completedDate || '<span class="no-data">-</span>'}</td><td>${formattedResult}</td>`; tbody.appendChild(assignRow); }); }); return table; }
 
         // =======================================================
-        // START: FINAL RANKING SCRIPT WITH TIMESTAMP
+        // START: FINAL "INTELLIGENT SYNC" RANKING SCRIPT
         // =======================================================
 
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxOay6sGNlL_f4MfhHkmwBTi0J3ONrCxv2dg1y5pqKjgKmAN07xttJtlrXjNqLbxdYR/exec";
@@ -290,59 +215,66 @@
         }
 
         /**
-         * This is the primary function triggered before going to the dashboard.
-         * It validates, prepares, and sends data.
-         * @returns {boolean} - Returns true if sending is successful, false otherwise.
+         * The primary sync function. It checks conditions, creates a data "fingerprint",
+         * and only sends data if it has changed or if forced.
+         * @param {boolean} [force=false] - If true, bypasses the fingerprint check.
+         * @returns {boolean} - Returns true if navigation can proceed, false if blocked.
          */
-        function sendRankingData() {
+        function sendRankingData(force = false) {
             const niveau = document.getElementById('niveau-secondaire').value;
             const userCode = getUserCode();
 
-            // 1. Validate that necessary data exists.
-            if (!userCode) {
-                alert("Erreur: Le nom de l'élève est introuvable. Veuillez recharger la page ou recoller vos données.");
-                return false; // Block navigation
+            if (!userCode || !niveau) {
+                if (force) alert("Veuillez sélectionner votre niveau (Secondaire 4 ou 5) avant de consulter le classement.");
+                return !force; // Block navigation only if forced (button click)
             }
-            if (!niveau) {
-                alert("Veuillez sélectionner votre niveau (Secondaire 4 ou 5) avant de consulter le classement.");
-                return false; // Block navigation
-            }
-            
-            console.log(`Validation successful. Preparing to send data for user '${userCode}'...`);
 
-            // 2. Save the selected level for the classement page to use.
             localStorage.setItem('jdlmNiveau', niveau);
-
-            // 3. Prepare data payload.
             const averages = calculateAverages();
             const mathAvg = getAggregatedSubjectAverage(averages.subjectAverages, ['MAT', 'CST', 'SN']);
             const englishAvg = getAggregatedSubjectAverage(averages.subjectAverages, ['ELA', 'ESL', 'EESL']);
             const frenchAvg = getAggregatedSubjectAverage(averages.subjectAverages, ['FRA']);
 
+            const dataPayload = {
+                userCode: userCode,
+                niveau: niveau,
+                avg_generale: averages.globalAverage ? averages.globalAverage.toFixed(2) : '',
+                avg_etape1: averages.termAverages.etape1 ? averages.termAverages.etape1.toFixed(2) : '',
+                avg_etape2: averages.termAverages.etape2 ? averages.termAverages.etape2.toFixed(2) : '',
+                avg_etape3: averages.termAverages.etape3 ? averages.termAverages.etape3.toFixed(2) : '',
+                avg_math: mathAvg ? mathAvg.toFixed(2) : '',
+                avg_anglais: englishAvg ? englishAvg.toFixed(2) : '',
+                avg_francais: frenchAvg ? frenchAvg.toFixed(2) : '',
+                last_updated: new Date().toISOString()
+            };
+
+            const dataFingerprint = JSON.stringify(dataPayload);
+            const lastSentFingerprint = sessionStorage.getItem('lastDataFingerprint');
+
+            if (!force && dataFingerprint === lastSentFingerprint) {
+                console.log("Data is unchanged since last sync. Skipping automatic send.");
+                return true;
+            }
+
+            console.log(force ? "Force-syncing data..." : "Data has changed. Syncing automatically...");
+            
             const formData = new FormData();
-            formData.append('userCode', userCode);
-            formData.append('niveau', niveau);
-            formData.append('avg_generale', averages.globalAverage ? averages.globalAverage.toFixed(2) : '');
-            formData.append('avg_etape1', averages.termAverages.etape1 ? averages.termAverages.etape1.toFixed(2) : '');
-            formData.append('avg_etape2', averages.termAverages.etape2 ? averages.termAverages.etape2.toFixed(2) : '');
-            formData.append('avg_etape3', averages.termAverages.etape3 ? averages.termAverages.etape3.toFixed(2) : '');
-            formData.append('avg_math', mathAvg ? mathAvg.toFixed(2) : '');
-            formData.append('avg_anglais', englishAvg ? englishAvg.toFixed(2) : '');
-            formData.append('avg_francais', frenchAvg ? frenchAvg.toFixed(2) : '');
+            for (const key in dataPayload) {
+                formData.append(key, dataPayload[key]);
+            }
             
-            // 4. Add the new timestamp.
-            formData.append('last_updated', new Date().toISOString());
-            
-            // 5. Send the data.
             fetch(SCRIPT_URL, { method: 'POST', body: formData })
             .then(response => response.json())
             .then(data => {
-                if(data.result === 'success') console.log("Data sent and updated successfully:", data.userCode);
-                else console.error("Script Error:", data.error);
+                if(data.result === 'success') {
+                    console.log("Sync successful for user:", data.userCode);
+                    sessionStorage.setItem('lastDataFingerprint', dataFingerprint);
+                } else {
+                    console.error("Script Error:", data.error);
+                }
             })
             .catch(error => console.error("Network Error:", error));
 
-            // 6. Allow navigation to proceed.
             return true;
         }
     </script>
