@@ -181,11 +181,18 @@
     function renderTermData(termData, container) { container.innerHTML = ''; if (!termData || termData.length === 0) { container.innerHTML = '<p class="no-data">Aucune donnée pour cette étape.</p>'; return; } termData.forEach(subject => container.appendChild(renderSubjectTable(subject))); }
     function renderSubjectTable(subject) { const table = document.createElement('table'); table.className = 'subject-table'; table.innerHTML = `<thead><tr><th colspan="7">${subject.code} - ${subject.name}</th></tr><tr><th>Catégorie</th><th>Travail</th><th>Pond.</th><th>Date assignée</th><th>Date due</th><th>Date complétée</th><th>Résultat</th></tr></thead><tbody></tbody>`; const tbody = table.querySelector('tbody'); subject.competencies.forEach(comp => { const compRow = document.createElement('tr'); compRow.className = 'competency-row'; compRow.innerHTML = `<td colspan="7">${comp.name}</td>`; tbody.appendChild(compRow); comp.assignments.forEach(assign => { const assignRow = document.createElement('tr'); const numGrade = getNumericGrade(assign.result); let formattedResult = '<span class="no-data">-</span>'; if (assign.result) { const isLetterGrade = !!gradeMap[assign.result.trim()]; const isSimplePercentage = assign.result.includes('%') && !assign.result.includes('/'); if (isLetterGrade && numGrade !== null) { formattedResult = `${assign.result} <i>(~<span class="grade-percentage">${numGrade.toFixed(1)}%</span>)</i>`; } else if (isSimplePercentage || assign.result.match(/(\d+[,.]?\d*)\s*\/\s*(\d+[,.]?\d*)/)) { formattedResult = assign.result.replace(/(\d+[,.]?\d*\s*\/.*|(\d+[,.]?\d*\s*%))/g, (match) => `<span class="grade-percentage">${match}</span>`); } else { formattedResult = assign.result; } } assignRow.innerHTML = `<td>${assign.category || '<span class="no-data">-</span>'}</td><td>${assign.work || '<span class="no-data">-</span>'}</td><td>${assign.pond || '<span class="no-data">-</span>'}</td><td>${assign.assignedDate || '<span class="no-data">-</span>'}</td><td>${assign.dueDate.replace('à','') || '<span class="no-data">-</span>'}</td><td>${assign.completedDate || '<span class="no-data">-</span>'}</td><td>${formattedResult}</td>`; tbody.appendChild(assignRow); }); }); return table; }
 
+    // =======================================================
+    // START: INTELLIGENT SESSION-BASED RANKING SCRIPT
+    // =======================================================
 
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxOay6sGNlL_f4MfhHkmwBTi0J3ONrCxv2dg1y5pqKjgKmAN07xttJtlrXjNqLbxdYR/exec";
 
+    /**
+     * This is the master function that controls data sending.
+     * It will only send data ONCE per page session.
      */
     function sendRankingDataOnce() {
+        // Check the session flag. If it's true, we've already sent data. Stop.
         if (sessionStorage.getItem('hasSentDataThisSession') === 'true') {
             console.log("Data has already been sent this session. No action needed.");
             return;
@@ -194,17 +201,21 @@
         const niveau = document.getElementById('niveau-secondaire').value;
         const userCode = getUserCode();
 
+        // Check if the necessary conditions are met.
         if (!niveau || !userCode) {
             console.log("Conditions not met for sending data (missing name or level). Waiting...");
             return;
         }
         
+        // --- If we reach this point, conditions are met AND we haven't sent data yet ---
         
         console.log(`Conditions met. Sending data for user '${userCode}' at level '${niveau}'...`);
         
-
+        // **CRITICAL STEP**: Set the session flag to 'true' immediately.
+        // This prevents any other call from sending data again.
         sessionStorage.setItem('hasSentDataThisSession', 'true');
 
+        // Save the selected level for the classement page to use
         localStorage.setItem('jdlmNiveau', niveau);
 
         const averages = calculateAverages();
@@ -252,7 +263,7 @@
             }
         });
         return count > 0 ? totalSum / count : null;
-    }     
-    </script>
+    }
+</script>
 </body>
 </html>
